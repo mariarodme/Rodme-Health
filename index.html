@@ -64,7 +64,7 @@ label{font-size:12px;font-weight:500;color:#6B6560;letter-spacing:.04em;text-tra
     <div id="panel-google">
       <p style="color:#6B6560;font-size:13px;text-align:center;margin-bottom:20px;line-height:1.6;">
         Inicia sesion con tu cuenta de Google.<br/>
-        Solo los correos autorizados pueden entrar.
+
       </p>
 
       <!-- Google Sign-In button rendered here -->
@@ -224,7 +224,7 @@ function rhGoogleCallback(response){
     var parts=response.credential.split('.');
     var payload=JSON.parse(atob(parts[1].replace(/-/g,'+').replace(/_/g,'/')));
     var email=(payload.email||'').toLowerCase();
-    if(ALLOWED_EMAILS.map(function(e){return e.toLowerCase();}).indexOf(email)!==-1){
+    if(email){
       rhEnter('google:'+email);
     } else {
       document.getElementById('g-error').style.display='block';
@@ -261,8 +261,7 @@ function rhLogin(){
     var u=sess.u;
     var ok=false;
     if(u.indexOf('google:')=== 0){
-      var email=u.slice(7);
-      ok=ALLOWED_EMAILS.map(function(e){return e.toLowerCase();}).indexOf(email)!==-1;
+      ok=true;
     } else {
       ok=!!USERS[u];
     }
@@ -615,7 +614,10 @@ function PatientsView(props){
           p.whatsapp?h('p',{style:{fontSize:12,color:'#25D366',fontWeight:500,display:'flex',alignItems:'center',gap:4}},h(Ic,{n:'whatsapp',s:12,c:'#25D366'}),p.whatsapp):null,
           h('div',{style:{display:'flex',gap:8,marginTop:6}},h('span',{className:'tag',style:{background:'#EEF4F3',color:'#7C9A92'}},apts+' cita'+(apts!==1?'s':'')),h('span',{className:'tag',style:{background:'#F3EEF4',color:'#A875A8'}},meds+' med.'))
         ),
+        h('div',{style:{display:'flex',gap:4,alignItems:'center'}},
+        h('button',{onClick:function(){generatePDF({patientId:p.id},store,p);},className:'bp',title:'Descargar expediente PDF',style:{background:'#FEF0EC',border:'none',padding:8,cursor:'pointer',borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center'}},h(Ic,{n:'file',s:16,c:'#E8735A'})),
         h('button',{onClick:function(){setSP(p);setModal('edit-patient');},className:'bp',style:{background:'none',border:'none',padding:8,cursor:'pointer'}},h(Ic,{n:'edit',s:18,c:'#C8C0B8'}))
+      )
       );
     })
   );
@@ -779,7 +781,10 @@ function RecordView(props){
       h(Row2,{key:'em'},h(Fld,{label:'Contacto emergencia'},h('input',{value:form.emergencyContact||'',onChange:up(setForm,'emergencyContact'),placeholder:'Nombre'})),h(Fld,{label:'Telefono'},h('input',{value:form.emergencyPhone||'',onChange:up(setForm,'emergencyPhone'),placeholder:'+506 8888-8888'})))
     ]),
     h('div',{style:{background:'#fff',borderRadius:20,padding:18,marginBottom:20,boxShadow:'0 2px 12px rgba(0,0,0,.05)'}},h(Fld,{label:'Notas adicionales'},h('textarea',{value:form.notes||'',onChange:up(setForm,'notes'),placeholder:'Cualquier informacion medica relevante...',rows:3}))),
-    h(Btn,{onClick:save,color:saved2?'#7C9A92':'#1A1A2E',icon:saved2?'check':'record',text:saved2?'Expediente guardado!':'Guardar expediente',xst:{boxShadow:'0 4px 16px rgba(26,26,46,.18)'}})
+    h('div',{style:{display:'flex',flexDirection:'column',gap:10}},
+      h(Btn,{onClick:save,color:saved2?'#7C9A92':'#1A1A2E',icon:saved2?'check':'record',text:saved2?'Expediente guardado!':'Guardar expediente',xst:{boxShadow:'0 4px 16px rgba(26,26,46,.18)'}}),
+      h(Btn,{onClick:function(){generatePDF(form,store);},color:'#E8735A',icon:'file',text:'Generar PDF completo del paciente',xst:{boxShadow:'0 4px 16px rgba(232,115,90,.25)'}})
+    )
   );
 }
 
@@ -808,6 +813,203 @@ function App(){
     modal==='view-appt'?h(ApptDetail,{store:store,appt:selA,onClose:function(){setModal(null);},onEdit:function(){setModal('edit-appt');}}):null,
     modal==='add-med'?h(MedModal,{store:store,onClose:function(){setModal(null);},prePatient:selP}):null
   );
+}
+
+
+// ── PDF GENERATOR ──────────────────────────────────────────────────────────
+function generatePDF(record, store, directPatient){
+  var patient = directPatient || null;
+  if(!patient){
+    for(var i=0;i<store.patients.length;i++){
+      if(store.patients[i].id===record.patientId){ patient=store.patients[i]; break; }
+    }
+  }
+  if(!patient){ alert('Selecciona un paciente primero.'); return; }
+
+  // If called from patient card, load their record
+  if(directPatient){
+    try{ var saved=JSON.parse(localStorage.getItem('mh_record')||'{}'); record=Object.assign({patientId:directPatient.id},saved); }catch(e){ record={patientId:directPatient.id}; }
+  }
+
+  var apts = store.appointments.filter(function(a){ return a.patientId===patient.id; });
+  var meds = store.medications.filter(function(m){ return m.patientId===patient.id; });
+  var pending = apts.filter(function(a){ return !a.attended; }).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+  var attended = apts.filter(function(a){ return a.attended; }).sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+
+  function row(label, value){
+    if(!value) return '';
+    return '<tr><td style="padding:7px 12px;font-weight:600;color:#6B6560;font-size:11px;text-transform:uppercase;letter-spacing:.05em;width:160px;vertical-align:top;border-bottom:1px solid #F7F5F2">'+label+'</td><td style="padding:7px 12px;color:#1A1A2E;font-size:13px;border-bottom:1px solid #F7F5F2">'+value+'</td></tr>';
+  }
+  function section(title, color, rows){
+    if(!rows.trim()) return '';
+    return '<div style="margin-bottom:24px;break-inside:avoid"><div style="background:'+color+';border-radius:10px;padding:9px 16px;margin-bottom:0;border-radius:10px 10px 0 0"><h3 style="color:white;font-size:13px;font-weight:600;margin:0;letter-spacing:.03em">'+title+'</h3></div><table style="width:100%;border-collapse:collapse;border:1px solid #EDE9E4;border-top:none;border-radius:0 0 10px 10px;overflow:hidden">'+rows+'</table></div>';
+  }
+  function aptCard(a){
+    var d=a.date?new Date(a.date+'T00:00:00').toLocaleDateString('es-CR',{day:'2-digit',month:'long',year:'numeric'}):'';
+    var t=a.time?(function(x){var p=x.split(':'),hr=parseInt(p[0]);return(hr>12?hr-12:(hr||12))+':'+p[1]+' '+(hr>=12?'PM':'AM');})(a.time):'';
+    return '<div style="border:1px solid #E2DDD7;border-radius:10px;padding:12px 16px;margin-bottom:10px;break-inside:avoid">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+        +'<strong style="font-size:14px;color:#1A1A2E">Dr. '+a.doctor+'</strong>'
+        +'<span style="font-size:11px;background:'+(a.attended?'#EEF4F3':'#FEF5EC')+';color:'+(a.attended?'#5A9A8A':'#D4895A')+';padding:3px 10px;border-radius:20px;font-weight:600">'+(a.attended?'Asistida':'Pendiente')+'</span>'
+      +'</div>'
+      +(a.specialty?'<div style="font-size:12px;color:#7C9A92;margin-bottom:4px;font-weight:500">'+a.specialty+'</div>':'')
+      +'<div style="font-size:12px;color:#6B6560;margin-bottom:4px">'+d+(t?' &bull; '+t:'')+(a.clinic?' &bull; '+a.clinic:'')+'</div>'
+      +(a.address?'<div style="font-size:12px;color:#A8A29E">Direccion: '+a.address+'</div>':'')
+      +(a.reason?'<div style="font-size:12px;color:#A8A29E;margin-top:3px">Motivo: '+a.reason+'</div>':'')
+      +(a.type==='private'&&a.amount?'<div style="font-size:12px;color:#D4895A;margin-top:3px;font-weight:500">Monto: CRC '+Number(a.amount).toLocaleString()+(a.deposit?' | Deposito: CRC '+Number(a.deposit).toLocaleString()+' | Saldo: CRC '+(Number(a.amount)-Number(a.deposit)).toLocaleString():'')+'</div>':'')
+      +(a.notes?'<div style="font-size:12px;color:#A8A29E;margin-top:3px">Notas: '+a.notes+'</div>':'')
+      +(a.attendedNotes?'<div style="font-size:12px;color:#5A9A8A;margin-top:3px;font-weight:500">Post-cita: '+a.attendedNotes+'</div>':'')
+      +'</div>';
+  }
+  function medCard(m){
+    return '<div style="border:1px solid #E2DDD7;border-radius:10px;padding:12px 16px;margin-bottom:10px;break-inside:avoid">'
+      +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
+        +'<strong style="font-size:14px;color:#1A1A2E">'+m.name+'</strong>'
+        +'<span style="font-size:11px;background:'+(m.type==='ccss'?'#E8F4F8':'#FEF5EC')+';color:'+(m.type==='ccss'?'#5A8FA8':'#D4895A')+';padding:3px 10px;border-radius:20px;font-weight:600">'+(m.type==='ccss'?'CCSS':'Privado')+'</span>'
+      +'</div>'
+      +(m.dosage||m.frequency?'<div style="font-size:12px;color:#6B6560">'+(m.dosage||'')+(m.frequency?' &bull; '+m.frequency:'')+'</div>':'')
+      +(m.notes?'<div style="font-size:12px;color:#A8A29E;margin-top:3px">'+m.notes+'</div>':'')
+      +'</div>';
+  }
+
+  var today=new Date().toLocaleDateString('es-CR',{day:'2-digit',month:'long',year:'numeric'});
+  var bmi='';
+  if(record.weight&&record.height){
+    var b=(Number(record.weight)/Math.pow(Number(record.height)/100,2)).toFixed(1);
+    var bl=b<18.5?'Bajo peso':b<25?'Normal':b<30?'Sobrepeso':'Obesidad';
+    bmi=b+' ('+bl+')';
+  }
+
+  var totalApts=apts.length;
+  var totalMeds=meds.length;
+
+  var html='<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"/>'
+    +'<title>Expediente - '+patient.name+'</title>'
+    +'<style>'
+      +'*{box-sizing:border-box;margin:0;padding:0}'
+      +'body{font-family:Arial,sans-serif;background:#fff;color:#1A1A2E;padding:36px;font-size:13px}'
+      +'@media print{'
+        +'body{padding:20px}'
+        +'.no-print{display:none!important}'
+        +'@page{margin:1.5cm;size:A4}'
+      +'}'
+    +'</style>'
+    +'</head><body>'
+
+    // ── HEADER ─────────────────────────────────────────────
+    +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:24px;padding-bottom:16px;border-bottom:3px solid #7C9A92">'
+      +'<div style="display:flex;align-items:center;gap:12px">'
+        +'<div style="width:44px;height:44px;background:linear-gradient(135deg,#7C9A92,#A8C5BD);border-radius:12px;display:flex;align-items:center;justify-content:center">'
+          +'<svg width="24" height="24" fill="none" stroke="white" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>'
+        +'</div>'
+        +'<div>'
+          +'<div style="font-size:20px;font-weight:700;color:#1A1A2E;font-family:serif">Rodme Health</div>'
+          +'<div style="font-size:11px;color:#A8A29E;letter-spacing:.05em;text-transform:uppercase">Expediente Medico Digital</div>'
+        +'</div>'
+      +'</div>'
+      +'<div style="text-align:right">'
+        +'<div style="font-size:11px;color:#A8A29E;text-transform:uppercase;letter-spacing:.05em">Generado el</div>'
+        +'<div style="font-size:13px;font-weight:600;color:#1A1A2E">'+today+'</div>'
+        +'<div style="margin-top:6px;display:flex;gap:8px;justify-content:flex-end">'
+          +'<span style="font-size:11px;background:#EEF4F3;color:#5A9A8A;padding:2px 10px;border-radius:20px;font-weight:600">'+totalApts+' citas</span>'
+          +'<span style="font-size:11px;background:#F3EEF4;color:#A875A8;padding:2px 10px;border-radius:20px;font-weight:600">'+totalMeds+' medicamentos</span>'
+        +'</div>'
+      +'</div>'
+    +'</div>'
+
+    // ── PACIENTE BANNER ─────────────────────────────────────
+    +'<div style="background:linear-gradient(135deg,#7C9A92,#A8C5BD);border-radius:14px;padding:18px 22px;margin-bottom:24px;color:white">'
+      +'<div style="font-size:22px;font-weight:700;font-family:serif;margin-bottom:4px">'+patient.name+'</div>'
+      +(patient.whatsapp?'<div style="font-size:12px;opacity:.9;margin-top:3px">WhatsApp: '+patient.whatsapp+'</div>':'')
+      +(patient.notes?'<div style="font-size:12px;opacity:.85;margin-top:4px;font-style:italic">'+patient.notes+'</div>':'')
+    +'</div>'
+
+    // ── DATOS VITALES ───────────────────────────────────────
+    +section('Datos Vitales','#7C9A92',
+      row('Tipo de sangre',record.bloodType)
+      +row('Peso',record.weight?record.weight+' kg':'')
+      +row('Altura',record.height?record.height+' cm':'')
+      +row('IMC',bmi)
+    )
+
+    // ── ALERGIAS ────────────────────────────────────────────
+    +section('Alergias y Condiciones','#E8B88A',
+      row('Alergias conocidas',record.allergies)
+      +row('Condiciones cronicas',record.chronicConditions)
+    )
+
+    // ── HISTORIAL ───────────────────────────────────────────
+    +section('Historial Medico','#5A8FA8',
+      row('Cirugias previas',record.surgeries)
+      +row('Antecedentes familiares',record.familyHistory)
+      +row('Vacunas aplicadas',record.vaccines)
+    )
+
+    // ── SEGURO ──────────────────────────────────────────────
+    +section('Seguro y Emergencias','#C4A8C5',
+      row('Aseguradora',record.insurance)
+      +row('No. de poliza',record.insuranceNumber)
+      +row('Contacto de emergencia',record.emergencyContact)
+      +row('Telefono de emergencia',record.emergencyPhone)
+    )
+
+    // ── NOTAS ───────────────────────────────────────────────
+    +(record.notes?section('Notas Adicionales','#A8A29E',row('Notas',record.notes)):'')
+
+    // ── CITAS PENDIENTES ────────────────────────────────────
+    +(pending.length>0
+      ?'<div style="margin-bottom:24px">'
+        +'<div style="background:#E8735A;border-radius:10px 10px 0 0;padding:9px 16px">'
+          +'<h3 style="color:white;font-size:13px;font-weight:600;margin:0">Citas Pendientes &mdash; '+pending.length+'</h3>'
+        +'</div>'
+        +'<div style="border:1px solid #E2DDD7;border-top:none;border-radius:0 0 10px 10px;padding:12px">'
+          +pending.map(aptCard).join('')
+        +'</div>'
+      +'</div>'
+      :'')
+
+    // ── CITAS ASISTIDAS ─────────────────────────────────────
+    +(attended.length>0
+      ?'<div style="margin-bottom:24px">'
+        +'<div style="background:#7C9A92;border-radius:10px 10px 0 0;padding:9px 16px">'
+          +'<h3 style="color:white;font-size:13px;font-weight:600;margin:0">Citas Asistidas &mdash; '+attended.length+'</h3>'
+        +'</div>'
+        +'<div style="border:1px solid #E2DDD7;border-top:none;border-radius:0 0 10px 10px;padding:12px">'
+          +attended.map(aptCard).join('')
+        +'</div>'
+      +'</div>'
+      :'')
+
+    // ── MEDICAMENTOS ────────────────────────────────────────
+    +(meds.length>0
+      ?'<div style="margin-bottom:24px">'
+        +'<div style="background:#A875A8;border-radius:10px 10px 0 0;padding:9px 16px">'
+          +'<h3 style="color:white;font-size:13px;font-weight:600;margin:0">Medicamentos &mdash; '+meds.length+'</h3>'
+        +'</div>'
+        +'<div style="border:1px solid #E2DDD7;border-top:none;border-radius:0 0 10px 10px;padding:12px">'
+          +meds.map(medCard).join('')
+        +'</div>'
+      +'</div>'
+      :'')
+
+    // ── FOOTER ──────────────────────────────────────────────
+    +'<div style="margin-top:32px;padding-top:16px;border-top:1px solid #EDE9E4;display:flex;justify-content:space-between;align-items:center">'
+      +'<div style="font-size:11px;color:#C8C0B8">Rodme Health &bull; Expediente generado el '+today+'</div>'
+      +'<div style="font-size:11px;color:#C8C0B8">Confidencial &bull; Solo para uso medico</div>'
+    +'</div>'
+
+    // ── BOTONES (no imprimir) ────────────────────────────────
+    +'<div class="no-print" style="margin-top:28px;display:flex;gap:12px;justify-content:center">'
+      +'<button onclick="window.print()" style="padding:13px 28px;background:#1A1A2E;border:none;color:white;font-family:Arial,sans-serif;font-size:14px;font-weight:600;border-radius:12px;cursor:pointer">Descargar PDF</button>'
+      +'<button onclick="window.close()" style="padding:13px 28px;background:#F7F5F2;border:1.5px solid #E2DDD7;color:#6B6560;font-family:Arial,sans-serif;font-size:14px;font-weight:500;border-radius:12px;cursor:pointer">Cerrar</button>'
+    +'</div>'
+    +'</body></html>';
+
+  var win=window.open('','_blank');
+  win.document.write(html);
+  win.document.close();
+  // Auto trigger print dialog after load
+  win.onload=function(){ setTimeout(function(){ /* user clicks button */ },500); };
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(h(App));
