@@ -1020,37 +1020,37 @@ function HomeView(p){
         h('img',{src:'https://images.pexels.com/photos/7446757/pexels-photo-7446757.jpeg?auto=compress&cs=tinysrgb&w=1920',alt:'',loading:'eager',decoding:'async',onError:function(e){e.currentTarget.style.display='none';}})
       ),
       h('div',{className:'wix-hero-body'},
-        h('p',{className:'wix-hero-kicker'},'UN ESPACIO PARA CUIDAR DE TI'),
-        h('h1',null,'Tu salud,',h('br'),'en casa.'),
-        h('p',{className:'wix-hero-description'},'Un lugar tranquilo para organizar lo importante: tus citas médicas, tus medicamentos y el bienestar de tu familia.'),
+        h('p',{className:'wix-hero-kicker'},'TU SALUD, A TU MANERA'),
+        h('h1',null,'Tu salud,',h('br'),'a tu ritmo.'),
+        h('p',{className:'wix-hero-description'},'Consulta tus citas, tratamientos y registros familiares desde un espacio pensado para hacer todo más sencillo.'),
         h('div',{className:'wix-hero-buttons'},
           h('button',{className:'wix-button wix-button-dark',onClick:function(){sm('add-apt');}},'Agendar una cita',h('span',{'aria-hidden':'true'},'↗')),
           h('button',{className:'wix-button wix-button-outline',onClick:function(){sv('record');}},'Ver mi expediente')
         )
       ),
-      h('span',{className:'wix-hero-sign'},'RODME HEALTH · BIENESTAR FAMILIAR')
+      h('span',{className:'wix-hero-sign'},'RODME HEALTH · TU ESPACIO PERSONAL')
     ),
     h('section',{className:'wix-intro'},
-      h('div',{className:'wix-section-numeral'},'01 / TU ESPACIO'),
-      h('h2',null,'Una forma más simple',h('br'),'de cuidar lo esencial.'),
+      h('div',{className:'wix-section-numeral'},'01 / BIENVENIDA'),
+      h('h2',null,'Lo importante,',h('br'),'siempre a mano.'),
       h('div',{className:'wix-intro-side'},
-        h('p',null,(name?'Hola, '+name+'. ':'')+'Tu información de salud merece un espacio claro, cómodo y fácil de consultar, cada día.'),
-        h('button',{className:'wix-text-link',onClick:function(){sv('patients');}},'Conocer mis registros ',h('span',{'aria-hidden':'true'},'↗'))
+        h('p',null,(name?'Hola, '+name+'. ':'')+'Aquí puedes consultar lo que has registrado, organizar tus próximas citas y tener a mano los datos de tu familia.'),
+        h('button',{className:'wix-text-link',onClick:function(){sv('patients');}},'Ver mis familiares ',h('span',{'aria-hidden':'true'},'↗'))
       )
     ),
     h('section',{className:'wix-service-section','aria-label':'Servicios y accesos'},
       h('div',{className:'wix-section-heading'},
         h('div',null,
-          h('span',{className:'wix-section-numeral'},'02 / ORGANIZA TU BIENESTAR'),
-          h('h2',null,'Todo en un solo lugar.')
+          h('span',{className:'wix-section-numeral'},'02 / TUS HERRAMIENTAS'),
+          h('h2',null,'Cada detalle, en su lugar.')
         ),
-        h('p',null,'Las herramientas que necesitas, sin complicaciones.')
+        h('p',null,'Encuentra rápidamente la información que buscas.')
       ),
       h('div',{className:'wix-services'},
         [
-          {n:'calendar',id:'appointments',title:'Citas médicas',description:'Organiza tus próximas consultas y mantén a mano cada detalle.',action:'Ver mis citas',number:'01',tone:'sand'},
-          {n:'pill',id:'medications',title:'Medicamentos',description:'Consulta tratamientos, dosis e indicaciones que hayas registrado.',action:'Ver tratamientos',number:'02',tone:'sage'},
-          {n:'user',id:'patients',title:'Mi familia',description:'Un espacio para organizar los datos de cada miembro de tu familia.',action:'Ver familiares',number:'03',tone:'rose'}
+          {n:'calendar',id:'appointments',title:'Citas médicas',description:'Guarda fechas, horarios y médicos para consultar tus próximas visitas.',action:'Ver mis citas',number:'01',tone:'sand'},
+          {n:'pill',id:'medications',title:'Medicamentos',description:'Ten a mano los nombres, las dosis y las notas de tus tratamientos.',action:'Ver tratamientos',number:'02',tone:'sage'},
+          {n:'user',id:'patients',title:'Mi familia',description:'Mantén separados y organizados los registros de cada familiar.',action:'Ver familiares',number:'03',tone:'rose'}
         ].map(function(item){
           return h('button',{key:item.id,className:'wix-service-card '+item.tone,onClick:function(){sv(item.id);}},
             h('div',{className:'wix-service-card-top'},h('span',null,item.number),h(Ic,{n:item.n,s:31,c:'currentColor'})),
@@ -1062,9 +1062,9 @@ function HomeView(p){
     ),
     h('section',{className:'wix-stat-band','aria-label':'Tu resumen personal'},
       h('div',{className:'wix-stat-intro'},
-        h('span',{className:'wix-section-numeral'},'03 / MIS REGISTROS'),
-        h('h2',null,'Tu espacio,',h('br'),'de un vistazo.'),
-        h('p',null,'Un resumen actualizado con la información que vas agregando.')
+        h('span',{className:'wix-section-numeral'},'03 / TU RESUMEN'),
+        h('h2',null,'Lo que llevas',h('br'),'registrado.'),
+        h('p',null,'Estas cifras se actualizan cuando agregas o modificas tus registros.')
       ),
       h('div',{className:'wix-stat-grid'},
         stats.map(function(x){return h('button',{key:x.title,className:'wix-stat-item',onClick:function(){sv(x.target);}},
@@ -1076,8 +1076,8 @@ function HomeView(p){
     ),
     h('section',{className:'wix-agenda-section'},
       h('div',{className:'wix-section-heading'},
-        h('div',null,h('span',{className:'wix-section-numeral'},'04 / LO QUE VIENE'),h('h2',null,'Al día con tu salud.')),
-        h('p',null,'Tu agenda y tus tratamientos, siempre a mano.')
+        h('div',null,h('span',{className:'wix-section-numeral'},'04 / TU AGENDA'),h('h2',null,'Lo próximo en tu agenda.')),
+        h('p',null,'Revisa tus siguientes citas y los medicamentos que tienes anotados.')
       ),
       h('div',{className:'wix-agenda-grid'},
         h('div',{className:'wix-agenda-card'},
@@ -1095,7 +1095,7 @@ function HomeView(p){
             })
             :h('div',{className:'wix-empty-state'},
               h(Ic,{n:'calendar',s:28,c:'var(--accent)'}),
-              h('p',null,'No tienes citas próximas registradas.'),
+              h('p',null,'Todavía no hay citas próximas en tu agenda.'),
               h('button',{onClick:function(){sm('add-apt');}},'Agregar una cita ↗')
             )
         ),
@@ -1114,7 +1114,7 @@ function HomeView(p){
             })
             :h('div',{className:'wix-empty-state'},
               h(Ic,{n:'pill',s:28,c:'var(--accent)'}),
-              h('p',null,'Aún no tienes medicamentos registrados.'),
+              h('p',null,'No has agregado medicamentos a este espacio.'),
               h('button',{onClick:function(){sm('add-med');}},'Agregar medicamento ↗')
             )
         )
@@ -1122,8 +1122,8 @@ function HomeView(p){
     ),
     h('section',{className:'wix-health-note'},
       h('div',{className:'wix-note-symbol'},h(Ic,{n:'heart',s:34,c:'currentColor'})),
-      h('div',null,h('span',{className:'wix-section-numeral'},'05 / TU INFORMACIÓN'),h('h2',null,'Pequeños registros.',h('br'),'Grandes cuidados.'),
-        h('p',null,'Mantén organizado tu expediente personal. Aquí aparecen solamente los valores que registres; nunca mostramos mediciones de ejemplo.')),
+      h('div',null,h('span',{className:'wix-section-numeral'},'05 / TU EXPEDIENTE'),h('h2',null,'Tu información,',h('br'),'bien organizada.'),
+        h('p',null,'Consulta aquí las mediciones que hayas anotado en tu expediente. Si no has registrado un dato, aparecerá como pendiente.')),
       h('div',{className:'wix-vitals-list'},
         h('div',null,h('span',null,'Frecuencia cardíaca'),h('strong',null,rec.heartRate?rec.heartRate+' bpm':'Sin registrar')),
         h('div',null,h('span',null,'Presión arterial'),h('strong',null,rec.bloodPressure||'Sin registrar')),
@@ -1131,7 +1131,7 @@ function HomeView(p){
       )
     ),
     h('footer',{className:'wix-home-footer'},
-      h('div',null,h('strong',null,'rodme ',h('em',null,'health')),h('span',null,'Un espacio más simple para tu bienestar.')),
+      h('div',null,h('strong',null,'rodme ',h('em',null,'health')),h('span',null,'Tus registros, claros y a tu alcance.')),
       h('div',{className:'wix-home-footer-links'},
         h('button',{onClick:function(){sv('patients');}},'Pacientes'),
         h('button',{onClick:function(){sv('appointments');}},'Citas'),
