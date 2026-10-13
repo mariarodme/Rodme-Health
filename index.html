@@ -501,6 +501,175 @@ label{font-size:.7rem;letter-spacing:.045em;color:var(--text2)}
   *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}
 }
 
+
+/* Rodme Health 2026: edición visual principal */
+:root{
+ --bg:#F6F8FD;--surface:#FFFFFF;--surface2:#F0F3FA;--border:#E5EAF3;
+ --text:#1B2B49;--text2:#67768E;--text3:#8A98AB;
+ --accent:#4D63CE;--accent2:#39BEAF;--accent-bg:#EDF0FF;--accent-light:#F3F5FF;
+ --green:#19A17A;--green-bg:#E7F8F1;--green-border:#BBECDC;
+ --purple:#8A6BCC;--purple-bg:#F3EEFF;--teal:#168DA5;--teal-bg:#E6F7FB;
+ --shadow:0 3px 16px rgba(34,51,95,.035);--shadow-md:0 12px 34px rgba(34,51,95,.10);
+ --r-lg:19px;--r-xl:25px;
+}
+[data-theme=dark]{
+ --bg:#111B2D;--surface:#1C2942;--surface2:#263652;--border:#334761;
+ --text:#F2F5FD;--text2:#BAC6DC;--text3:#92A6BF;
+ --accent:#9AA8FF;--accent2:#6AD9C7;--accent-bg:#2B385D;--accent-light:#263552;
+ --green-bg:#20483B;--green-border:#35634E;--purple-bg:#382C58;--teal-bg:#1D4150;
+}
+body{background:var(--bg)}
+.app-layout>.sidebar{display:none}
+.app-layout>.sidebar.open{display:flex}
+.main-content{margin-left:0!important;width:100%;min-width:0}
+.top-bar.rh-desktop-header{
+ display:flex;align-items:center;justify-content:space-between;gap:22px;
+ height:85px;padding:12px max(25px,calc((100vw - 1440px)/2 + 30px));
+ background:var(--surface);box-shadow:0 5px 32px rgba(25,47,102,.045)
+}
+.rh-nav-brand{display:flex;align-items:center;gap:10px;flex-shrink:0;background:transparent;border:0;color:var(--text);cursor:pointer;text-align:left}
+.rh-nav-symbol{width:46px;height:46px;border-radius:15px;background:linear-gradient(135deg,#485FCC,#4BAEB7);box-shadow:0 7px 20px rgba(71,99,205,.24);display:grid;place-items:center}
+.rh-nav-brand>span:last-child{display:flex;flex-direction:column}
+.rh-nav-brand strong{font-weight:800;font-size:1.24rem;letter-spacing:-.075em;line-height:1.1}
+.rh-nav-brand em{font-weight:600;color:var(--accent);font-style:normal}
+.rh-nav-brand small{font-size:.53rem;font-weight:800;letter-spacing:.13em;color:var(--text3);margin-top:3px}
+.rh-nav-links{display:flex;align-items:center;justify-content:center;flex:1;gap:3px}
+.rh-nav-link{background:transparent;border:0;border-radius:11px;min-height:44px;display:flex;align-items:center;gap:7px;padding:10px 12px;color:var(--text2);font-size:.8rem;font-weight:700;cursor:pointer}
+.rh-nav-link:hover{background:var(--surface2);color:var(--text)}
+.rh-nav-link.active{background:var(--accent-bg);color:var(--accent)}
+.rh-nav-count{background:#F06D76;color:white;padding:2px 6px;border-radius:12px;font-size:.64rem}
+.rh-nav-end{display:flex;align-items:center;gap:11px;flex-shrink:0}
+.rh-nav-theme{background:var(--surface);border:1px solid var(--border);border-radius:12px;width:42px;height:42px;display:grid;place-items:center;color:var(--text2);cursor:pointer}
+.rh-nav-cta{display:flex;align-items:center;justify-content:center;gap:6px;height:43px;padding:0 16px;background:#4D63CE;color:#fff;font-weight:800;border:0;border-radius:12px;font-size:.8rem;cursor:pointer}
+.rh-nav-avatar{height:39px;width:39px;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--border);border-radius:50%;background:linear-gradient(145deg,#8FB8E9,#6978D4);color:white;font-size:.72rem;font-weight:800;cursor:pointer}
+.page-content{max-width:1430px;margin:0 auto;padding:35px clamp(20px,3.2vw,55px) 65px}
+.rh-dashboard{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(320px,.9fr);gap:22px;align-items:start}
+.rh-dashboard>.health-hero{grid-column:1/-1;grid-row:1}
+.rh-dashboard>div:nth-child(2){grid-column:1/-1;grid-row:2}
+.rh-dashboard>.quick-section{grid-column:1/-1;grid-row:3}
+.rh-dashboard>div:nth-child(4){grid-column:2;grid-row:4}
+.rh-dashboard>div:nth-child(5){grid-column:1;grid-row:4}
+.health-hero{
+ display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);
+ grid-template-rows:auto 1fr auto;gap:12px 28px;min-height:320px;
+ padding:40px clamp(28px,4vw,57px);margin:0;overflow:hidden;border-radius:25px;
+ background:radial-gradient(circle at 80% 35%,rgba(105,154,246,.35),transparent 42%),linear-gradient(120deg,#152A52 0%,#2C438B 70%,#5369CE 100%);
+ box-shadow:0 19px 44px rgba(29,54,120,.15);isolation:isolate;
+}
+[data-theme=dark] .health-hero{background:linear-gradient(120deg,#1C3565,#344A9E)}
+.health-hero::before{content:'';position:absolute;inset:0;z-index:0;background-image:radial-gradient(rgba(255,255,255,.2) 1px,transparent 1px);background-size:24px 24px;mask-image:linear-gradient(90deg,transparent 40%,black)}
+.health-hero::after{border:1px solid rgba(255,255,255,.19);width:380px;height:380px;top:-140px;right:-100px}
+.health-hero h1{font-family:var(--font)!important;font-size:clamp(2.15rem,4vw,4rem)!important;font-weight:800!important;line-height:1.11!important;letter-spacing:-.075em;color:white!important;white-space:pre-line}
+.health-hero>div:first-child p{color:#CFE2FF!important;letter-spacing:.04em;text-transform:uppercase;font-size:.74rem!important}
+.health-hero>div:first-child .av{background:linear-gradient(135deg,#81A6F5,#7BDFD1)!important}
+.hero-kicker{color:#CBD9FF}
+.hero-cta{background:#fff;color:#2A4288;border:none;border-radius:12px;padding:12px 19px;box-shadow:0 9px 22px rgba(8,19,58,.12)}
+.hero-cta:hover{background:#EDF4FF}
+.vital-card{background:rgba(255,255,255,.98);border-radius:17px;border:1px solid rgba(255,255,255,.7);padding:22px 17px;box-shadow:0 12px 25px rgba(15,30,80,.13);min-height:163px}
+[data-theme=dark] .vital-card{background:var(--surface);border-color:var(--border)}
+.vital-card>p:nth-child(2){font-family:var(--font)!important;font-weight:800!important;font-size:1.65rem!important;letter-spacing:-.055em}
+.rh-dashboard>div:nth-child(2) .stats-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin:0}
+.rh-dashboard .stat-card{min-height:149px;padding:20px;border-radius:19px;box-shadow:var(--shadow);display:flex;flex-direction:column;align-items:flex-start;justify-content:center}
+.rh-dashboard .stat-num{font-family:var(--font);font-size:2.2rem!important;font-weight:800;letter-spacing:-.065em;color:var(--text)!important;margin:1px 0 8px}
+.rh-dashboard .stat-ico{width:42px;height:42px;border-radius:13px;margin-bottom:13px}
+.rh-dashboard .stat-lbl{font-size:.69rem;letter-spacing:.05em;color:var(--text2)}
+.rh-dashboard .quick-section{margin:0}
+.rh-dashboard .quick-grid{gap:14px}
+.rh-dashboard .quick-action{border-radius:19px;min-height:108px;padding:18px 20px;background:var(--surface);box-shadow:var(--shadow);transition:.2s}
+.rh-dashboard .quick-action:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.rh-dashboard .quick-action-icon{height:48px;width:48px;border-radius:14px}
+.rh-dashboard .quick-action-copy strong{font-size:.89rem}
+.rh-dashboard .quick-action-copy small{font-size:.7rem}
+.rh-dashboard>div:nth-child(4),.rh-dashboard>div:nth-child(5){min-width:0}
+.rh-dashboard>div:nth-child(4)>.card-flat{border-radius:19px;overflow:hidden}
+.rh-dashboard>div:nth-child(5)>.apt-row{min-height:79px;margin-bottom:10px;border-radius:16px;background:var(--surface)}
+.rh-dashboard .sec-title{font-family:var(--font);font-size:1.18rem;letter-spacing:-.035em;font-weight:800}
+.rh-dashboard .apt-avatar{border-radius:14px;background:var(--accent-bg)}
+.rh-dashboard .apt-row{box-shadow:var(--shadow)}
+.rh-dashboard .med-item{padding:17px 20px;min-height:80px}
+.rh-dashboard .med-dot{width:11px;height:11px;background:var(--accent);box-shadow:0 0 0 5px var(--accent-bg)}
+.rh-dashboard .med-chevron{color:var(--text3)}
+.rh-dashboard .quick-section .sec-hdr{margin-bottom:12px}
+.card,.card-flat,.pt-card,.med-card,.apt-row{border-radius:17px}
+.ph-title{font-family:var(--font);font-weight:800;letter-spacing:-.045em;font-size:clamp(1.65rem,2.4vw,2rem)}
+.sec-title,.sheet-title{font-family:var(--font);font-weight:800}
+.btn-primary{background:#4D63CE;box-shadow:0 7px 20px rgba(77,99,206,.2)}
+.btn-primary:hover{background:#3E54BC}
+.tab-btn.on{color:var(--accent)}
+/* Pantalla de acceso renovada */
+.auth-wrap{background:#EDF2FB}
+.auth-left{background:radial-gradient(circle at 8% 0%,rgba(111,148,243,.3),transparent 45%),linear-gradient(142deg,#10264A,#203976 66%,#4362AD);padding:45px clamp(38px,5vw,90px);isolation:isolate}
+.auth-left h2{font-family:var(--font);font-size:clamp(2.7rem,4.3vw,4.6rem);letter-spacing:-.068em;font-weight:800;white-space:pre-line;line-height:1.1}
+.auth-left>p{color:#CFDCF7!important;font-size:.91rem}
+.auth-left::after{border-color:rgba(255,255,255,.2);width:500px;height:500px;right:-160px;bottom:-240px}
+.rh-auth-window{margin-top:30px;padding:22px;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.27);border-radius:19px;backdrop-filter:blur(18px);box-shadow:0 15px 34px rgba(6,17,46,.13)}
+.rh-auth-window-top{display:flex;justify-content:space-between;gap:10px;margin-bottom:15px;font-size:.65rem;font-weight:800;letter-spacing:.07em;color:#D5E4FF}
+.rh-auth-window-top span:last-child{color:#80F1CF;letter-spacing:0}
+.rh-auth-window>strong{color:white;font-size:1.2rem;font-weight:800}
+.rh-auth-window>p{font-size:.78rem;color:#C4D3F2;margin-top:5px}
+.rh-auth-window-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:18px}
+.rh-auth-window-cards>div{padding:14px 10px;min-height:80px;display:flex;flex-direction:column;align-items:flex-start;justify-content:space-between;gap:9px;background:white;border-radius:13px;color:#5267C3;font-weight:800;font-size:.73rem}
+.rh-auth-window-cards>div:nth-child(2){color:#219F8B}
+.rh-auth-window-cards>div:nth-child(3){color:#916BC9}
+.auth-feats{display:grid;grid-template-columns:1fr 1fr;gap:9px 15px;margin-top:23px}
+.auth-feat{font-size:.77rem;gap:9px}
+.auth-feat-ico{width:36px;height:36px;background:rgba(255,255,255,.14)}
+.auth-right{width:min(480px,40vw);min-width:380px;padding:46px clamp(30px,3.3vw,53px);background:var(--surface);box-shadow:-9px 0 35px rgba(16,36,76,.07)}
+.rh-auth-intro{margin-bottom:21px}
+.rh-auth-intro>span{color:var(--accent);font-size:.66rem;font-weight:800;letter-spacing:.12em}
+.rh-auth-intro h1{margin:9px 0 9px;font-size:clamp(1.8rem,2.4vw,2.25rem);font-weight:800;letter-spacing:-.065em;line-height:1.17}
+.rh-auth-intro p{color:var(--text2);font-size:.8rem}
+.auth-tab.on{color:var(--accent)}
+.auth-right .btn-primary{background:#4D63CE}
+@media(max-width:1220px){
+ .top-bar.rh-desktop-header{gap:10px;padding:10px 20px}
+ .rh-nav-link{padding:8px 9px;font-size:.75rem;gap:5px}
+ .rh-nav-brand strong{font-size:1.08rem}
+ .rh-nav-brand small{display:none}
+ .rh-nav-end{gap:7px}
+ .rh-nav-cta{padding:0 11px}
+}
+@media(max-width:900px){
+ .rh-dashboard{grid-template-columns:1fr}
+ .rh-dashboard>.health-hero,.rh-dashboard>div:nth-child(2),.rh-dashboard>.quick-section,.rh-dashboard>div:nth-child(4),.rh-dashboard>div:nth-child(5){grid-column:1;grid-row:auto}
+ .rh-dashboard>div:nth-child(4){order:5}
+ .rh-dashboard>div:nth-child(5){order:4}
+ .rh-dashboard>div:nth-child(2) .stats-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .health-hero{grid-template-columns:1fr;gap:16px}
+ .health-hero>div:first-child{grid-column:1;grid-row:1}
+ .health-hero h1{grid-column:1;grid-row:2}
+ .health-hero .vitals-grid{grid-column:1;grid-row:3}
+ .hero-actions{grid-column:1;grid-row:4}
+ .rh-dashboard .stat-card{min-height:135px}
+}
+@media(max-width:768px){
+ .app-layout>.sidebar:not(.open){display:none}
+ .top-bar.rh-desktop-header{display:none}
+ .page-content{padding:22px 15px 110px}
+ .rh-dashboard{gap:19px}
+ .rh-dashboard .health-hero{min-height:0;padding:25px 22px;gap:15px}
+ .health-hero h1{font-size:clamp(2rem,8vw,2.6rem)!important}
+ .rh-dashboard .stat-num{font-size:1.8rem!important}
+ .rh-dashboard .stat-card{min-height:125px;padding:15px}
+ .rh-dashboard .stat-ico{height:35px;width:35px}
+ .rh-dashboard .quick-grid{gap:9px}
+ .rh-dashboard .quick-action{min-height:105px;padding:13px}
+ .rh-dashboard .quick-action-icon{height:37px;width:37px}
+ .rh-dashboard .quick-action-copy strong{font-size:.8rem}
+ .auth-wrap{padding:16px;background:radial-gradient(circle at 12% 0%,#D5DFFB,transparent 60%),#EFF2FA}
+ .auth-left{display:none}
+ .auth-right{width:min(100%,470px);min-width:0;padding:28px 24px;border-radius:24px;box-shadow:0 20px 65px rgba(27,46,100,.14)}
+ .rh-auth-intro h1{font-size:2rem}
+}
+@media(max-width:420px){
+ .rh-dashboard .health-hero{padding:23px 18px}
+ .health-hero h1{font-size:1.92rem!important}
+ .rh-dashboard .stat-card{padding:13px}
+ .rh-dashboard .quick-action{gap:7px}
+ .auth-right{padding:25px 19px}
+ .rh-auth-intro h1{font-size:1.8rem}
+}
+
 </style>
 </head>
 <body>
@@ -670,9 +839,17 @@ function AuthScreen(p){
         h('div',{className:'logo-mark'},h('svg',{width:18,height:18,viewBox:'0 0 26 26',fill:'none'},h('circle',{cx:'13',cy:'13',r:'10',stroke:'white',strokeWidth:'1.5',fill:'none'}),h('path',{d:'M9 13l3 3 5-6',stroke:'white',strokeWidth:'2',strokeLinecap:'round',strokeLinejoin:'round'}))),
         h('div',null,h('div',{style:{fontWeight:800,color:'white',fontSize:'.95rem'}},'Rodme Health'),h('div',{style:{fontSize:'.62rem',color:'rgba(255,255,255,.6)',textTransform:'uppercase',letterSpacing:'.08em'}},'Tu salud familiar'))
       ),
-      h('h2',null,'Manten el control\nde la salud de tu familia'),
-      h('p',null,'Citas, medicamentos y expedientes medicos en un solo lugar, siempre al alcance.'),
-      h('div',{className:'auth-feats'},
+      h('h2',null,'La salud de tu familia,\nmás organizada que nunca.'),
+      h('p',null,'Un espacio práctico para organizar citas, medicamentos y expedientes, estés donde estés.'),
+      h('div',{className:'rh-auth-window','aria-hidden':'true'},
+         h('div',{className:'rh-auth-window-top'},h('span',null,'VISTA GENERAL'),h('span',null,'● Organizado')),
+         h('strong',null,'Tu centro de bienestar'),
+         h('p',null,'Acceso rápido a lo importante'),
+         h('div',{className:'rh-auth-window-cards'},
+           [{n:'calendar',t:'Citas'},{n:'pill',t:'Tratamientos'},{n:'user',t:'Familia'}].map(function(x){return h('div',{key:x.t},h(Ic,{n:x.n,s:21,c:'currentColor'}),h('span',null,x.t));})
+         )
+       ),
+       h('div',{className:'auth-feats'},
         [{ico:'calendar',t:'Citas medicas',d:'Agenda y recordatorios'},{ico:'pill',t:'Medicamentos',d:'Registro de tratamientos'},{ico:'file',t:'Expediente digital',d:'Historial medico completo'},{ico:'shield',t:'Datos en este dispositivo',d:'Esta versión utiliza almacenamiento local'}].map(function(f){
           return h('div',{key:f.t,className:'auth-feat'},h('div',{className:'auth-feat-ico'},h(Ic,{n:f.ico,s:15,c:'white'})),h('div',null,h('div',{style:{fontWeight:700}},f.t),h('div',{style:{fontSize:'.75rem',opacity:.65,marginTop:1}},f.d)));
         })
@@ -684,6 +861,7 @@ function AuthScreen(p){
         h('div',{className:'logo-mark'},h('svg',{width:16,height:16,viewBox:'0 0 26 26',fill:'none'},h('circle',{cx:'13',cy:'13',r:'10',stroke:'white',strokeWidth:'1.5',fill:'none'}),h('path',{d:'M9 13l3 3 5-6',stroke:'white',strokeWidth:'2',strokeLinecap:'round',strokeLinejoin:'round'}))),
         h('div',{style:{fontWeight:800,fontSize:'.9rem'}},'Rodme Health')
       ),
+      h('div',{className:'rh-auth-intro'},h('span',null,'TU ESPACIO PERSONAL'),h('h1',null,'Bienvenida a Rodme Health'),h('p',null,'Todo lo que necesitas para llevar tu salud organizada.')),
       h('div',{className:'auth-tabs'},
         h('button',{className:'auth-tab'+(tab==='login'?' on':''),onClick:function(){setTab('login');sErr('');sOk('');}  },'Iniciar sesion'),
         h('button',{className:'auth-tab'+(tab==='register'?' on':''),onClick:function(){setTab('register');sErr('');sOk('');}},'Crear cuenta')
@@ -754,21 +932,21 @@ function HomeView(p){
   var hrPts='M0,30 C10,30 15,5 25,5 C35,5 35,50 45,50 C55,50 55,20 65,20 C75,20 80,35 90,35 C100,35 105,10 115,10 C125,10 125,45 135,45 C145,45 150,25 160,25';
   var bpBars=[20,55,32,65,40,72,28,60,45,68];
 
-  return h('div',{className:'su',style:{paddingBottom:8}},
+  return h('div',{className:'su rh-dashboard',style:{paddingBottom:8}},
 
     // ── HERO (replicando imagen: fondo verde claro, saludo, vitales) ──
     h('div',{className:'health-hero'},
       h('div',{style:{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}},
         h('div',{style:{display:'flex',alignItems:'center',gap:10}},
           h('div',{className:'av',style:{width:34,height:34,fontSize:'.7rem',background:'var(--accent)',flexShrink:0}},ini(name||'U')),
-          h('p',{style:{fontSize:'.88rem',fontWeight:700,color:'var(--text)'}},'Hola, '+(name||'Usuario')+' \uD83D\uDC4B')
+          h('p',{style:{fontSize:'.88rem',fontWeight:700,color:'var(--text)'}},'MI ESPACIO DE BIENESTAR · '+(name||'Usuario'))
         ),
         h('button',{className:'btn-icon',style:{background:'white',borderRadius:10,boxShadow:'0 1px 6px rgba(0,0,0,.1)',width:34,height:34},onClick:function(){sv('appointments');}},
           h(Ic,{n:'bell',s:17,c:'var(--text2)'})
         )
       ),
       h('h1',{style:{fontFamily:'var(--serif)',fontSize:'1.7rem',fontWeight:600,color:'var(--text)',lineHeight:1.22,marginBottom:16}},
-        'Tu salud, organizada\ny siempre a mano.'
+        'Tu salud y tu familia,\nen un solo lugar.'
       ),
       h('div',{className:'hero-actions'},
         h('button',{className:'btn hero-cta',onClick:function(){sv('record');}},h(Ic,{n:'file',s:16,c:'currentColor'}),'Ver mi expediente'),
@@ -1414,13 +1592,23 @@ function App(){
         h('button',{onClick:function(){sNb(false);},style:{background:'none',border:'none',color:'white',cursor:'pointer',padding:4}},h(Ic,{n:'close',s:12,c:'white'}))
       ),
 
-      // Desktop top bar
-      h('div',{className:'top-bar'},
-        h('p',{style:{fontFamily:'var(--serif)',fontSize:'1.05rem',fontWeight:600}},navItems.find(function(x){return x.id===view;})?navItems.find(function(x){return x.id===view;}).l:''),
-        h('div',{style:{display:'flex',alignItems:'center',gap:9}},
-          h('button',{className:'btn-icon',onClick:function(){setTheme(theme==='dark'?'light':'dark');}},h(Ic,{n:theme==='dark'?'sun':'moon',s:17,c:'var(--text2)'})),
-          h('button',{className:'btn btn-primary',style:{borderRadius:'var(--r-full)',padding:'8px 14px',fontSize:'.8rem'},onClick:function(){sm('add-apt');}},h(Ic,{n:'plus',s:14,c:'white'}),'Nueva cita'),
-          h('div',{className:'av',style:{width:32,height:32,fontSize:'.66rem',cursor:'pointer'},onClick:function(){sv('settings');}},ini(displayName||uEmail))
+      // Cabecera superior y navegación horizontal
+      h('div',{className:'top-bar rh-desktop-header'},
+        h('button',{className:'rh-nav-brand',onClick:function(){sv('home');}},
+          h('span',{className:'rh-nav-symbol'},h('svg',{width:23,height:23,viewBox:'0 0 26 26',fill:'none'},
+            h('path',{d:'M2 14h6l3-7 4 12 3-6h6',stroke:'white',strokeWidth:2.6,strokeLinecap:'round',strokeLinejoin:'round'}))),
+          h('span',null,h('strong',null,'rodme',h('em',null,'health')),h('small',null,'SALUD FAMILIAR'))
+        ),
+        h('nav',{className:'rh-nav-links','aria-label':'Secciones'},
+          navItems.map(function(it){return h('button',{key:it.id,className:'rh-nav-link'+(view===it.id?' active':''),onClick:function(){sv(it.id);}},
+            h(Ic,{n:it.n,s:17,c:'currentColor'}),it.l,
+            it.id==='appointments'&&notifs.length>0&&h('span',{className:'rh-nav-count'},notifs.length)
+          );})
+        ),
+        h('div',{className:'rh-nav-end'},
+          h('button',{className:'rh-nav-theme',title:'Cambiar tema',onClick:function(){setTheme(theme==='dark'?'light':'dark');}},h(Ic,{n:theme==='dark'?'sun':'moon',s:18,c:'currentColor'})),
+          h('button',{className:'rh-nav-cta',onClick:function(){sm('add-apt');}},h(Ic,{n:'plus',s:15,c:'currentColor'}),' Nueva cita'),
+          h('button',{className:'rh-nav-avatar',title:'Mi cuenta',onClick:function(){sv('settings');}},ini(displayName||uEmail||'U'))
         )
       ),
 
