@@ -1100,6 +1100,23 @@ body{background:var(--bg);color:var(--text)}
 .rh-timeline-status{color:var(--accent);font-size:.7rem;font-weight:800}
 .rh-timeline-item button{margin-top:3px;border:0;background:transparent;color:var(--accent);font-size:.73rem;cursor:pointer;font-weight:800}
 @media(max-width:750px){.rh-profile-columns{grid-template-columns:1fr}.rh-profile-hero{padding:18px;gap:12px}.rh-profile-photo{width:62px;height:62px}.rh-profile-tools{width:100%}.rh-profile-tools button{flex:1}.rh-profile-counts strong{font-size:1.9rem}.rh-profile-counts>div{padding:14px 5px}.rh-profile-counts span{font-size:.67rem}.rh-profile-panel{padding:18px}}
+
+.rh-backup-panel{background:var(--surface);border:1px solid var(--border);border-radius:13px;padding:24px;display:flex;flex-direction:column;gap:14px;margin-bottom:15px}
+.rh-backup-title{display:flex;gap:12px;align-items:flex-start}
+.rh-backup-title h2{font-family:var(--serif);font-size:1.65rem;font-weight:400;line-height:1.2}
+.rh-backup-title p{color:var(--text2);font-size:.75rem;margin-top:6px}
+.rh-backup-tabs{display:flex;gap:5px;align-self:flex-start;border-radius:99px;background:var(--surface2);padding:4px}
+.rh-backup-tabs button{border:0;border-radius:99px;background:transparent;cursor:pointer;color:var(--text2);font-weight:800;font-size:.77rem;padding:9px 16px}
+.rh-backup-tabs button.active{background:var(--accent);color:#fff}
+.rh-backup-description,.rh-backup-foot{font-size:.77rem;line-height:1.7;color:var(--text2)}
+.rh-backup-field{display:flex;flex-direction:column;gap:6px}
+.rh-backup-field span{font-size:.74rem;font-weight:700;color:var(--text2)}
+.rh-backup-field input{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px;width:100%;min-height:45px}
+.rh-backup-main{align-self:flex-start;min-height:45px;padding:12px 23px;border-radius:99px;border:0;background:var(--accent);color:#fff;font-weight:800;font-size:.78rem;cursor:pointer}
+.rh-backup-main:disabled{opacity:.6;cursor:wait}
+.rh-backup-message{font-size:.79rem;line-height:1.6;font-weight:700;color:var(--text)}
+.rh-backup-foot{font-size:.7rem}
+@media(max-width:770px){.rh-backup-panel{padding:18px}.rh-backup-main{width:100%}}
 </style>
 </head>
 <body>
@@ -1651,6 +1668,128 @@ function MedCard(p){
 }
 
 // ── SETTINGS ───────────────────────────────────────────────────────────────
+// Copias de seguridad locales cifradas, independientes de servicios externos.
+function rhToB64(bytes){
+  var chunks=[];
+  for(var i=0;i<bytes.length;i+=8192)chunks.push(String.fromCharCode.apply(null,bytes.subarray(i,i+8192)));
+  return btoa(chunks.join(''));
+}
+function rhFromB64(str){
+  if(typeof str!=='string'||str.length>26000000||!/^[A-Za-z0-9+/]*={0,2}$/.test(str))throw Error('Archivo inválido');
+  var raw=atob(str),out=new Uint8Array(raw.length);
+  for(var i=0;i<raw.length;i++)out[i]=raw.charCodeAt(i);
+  return out;
+}
+async function rhDeriveBackupKey(password,salt){
+  var base=await crypto.subtle.importKey('raw',new TextEncoder().encode(password),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',salt:salt,iterations:250000,hash:'SHA-256'},
+    base,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
+}
+function rhBackupPayload(user){
+  return {
+    app:'rodme-health',version:1,createdAt:new Date().toISOString(),
+    data:{
+      p:lsg(uk(user,'p'))||[],
+      a:lsg(uk(user,'a'))||[],
+      m:lsg(uk(user,'m'))||[],
+      d:lsg(uk(user,'d'))||[],
+      prefs:lsg(uk(user,'prefs'))||{},
+      rec:lsg(uk(user,'rec'))||{}
+    }
+  };
+}
+function rhValidateBackup(data){
+  if(!data||data.app!=='rodme-health'||data.version!==1||!data.data||typeof data.data!=='object')throw Error('El archivo no es una copia compatible');
+  ['p','a','m','d'].forEach(function(k){if(!Array.isArray(data.data[k])||data.data[k].length>20000)throw Error('Datos inválidos: '+k);});
+  ['prefs','rec'].forEach(function(k){var v=data.data[k];if(!v||typeof v!=='object'||Array.isArray(v))throw Error('Datos inválidos: '+k);});
+  // Verificar asociaciones antes de restaurar.
+  var patientIds=new Set();
+  data.data.p.forEach(function(v){if(!v||typeof v.id!=='string'||!v.id||typeof v.name!=='string')throw Error('Paciente inválido');patientIds.add(v.id);});
+  data.data.a.forEach(function(v){if(!v||typeof v.id!=='string'||!v.id||typeof v.date!=='string'||typeof v.patientId!=='string'||!patientIds.has(v.patientId))throw Error('Cita inválida');});
+  var medIds=new Set();
+  data.data.m.forEach(function(v){if(!v||typeof v.id!=='string'||!v.id||typeof v.name!=='string'||!patientIds.has(v.patientId))throw Error('Medicamento inválido');medIds.add(v.id);});
+  data.data.d.forEach(function(v){if(!v||typeof v.id!=='string'||typeof v.at!=='string'||!medIds.has(v.medicationId))throw Error('Registro de dosis inválido');});
+  return data.data;
+}
+function BackupPanel(p){
+  var passState=useState(''),password=passState[0],setPassword=passState[1];
+  var againState=useState(''),again=againState[0],setAgain=againState[1];
+  var fileState=useState(null),file=fileState[0],setFile=fileState[1];
+  var statusState=useState(''),status=statusState[0],setStatus=statusState[1];
+  var busyState=useState(false),busy=busyState[0],setBusy=busyState[1];
+  var modeState=useState('export'),mode=modeState[0],setMode=modeState[1];
+  async function exportBackup(){
+    if(busy)return;
+    if(!window.crypto||!crypto.subtle){setStatus('Este navegador no admite copias cifradas.');return;}
+    if(password.length<10){setStatus('Elige una contraseña de al menos 10 caracteres.');return;}
+    if(password!==again){setStatus('Las contraseñas no coinciden.');return;}
+    setBusy(true);setStatus('');
+    try{
+      var salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+      var key=await rhDeriveBackupKey(password,salt);
+      var plaintext=new TextEncoder().encode(JSON.stringify(rhBackupPayload(p.user)));
+      var encrypted=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv:iv},key,plaintext));
+      var wrapper={format:'rodme-health-encrypted',version:1,kdf:'PBKDF2-SHA256',iterations:250000,
+        cipher:'AES-256-GCM',createdAt:new Date().toISOString(),
+        salt:rhToB64(salt),iv:rhToB64(iv),payload:rhToB64(encrypted)};
+      rhDownload(JSON.stringify(wrapper,null,2),'rodme-backup-'+rhCalDay(new Date())+'.rhbackup','application/json');
+      setStatus('Copia cifrada descargada. Guarda la contraseña en un lugar seguro: no podremos recuperarla.');
+      setPassword('');setAgain('');
+    }catch(e){setStatus('No se pudo generar la copia. Comprueba el espacio disponible y los permisos del navegador.');}
+    finally{setBusy(false);}
+  }
+  async function restore(){
+    if(busy)return;
+    if(!file||!password){setStatus('Selecciona un archivo y escribe su contraseña.');return;}
+    if(file.size>19000000){setStatus('El archivo supera el límite de 19 MB.');return;}
+    if(!window.crypto||!crypto.subtle){setStatus('Este navegador no permite descifrar la copia.');return;}
+    setBusy(true);setStatus('');
+    try{
+      var envelope=JSON.parse(await file.text());
+      if(!envelope||envelope.format!=='rodme-health-encrypted'||envelope.version!==1||
+        envelope.cipher!=='AES-256-GCM'||envelope.iterations!==250000)throw Error('Formato no compatible');
+      var salt=rhFromB64(envelope.salt),iv=rhFromB64(envelope.iv);
+      if(salt.length!==16||iv.length!==12)throw Error('Parámetros inválidos');
+      var key=await rhDeriveBackupKey(password,salt);
+      var plaintext=await crypto.subtle.decrypt({name:'AES-GCM',iv:iv},key,rhFromB64(envelope.payload));
+      var payload=JSON.parse(new TextDecoder().decode(plaintext)),data=rhValidateBackup(payload);
+      if(!window.confirm('La restauración reemplazará los registros de este espacio en este navegador. ¿Ya guardaste una copia de los datos actuales y deseas continuar?')){setStatus('Restauración cancelada; no se cambió ningún dato.');return;}
+      var keys=['p','a','m','d','prefs','rec'],old={};
+      keys.forEach(function(k){old[k]=localStorage.getItem(uk(p.user,k));});
+      try{keys.forEach(function(k){localStorage.setItem(uk(p.user,k),JSON.stringify(data[k]));});}
+      catch(e){
+        keys.forEach(function(k){try{if(old[k]===null)localStorage.removeItem(uk(p.user,k));else localStorage.setItem(uk(p.user,k),old[k]);}catch(ignored){}});
+        throw Error('No hay suficiente espacio para restaurar los registros');
+      }
+      setPassword('');setAgain('');window.alert('Copia restaurada correctamente.');window.location.reload();
+    }catch(e){
+      setStatus(e.name==='OperationError'?'Contraseña incorrecta o archivo dañado.':(e.message||'No se pudo leer la copia.'));
+    }finally{setBusy(false);}
+  }
+  function switchMode(m){setMode(m);setStatus('');setPassword('');setAgain('');}
+  return h('section',{className:'rh-backup-panel'},
+    h('div',{className:'rh-backup-title'},h(Ic,{n:'shield',s:19,c:'var(--accent)'}),
+      h('div',null,h('h2',null,'Copias de seguridad'),h('p',null,'Protege tus registros con una copia cifrada y recuperable.'))),
+    h('div',{className:'rh-backup-tabs',role:'group','aria-label':'Copia o restauración'},
+      h('button',{className:mode==='export'?'active':'',onClick:function(){switchMode('export');}},'Guardar copia'),
+      h('button',{className:mode==='import'?'active':'',onClick:function(){switchMode('import');}},'Restaurar copia')
+    ),
+    mode==='export'?h('p',{className:'rh-backup-description'},'Descarga un archivo cifrado con tus pacientes, citas, tratamientos, dosis y preferencias. La copia no se envía a ningún servidor.')
+      :h('p',{className:'rh-backup-description'},'Selecciona un archivo .rhbackup generado en Rodme Health. Antes de reemplazar información se solicitará confirmación.'),
+    mode==='import'&&h('label',{className:'rh-backup-field'},h('span',null,'Archivo de copia'),
+      h('input',{type:'file',accept:'.rhbackup,application/json',onChange:function(e){setFile(e.target.files&&e.target.files[0]||null);setStatus('');}})),
+    h('label',{className:'rh-backup-field'},h('span',null,mode==='export'?'Contraseña para cifrar':'Contraseña de la copia'),
+      h('input',{type:'password',autoComplete:'new-password',value:password,onChange:function(e){setPassword(e.target.value);setStatus('');},
+        placeholder:mode==='export'?'Mínimo 10 caracteres':'Contraseña del archivo'})),
+    mode==='export'&&h('label',{className:'rh-backup-field'},h('span',null,'Repetir contraseña'),
+      h('input',{type:'password',value:again,onChange:function(e){setAgain(e.target.value);setStatus('');},placeholder:'Repetir contraseña'})),
+    status&&h('p',{className:'rh-backup-message',role:'status'},status),
+    h('button',{className:'rh-backup-main',disabled:busy,onClick:mode==='export'?exportBackup:restore},
+      busy?'Procesando…':mode==='export'?'Descargar copia cifrada':'Restaurar desde archivo'),
+    h('p',{className:'rh-backup-foot'},'Sin la contraseña no es posible recuperar la copia. Estos archivos contienen información privada: guárdalos en un lugar protegido.')
+  );
+}
+
 function SettingsView(p){
   var user=p.user,sv=p.sv,theme=p.theme,setTheme=p.setTheme;
   var pk=uk(user,'prefs'),saved=lsg(pk)||{};
@@ -1664,7 +1803,7 @@ function SettingsView(p){
   function save(){lss(pk,form);setSavedOk(true);}
   function clearSpace(){
     if(confirm('¿Borrar todos los registros de este espacio en este navegador? Esta acción no se puede deshacer.')){
-      ['p','a','m','rec','prefs'].forEach(function(k){localStorage.removeItem(uk(user,k));});
+      ['p','a','m','d','rec','prefs'].forEach(function(k){localStorage.removeItem(uk(user,k));});
       location.reload();
     }
   }
@@ -1705,6 +1844,7 @@ function SettingsView(p){
     ),
     h('button',{className:'btn btn-primary btn-full',style:{marginTop:17,marginBottom:15,padding:'13px'},onClick:save},
       h(Ic,{n:savedOk?'check':'settings',s:15,c:'white'}),savedOk?'Preferencias guardadas':'Guardar cambios'),
+    h(BackupPanel,{user:user}),
     h('div',{className:'rh-local-warning'},
       h(Ic,{n:'shield',s:19,c:'var(--accent)'}),
       h('p',null,'Este espacio no utiliza inicio de sesión. Los registros quedan guardados solo en este navegador, no se sincronizan entre dispositivos y cualquier persona que use este dispositivo puede verlos. Evita ingresar información médica sensible.')
