@@ -1132,6 +1132,8 @@ body{background:var(--bg);color:var(--text)}
 }
 @media(max-width:430px){.wix-hero{min-height:440px}}
 @media(min-width:769px){.wix-hero{min-height:clamp(420px,55vh,570px)}}
+
+.rh-no-patient{font-size:.81rem;line-height:1.6;color:var(--text2);padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px}
 </style>
 </head>
 <body>
@@ -1149,7 +1151,11 @@ var uid=function(){return Math.random().toString(36).slice(2,10);};
 var ini=function(n){return(n||'').split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase()||'?';};
 var xt=function(a,b){return Object.assign({},a,b);};
 var lsg=function(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):(d!==undefined?d:null);}catch(e){return d!==undefined?d:null;}};
-var lss=function(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
+var rhStorageWarned=false;
+var lss=function(k,v){
+  try{localStorage.setItem(k,JSON.stringify(v));return true;}
+  catch(e){if(!rhStorageWarned){rhStorageWarned=true;window.alert('No fue posible guardar los datos en este navegador. Revisa el espacio disponible o la configuración de almacenamiento.');}return false;}
+};
 var uk=function(u,s){return'rh_'+(u||'x').replace(/[^a-z0-9]/gi,'_').toLowerCase()+'_'+s;};
 
 function useStore(user){
@@ -1572,10 +1578,6 @@ function LegacyApptsList(p){
   var shown=filtered.filter(function(a){if(!q)return true;var pt=gp(a.patientId);return [a.doctor,a.reason,a.specialty,a.clinic,pt&&pt.name].some(function(t){return String(t||'').toLowerCase().includes(q.toLowerCase());});});
   return h('div',null,
     h('div',{className:'ph'},
-      h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'flex-end',marginBottom:12}},
-        h('div',null,h('p',{className:'ph-sub'},'Historial'),h('h1',{className:'ph-title'},'Citas medicas')),
-        h('button',{className:'btn btn-primary',style:{borderRadius:'var(--r-full)',padding:'9px 16px',fontSize:'.8rem'},onClick:function(){sm('add-apt');}},h(Ic,{n:'plus',s:14,c:'white'}),'Nueva')
-      ),
       h('div',{style:{display:'flex',gap:10,flexWrap:'wrap',alignItems:'center'}},
         h('div',{className:'tab-group',style:{flex:'none'}},
           h('button',{className:'tab-btn'+(tab==='pending'?' on':''),onClick:function(){stab('pending');}},'Pendientes ('+store.appointments.filter(function(a){return !a.attended;}).length+')'),
@@ -1973,7 +1975,11 @@ function AptModal(p){
   function loadDoc(e){var f=e.target.files[0];if(!f)return;b64(f).then(function(bv){sf(function(x){return xt(x,{attendedDoc:bv});});});}
   var saldo=(form.amount&&form.deposit&&Number(form.amount)>Number(form.deposit))?(Number(form.amount)-Number(form.deposit)):null;
   return h(Sheet,{title:'Cita medica',sub:appt?'Editar':'Nueva',onClose:onClose},
-    h(Fld,{label:'Paciente'},h('select',{value:form.patientId,onChange:upd(sf,'patientId')},store.patients.map(function(pt){return h('option',{key:pt.id,value:pt.id},pt.name);}))),
+    h(Fld,{label:'Paciente'},
+      store.patients.length?h('select',{value:form.patientId,onChange:upd(sf,'patientId')},
+        store.patients.map(function(pt){return h('option',{key:pt.id,value:pt.id},pt.name);}))
+        :h('p',{className:'rh-no-patient'},'Primero agrega un paciente para poder guardar esta cita.')
+    ),
     h('div',{style:{height:1,background:'var(--border)',margin:'4px 0'}}),
     h('div',{className:'fg'},h(Fld,{label:'Doctor'},h('input',{value:form.doctor,onChange:upd(sf,'doctor'),placeholder:'Rodriguez Mora'})),h(Fld,{label:'Especialidad'},h('input',{value:form.specialty||'',onChange:upd(sf,'specialty'),placeholder:'Cardiologia...'}))),
     h(Fld,{label:'Motivo'},h('input',{value:form.reason||'',onChange:upd(sf,'reason'),placeholder:'Control anual...'})),
@@ -2030,7 +2036,7 @@ function AptDetail(p){
   var store=p.store,appt=p.appt,onClose=p.onClose,onEdit=p.onEdit;
   var pt=store.patients.find(function(x){return x.id===appt.patientId;})||null;
   var d=du(appt.date);
-  function sendWA(){if(!pt||!pt.whatsapp){alert('Sin WhatsApp.');return;}var msg=encodeURIComponent('Recordatorio cita medica\n\nPaciente: '+pt.name+'\nDoctor: Dr. '+appt.doctor+(appt.specialty?'\n'+appt.specialty:'')+'\nClinica: '+appt.clinic+'\nFecha: '+fmtDL(appt.date)+'\nHora: '+fmtT(appt.time)+(appt.type==='private'&&appt.amount?'\nMonto: CRC '+Number(appt.amount).toLocaleString():''));window.open('https://wa.me/'+pt.whatsapp.replace(/\D/g,'')+'?text='+msg,'_blank');}
+  function sendWA(){if(!pt||!pt.whatsapp){alert('Sin WhatsApp.');return;}var msg=encodeURIComponent('Recordatorio cita medica\n\nPaciente: '+pt.name+(appt.doctor?'\nDoctor: Dr. '+appt.doctor:'')+(appt.specialty?'\n'+appt.specialty:'')+'\nClinica: '+appt.clinic+'\nFecha: '+fmtDL(appt.date)+'\nHora: '+fmtT(appt.time)+(appt.type==='private'&&appt.amount?'\nMonto: CRC '+Number(appt.amount).toLocaleString():''));window.open('https://wa.me/'+pt.whatsapp.replace(/\D/g,'')+'?text='+msg,'_blank');}
   function del(){if(confirm('Eliminar cita?')){store.setAppointments(function(arr){return arr.filter(function(a){return a.id!==appt.id;});});onClose();}}
   var dc=d===0?'var(--red)':d!==null&&d<=3?'var(--amber)':'var(--accent)';
   var dT=d===null?null:d===0?'Hoy!':d<0?'Pasada':'Faltan '+d+' dias';
@@ -2089,7 +2095,11 @@ function MedModal(p){
   function save(){if(!form.name.trim()||!form.patientId)return;existing?store.setMedications(function(arr){return arr.map(function(m){return m.id===existing.id?xt(m,form):m;});}):store.setMedications(function(arr){return arr.concat([xt(form,{id:uid()})]);});onClose();}
   function loadImg(e){var f=e.target.files[0];if(!f)return;b64(f).then(function(bv){sf(function(x){return xt(x,{prescriptionImg:bv});});});}
   return h(Sheet,{title:existing?'Editar medicamento':'Nuevo medicamento',sub:'Medicamento',onClose:onClose},
-    h(Fld,{label:'Paciente'},h('select',{value:form.patientId,onChange:upd(sf,'patientId')},store.patients.map(function(pt){return h('option',{key:pt.id,value:pt.id},pt.name);}))),
+    h(Fld,{label:'Paciente'},
+      store.patients.length?h('select',{value:form.patientId,onChange:upd(sf,'patientId')},
+        store.patients.map(function(pt){return h('option',{key:pt.id,value:pt.id},pt.name);}))
+        :h('p',{className:'rh-no-patient'},'Primero agrega un paciente para poder guardar este medicamento.')
+    ),
     h(Fld,{label:'Medicamento'},h('input',{value:form.name,onChange:upd(sf,'name'),placeholder:'Metformina 500mg'})),
     h('div',{className:'fg'},h(Fld,{label:'Dosis'},h('input',{value:form.dosage||'',onChange:upd(sf,'dosage'),placeholder:'500mg'})),h(Fld,{label:'Frecuencia'},h('input',{value:form.frequency||'',onChange:upd(sf,'frequency'),placeholder:'Cada 12h'}))),
     h('div',{className:'fg'},h(Fld,{label:'Fecha de inicio'},h('input',{type:'date',value:form.startDate||'',onChange:upd(sf,'startDate')})),h(Fld,{label:'Duracion (dias)'},h('input',{type:'number',value:form.totalDays||'',onChange:upd(sf,'totalDays'),placeholder:'30'}))),
@@ -2116,7 +2126,7 @@ function generatePDF(record,store,directPt){
   var att=apts.filter(function(a){return a.attended;}).sort(function(a,b){return new Date(b.date)-new Date(a.date);});
   function row(l,v){if(!v)return'';return '<tr><td style="padding:6px 12px;font-weight:700;color:#6B7280;font-size:11px;text-transform:uppercase;letter-spacing:.05em;width:140px;vertical-align:top;border-bottom:1px solid #F3F4F6">'+l+'</td><td style="padding:6px 12px;color:#111827;font-size:13px;border-bottom:1px solid #F3F4F6">'+v+'</td></tr>';}
   function sec(title,col,rows){if(!rows.trim())return'';return '<div style="margin-bottom:16px"><div style="background:'+col+';border-radius:8px 8px 0 0;padding:8px 14px"><h3 style="color:white;font-size:11px;font-weight:800;margin:0;letter-spacing:.06em;text-transform:uppercase">'+title+'</h3></div><table style="width:100%;border-collapse:collapse;border:1px solid #E5E7EB;border-top:none">'+rows+'</table></div>';}
-  function aptC(a){var d=a.date?new Date(a.date+'T00:00:00').toLocaleDateString('es-CR',{day:'2-digit',month:'short',year:'numeric'}):'';var t=a.time?(function(x){var pp=x.split(':'),hr=parseInt(pp[0]);return(hr>12?hr-12:(hr||12))+':'+pp[1]+' '+(hr>=12?'PM':'AM');})(a.time):'';return '<div style="border:1px solid #E5E7EB;border-radius:7px;padding:9px 12px;margin-bottom:6px"><div style="display:flex;justify-content:space-between;margin-bottom:2px"><strong style="font-size:13px">Dr. '+a.doctor+'</strong><span style="font-size:10px;background:'+(a.attended?'#ECFDF5':'#FFFBEB')+';color:'+(a.attended?'#065F46':'#92400E')+';padding:2px 8px;border-radius:20px;font-weight:700">'+(a.attended?'Asistida':'Pendiente')+'</span></div>'+(a.specialty?'<div style="font-size:11px;color:#C4956A;font-weight:700">'+a.specialty+'</div>':'')+'<div style="font-size:11px;color:#6B7280">'+d+(t?' \u00b7 '+t:'')+(a.clinic?' \u00b7 '+a.clinic:'')+'</div>'+(a.attendedNotes?'<div style="font-size:11px;color:#047857;font-weight:600">Post-cita: '+a.attendedNotes+'</div>':'')+'</div>';}
+  function aptC(a){var d=a.date?new Date(a.date+'T00:00:00').toLocaleDateString('es-CR',{day:'2-digit',month:'short',year:'numeric'}):'';var t=a.time?(function(x){var pp=x.split(':'),hr=parseInt(pp[0]);return(hr>12?hr-12:(hr||12))+':'+pp[1]+' '+(hr>=12?'PM':'AM');})(a.time):'';return '<div style="border:1px solid #E5E7EB;border-radius:7px;padding:9px 12px;margin-bottom:6px"><div style="display:flex;justify-content:space-between;margin-bottom:2px"><strong style="font-size:13px">'+(a.doctor?'Dr. '+a.doctor:(a.reason||'Cita médica'))+'</strong><span style="font-size:10px;background:'+(a.attended?'#ECFDF5':'#FFFBEB')+';color:'+(a.attended?'#065F46':'#92400E')+';padding:2px 8px;border-radius:20px;font-weight:700">'+(a.attended?'Asistida':'Pendiente')+'</span></div>'+(a.specialty?'<div style="font-size:11px;color:#C4956A;font-weight:700">'+a.specialty+'</div>':'')+'<div style="font-size:11px;color:#6B7280">'+d+(t?' \u00b7 '+t:'')+(a.clinic?' \u00b7 '+a.clinic:'')+'</div>'+(a.attendedNotes?'<div style="font-size:11px;color:#047857;font-weight:600">Post-cita: '+a.attendedNotes+'</div>':'')+'</div>';}
   function medC(m){return '<div style="border:1px solid #E5E7EB;border-radius:7px;padding:9px 12px;margin-bottom:6px"><div style="display:flex;justify-content:space-between"><strong style="font-size:13px">'+m.name+'</strong><span style="font-size:10px;background:'+(m.type==='ccss'?'#ECFDF5':'#FFFBEB')+';color:'+(m.type==='ccss'?'#065F46':'#92400E')+';padding:2px 8px;border-radius:20px;font-weight:700">'+(m.type==='ccss'?'CCSS':'Privado')+'</span></div>'+(m.dosage||m.frequency?'<div style="font-size:11px;color:#6B7280">'+(m.dosage||'')+(m.frequency?' \u00b7 '+m.frequency:'')+'</div>':'')+(m.notes?'<div style="font-size:11px;color:#9CA3AF">'+m.notes+'</div>':'')+'</div>';}
   var today=new Date().toLocaleDateString('es-CR',{day:'2-digit',month:'long',year:'numeric'});
   var bmi='';if(record.weight&&record.height){var b=(Number(record.weight)/Math.pow(Number(record.height)/100,2)).toFixed(1);bmi=b+' ('+(b<18.5?'Bajo peso':b<25?'Normal':b<30?'Sobrepeso':'Obesidad')+')';}
@@ -2373,7 +2383,7 @@ function App(){
     modal==='edit-patient'&&h(PatientModal,{store:store,patient:selP,onClose:function(){sm(null);}}),
     modal==='add-apt'&&h(AptModal,{store:store,initialDate:draftDate,initialPatientId:view==='patient'&&selP?selP.id:null,onClose:function(){sm(null);setDraftDate('');}}),
     modal==='edit-apt'&&h(AptModal,{store:store,appt:selA,onClose:function(){sm(null);}}),
-    modal==='view-apt'&&h(AptDetail,{store:store,appt:(store.appointments.find(function(a){return selA&&a.id===selA.id;})||selA),onClose:function(){sm(null);},onEdit:function(){sm('edit-apt');}}),
+    modal==='view-apt'&&h(AptDetail,{store:store,appt:(store.appointments.find(function(a){return selA&&a.id===selA.id;})||selA),onClose:function(){sm(null);},onEdit:function(){ssa(store.appointments.find(function(a){return selA&&a.id===selA.id;})||selA);sm('edit-apt');}}),
     modal==='add-med'&&h(MedModal,{store:store,initialPatientId:view==='patient'&&selP?selP.id:null,onClose:function(){sm(null);}}),
     modal==='edit-med'&&h(MedModal,{store:store,med:selM,onClose:function(){sm(null);}})
   );
