@@ -671,29 +671,31 @@ body{background:var(--bg)}
 }
 
 
-/* Inicio con Google: contenedor estable para el botón generado por la API */
-.rh-google-wrap{display:flex;flex-direction:column;align-items:stretch;gap:7px;margin-top:2px}
-.rh-google-slot{min-height:44px;width:100%;display:flex;justify-content:center;align-items:center}
-.rh-google-slot iframe{max-width:100%}
-.rh-google-note{font-size:.72rem;color:var(--text2);text-align:center}
-.rh-google-error{padding:12px;border:1px solid var(--amber-border);border-radius:12px;background:var(--amber-bg);text-align:center}
-.rh-google-error p{font-size:.74rem;color:var(--text2);margin-bottom:9px}
-.rh-google-error button{font-size:.75rem;min-height:36px}
-/* Ayuda clara y discreta para identificar errores de Google */
-.rh-google-help-toggle{background:transparent;border:0;padding:8px;color:var(--accent);font-size:.75rem;font-weight:700;cursor:pointer;align-self:center}
-.rh-google-help-toggle:hover{text-decoration:underline}
-.rh-google-help{width:100%;margin-top:5px;padding:14px 16px;border:1px solid var(--border);background:var(--surface2);border-radius:13px;display:flex;flex-direction:column;gap:9px;font-size:.73rem;line-height:1.6;color:var(--text2)}
-.rh-google-help p{margin:0}
-.rh-google-help code{display:block;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.76rem;padding:9px 11px;overflow-wrap:anywhere;user-select:all}
-.rh-google-help a{color:var(--accent);font-weight:800;text-decoration:underline;word-break:break-word}
-.rh-google-help-foot{font-size:.69rem}
+
+.rh-local-settings{max-width:1000px}
+.rh-settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:17px}
+.rh-settings-section{padding:24px;display:flex;flex-direction:column;gap:15px}
+.rh-settings-section h2{font-size:1.06rem;letter-spacing:-.025em;font-weight:800;margin-bottom:5px}
+.rh-setting-field{display:flex;flex-direction:column;gap:6px;margin:0}
+.rh-setting-field>span{font-size:.72rem;font-weight:800;text-transform:none;letter-spacing:0;color:var(--text2)}
+.rh-setting-field input,.rh-setting-field select{width:100%;min-height:45px;border-radius:11px;background:var(--surface2)}
+.rh-theme-switch{display:flex;align-items:center;gap:8px}
+.rh-theme-switch button{flex:1;border:1px solid var(--border);background:var(--surface2);color:var(--text2);padding:12px;min-height:43px}
+.rh-theme-switch button.rh-theme-active{background:var(--accent-bg);border-color:var(--accent);color:var(--accent)}
+.rh-settings-link{display:flex;align-items:center;gap:10px;text-align:left;padding:13px 0;background:transparent;border:0;border-top:1px solid var(--border);cursor:pointer;font-weight:800;color:var(--text);font-size:.82rem;margin-top:4px}
+.rh-settings-link span{margin-left:auto;color:var(--accent)}
+.rh-local-warning{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;margin-bottom:17px;border:1px solid var(--border);border-radius:13px;background:var(--surface2);color:var(--text2)}
+.rh-local-warning>svg{flex-shrink:0;margin-top:2px}
+.rh-local-warning p{font-size:.76rem;line-height:1.7}
+.rh-settings-danger{display:flex;align-items:center;justify-content:space-between;gap:12px;border:1px solid var(--red-border);border-radius:13px;background:var(--red-bg);padding:14px 16px}
+.rh-settings-danger p{font-weight:800;color:var(--red);font-size:.76rem}
+@media(max-width:680px){.rh-settings-grid{grid-template-columns:1fr}.rh-settings-section{padding:20px}.rh-settings-danger{align-items:flex-start;flex-direction:column}}
 </style>
 </head>
 <body>
 <div id="root"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script>
 var h=React.createElement,useState=React.useState,useEffect=React.useEffect,useRef=React.useRef;
 var fmtD=function(d){if(!d)return'';return new Date(d+'T00:00:00').toLocaleDateString('es-CR',{day:'2-digit',month:'short',year:'numeric'});};
@@ -706,7 +708,6 @@ var ini=function(n){return(n||'').split(' ').map(function(w){return w[0]||'';}).
 var xt=function(a,b){return Object.assign({},a,b);};
 var lsg=function(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):(d!==undefined?d:null);}catch(e){return d!==undefined?d:null;}};
 var lss=function(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}};
-var hash=function(s){var h=0;for(var i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h=h&h;}return h.toString(36);};
 var uk=function(u,s){return'rh_'+(u||'x').replace(/[^a-z0-9]/gi,'_').toLowerCase()+'_'+s;};
 
 function useStore(user){
@@ -783,262 +784,12 @@ function Sheet(p){
   );
 }
 
-// ── AUTH ───────────────────────────────────────────────────────────────────
-function AuthScreen(p){
-  var ts=useState('login');var tab=ts[0],setTab=ts[1];
-  var lfs=useState({username:'',password:'',name:'',email:''});var lf=lfs[0],slf=lfs[1];
-  var rfs=useState({step:1,email:'',code:'',inputCode:'',newPwd:''});var rf=rfs[0],srf=rfs[1];
-  var es=useState('');var err=es[0],sErr=es[1];
-  var oks=useState('');var ok=oks[0],sOk=oks[1];
-  var sps=useState(false);var showP=sps[0],sSP=sps[1];
-  var sps2=useState(false);var showP2=sps2[0],sSP2=sps2[1];
-  var resetOpen=useState(false);var ro=resetOpen[0],setRo=resetOpen[1];
-  var googleButtonRef=useRef(null);
-  var gs=useState('loading');var googleStatus=gs[0],setGoogleStatus=gs[1];
-  var gr=useState(0);var googleRetry=gr[0],setGoogleRetry=gr[1];
-  var gh=useState(false);var showGoogleHelp=gh[0],setShowGoogleHelp=gh[1];
-
-  // Google Identity Services necesita inicialización imperativa: las vistas React se montan después del script.
-  function gCb(resp){
-    try{
-      if(!resp||!resp.credential)throw Error('Sin credencial');
-      var payload=resp.credential.split('.')[1];
-      if(!payload)throw Error('Credencial incompleta');
-      var b=payload.replace(/-/g,'+').replace(/_/g,'/');
-      while(b.length%4)b+='=';
-      var raw=atob(b),bytes=new Uint8Array(raw.length);
-      for(var i=0;i<raw.length;i++)bytes[i]=raw.charCodeAt(i);
-      var pl=JSON.parse(new TextDecoder().decode(bytes));
-      var googleClientId='894449264362-vmm7t215108qgaqu7fs483femv2rnuur.apps.googleusercontent.com';
-      if(!pl.email||pl.email_verified!==true||pl.aud!==googleClientId||
-        (pl.iss!=='https://accounts.google.com'&&pl.iss!=='accounts.google.com')||
-        !pl.exp||Number(pl.exp)*1000<=Date.now())throw Error('Credencial inválida o expirada');
-      sErr('');
-      // Las cuentas locales y Google permanecen separadas; no combinar expedientes automáticamente.
-      // La verificación criptográfica y la protección de datos requieren autenticación en un servidor.
-      p.onLogin('g:'+pl.email.toLowerCase(),pl.name||'');
-    }catch(e){
-      sErr('No se pudo completar el acceso con Google. Prueba de nuevo o ingresa con tu usuario y contraseña.');
-    }
-  }
-
-  useEffect(function(){
-    if(tab!=='login')return;
-    var active=true,tries=0,timer=null;
-    setGoogleStatus('loading');
-    function setupGoogle(){
-      if(!active)return;
-      var box=googleButtonRef.current;
-      if(!box)return;
-      if(!window.google||!window.google.accounts||!window.google.accounts.id){
-        if(tries++<48){timer=window.setTimeout(setupGoogle,250);}
-        else setGoogleStatus('unavailable');
-        return;
-      }
-      try{
-        // Inicializar una sola vez; dirigir las respuestas al componente actualmente montado.
-        window._rhGoogleReceiver=function(response){if(active)gCb(response);};
-        if(!window._rhGoogleInitialized){
-          window.google.accounts.id.initialize({
-            client_id:'894449264362-vmm7t215108qgaqu7fs483femv2rnuur.apps.googleusercontent.com',
-            callback:function(response){
-              if(typeof window._rhGoogleReceiver==='function')window._rhGoogleReceiver(response);
-            },
-            auto_select:false,
-            button_auto_select:false,
-            use_fedcm_for_button:true,
-            cancel_on_tap_outside:true
-          });
-          window._rhGoogleInitialized=true;
-        }
-        box.replaceChildren();
-        var width=Math.max(220,Math.min(Math.floor(box.getBoundingClientRect().width)||320,340));
-        window.google.accounts.id.renderButton(box,{
-          type:'standard',theme:'outline',size:'large',text:'signin_with',
-          shape:'pill',logo_alignment:'left',locale:'es',width:width
-        });
-        setGoogleStatus('ready');
-      }catch(e){
-        setGoogleStatus('unavailable');
-      }
-    }
-    setupGoogle();
-    return function(){
-      active=false;
-      if(timer!==null)window.clearTimeout(timer);
-      window._rhGoogleReceiver=null;
-    };
-  },[tab,googleRetry]);
-
-  function doLogin(){
-    sErr('');
-    var users=lsg('rh_users')||{};
-    var key=lf.username.trim().toLowerCase();
-    // Aceptar tanto el usuario registrado como el correo asociado a esa cuenta local.
-    if(!users[key]&&key.indexOf('@')!==-1){
-      var match=Object.keys(users).find(function(k){return users[k]&&users[k].email===key;});
-      if(match)key=match;
-    }
-    var user=users[key];
-    if(!user){sErr('No encontramos esa cuenta en este navegador. Si entraste con Google, usa el botón de Google.');return;}
-    if(user.pwHash!==hash(lf.password)){sErr('Contrasena incorrecta.');return;}
-    p.onLogin('u:'+key,user.name||key);
-  }
-
-  function doRegister(){
-    sErr('');
-    if(!lf.username.trim()||!lf.email.trim()||!lf.password||!lf.name.trim()){sErr('Completa todos los campos.');return;}
-    if(lf.username.length<3){sErr('Usuario: min. 3 caracteres.');return;}
-    if(lf.password.length<6){sErr('Contrasena: min. 6 caracteres.');return;}
-    var users=lsg('rh_users')||{};
-    var key=lf.username.trim().toLowerCase();
-    if(users[key]){sErr('Usuario ya existe. Elige otro.');return;}
-    users[key]={pwHash:hash(lf.password),email:lf.email.trim().toLowerCase(),name:lf.name.trim(),createdAt:Date.now()};
-    lss('rh_users',users);
-    sOk('Cuenta creada! Ya puedes iniciar sesion.');
-    setTab('login');
-    slf(function(f){return xt(f,{username:key,password:'',email:'',name:''}); });
-  }
-
-  function rstStep1(){
-    var email=rf.email.trim().toLowerCase();
-    if(!email){sErr('Ingresa tu correo.');return;}
-    var users=lsg('rh_users')||{};
-    var found=null,fKey=null;
-    Object.keys(users).forEach(function(k){if(users[k].email===email){found=users[k];fKey=k;}});
-    if(!found){sErr('No hay cuenta con ese correo.');return;}
-    var code=Math.floor(100000+Math.random()*900000).toString();
-    lss('rh_rst',{code:code,email:email,key:fKey,exp:Date.now()+600000});
-    srf(function(x){return xt(x,{step:2,code:code});});
-    sErr('');sOk('Codigo: '+code+' (En produccion llegaria por correo)');
-  }
-  function rstStep2(){
-    var stored=lsg('rh_rst');
-    if(!stored||Date.now()>stored.exp){sErr('Codigo expirado.');srf(function(x){return xt(x,{step:1});});return;}
-    if(rf.inputCode.trim()!==stored.code){sErr('Codigo incorrecto.');return;}
-    srf(function(x){return xt(x,{step:3});});sErr('');sOk('');
-  }
-  function rstStep3(){
-    if(!rf.newPwd||rf.newPwd.length<6){sErr('Min. 6 caracteres.');return;}
-    var stored=lsg('rh_rst');
-    var users=lsg('rh_users')||{};
-    users[stored.key].pwHash=hash(rf.newPwd);
-    lss('rh_users',users);
-    localStorage.removeItem('rh_rst');
-    setRo(false);sErr('');sOk('Contrasena actualizada! Inicia sesion.');setTab('login');
-  }
-
-  var iSt={border:'1.5px solid var(--border)',background:'var(--surface)',borderRadius:'var(--r)',padding:'11px 14px 11px 40px',fontSize:'.875rem',width:'100%',color:'var(--text)',outline:'none',fontFamily:'var(--font)',transition:'border-color .2s'};
-  var i0={border:'1.5px solid var(--border)',background:'var(--surface)',borderRadius:'var(--r)',padding:'11px 14px',fontSize:'.875rem',width:'100%',color:'var(--text)',outline:'none',fontFamily:'var(--font)',transition:'border-color .2s'};
-
-  return h('div',{className:'auth-wrap fi'},
-    // Left
-    h('div',{className:'auth-left'},
-      h('div',{style:{display:'flex',alignItems:'center',gap:10,marginBottom:36}},
-        h('div',{className:'logo-mark'},h('svg',{width:18,height:18,viewBox:'0 0 26 26',fill:'none'},h('circle',{cx:'13',cy:'13',r:'10',stroke:'white',strokeWidth:'1.5',fill:'none'}),h('path',{d:'M9 13l3 3 5-6',stroke:'white',strokeWidth:'2',strokeLinecap:'round',strokeLinejoin:'round'}))),
-        h('div',null,h('div',{style:{fontWeight:800,color:'white',fontSize:'.95rem'}},'Rodme Health'),h('div',{style:{fontSize:'.62rem',color:'rgba(255,255,255,.6)',textTransform:'uppercase',letterSpacing:'.08em'}},'Tu salud familiar'))
-      ),
-      h('h2',null,'La salud de tu familia,\nmás organizada que nunca.'),
-      h('p',null,'Un espacio práctico para organizar citas, medicamentos y expedientes, estés donde estés.'),
-      h('div',{className:'rh-auth-window','aria-hidden':'true'},
-         h('div',{className:'rh-auth-window-top'},h('span',null,'VISTA GENERAL'),h('span',null,'● Organizado')),
-         h('strong',null,'Tu centro de bienestar'),
-         h('p',null,'Acceso rápido a lo importante'),
-         h('div',{className:'rh-auth-window-cards'},
-           [{n:'calendar',t:'Citas'},{n:'pill',t:'Tratamientos'},{n:'user',t:'Familia'}].map(function(x){return h('div',{key:x.t},h(Ic,{n:x.n,s:21,c:'currentColor'}),h('span',null,x.t));})
-         )
-       ),
-       h('div',{className:'auth-feats'},
-        [{ico:'calendar',t:'Citas medicas',d:'Agenda y recordatorios'},{ico:'pill',t:'Medicamentos',d:'Registro de tratamientos'},{ico:'file',t:'Expediente digital',d:'Historial medico completo'},{ico:'shield',t:'Datos en este dispositivo',d:'Esta versión utiliza almacenamiento local'}].map(function(f){
-          return h('div',{key:f.t,className:'auth-feat'},h('div',{className:'auth-feat-ico'},h(Ic,{n:f.ico,s:15,c:'white'})),h('div',null,h('div',{style:{fontWeight:700}},f.t),h('div',{style:{fontSize:'.75rem',opacity:.65,marginTop:1}},f.d)));
-        })
-      )
-    ),
-    // Right
-    h('div',{className:'auth-right'},
-      h('div',{style:{display:'flex',alignItems:'center',gap:10,marginBottom:28}},
-        h('div',{className:'logo-mark'},h('svg',{width:16,height:16,viewBox:'0 0 26 26',fill:'none'},h('circle',{cx:'13',cy:'13',r:'10',stroke:'white',strokeWidth:'1.5',fill:'none'}),h('path',{d:'M9 13l3 3 5-6',stroke:'white',strokeWidth:'2',strokeLinecap:'round',strokeLinejoin:'round'}))),
-        h('div',{style:{fontWeight:800,fontSize:'.9rem'}},'Rodme Health')
-      ),
-      h('div',{className:'rh-auth-intro'},h('span',null,'TU ESPACIO PERSONAL'),h('h1',null,'Bienvenida a Rodme Health'),h('p',null,'Todo lo que necesitas para llevar tu salud organizada.')),
-      h('div',{className:'auth-tabs'},
-        h('button',{className:'auth-tab'+(tab==='login'?' on':''),onClick:function(){setTab('login');sErr('');sOk('');}  },'Iniciar sesion'),
-        h('button',{className:'auth-tab'+(tab==='register'?' on':''),onClick:function(){setTab('register');sErr('');sOk('');}},'Crear cuenta')
-      ),
-      ok&&h('div',{style:{background:'var(--green-bg)',border:'1px solid var(--green-border)',borderRadius:'var(--r)',padding:'10px 14px',fontSize:'.82rem',color:'#15803D',marginBottom:14,fontWeight:600}},'\u2713 '+ok),
-      err&&h('div',{style:{background:'var(--red-bg)',border:'1px solid var(--red-border)',borderRadius:'var(--r)',padding:'10px 14px',fontSize:'.82rem',color:'var(--red)',marginBottom:14,fontWeight:600}},'\u26A0 '+err),
-
-      tab==='login'&&h('div',{style:{display:'flex',flexDirection:'column',gap:12}},
-        h('div',null,h('label',null,'Usuario o correo electrónico'),h('div',{className:'inp-wrap'},h('span',{className:'inp-ico'},h(Ic,{n:'user',s:15,c:'var(--text3)'})),h('input',{style:iSt,value:lf.username,onChange:upd(slf,'username'),placeholder:'Usuario o correo',onKeyDown:function(e){if(e.key==='Enter')document.getElementById('lp')&&document.getElementById('lp').focus();}}))),
-        h('div',null,h('label',null,'Contrasena'),h('div',{className:'inp-wrap'},h('span',{className:'inp-ico'},h(Ic,{n:'key',s:15,c:'var(--text3)'})),h('input',{id:'lp',style:iSt,type:showP?'text':'password',value:lf.password,onChange:upd(slf,'password'),placeholder:'\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022',onKeyDown:function(e){if(e.key==='Enter')doLogin();}}),h('button',{className:'inp-act',onClick:function(){sSP(!showP);}},h(Ic,{n:showP?'eyeoff':'eye',s:14,c:'var(--text3)'})))),
-        h('button',{style:{background:'none',border:'none',color:'var(--accent)',fontSize:'.8rem',cursor:'pointer',fontFamily:'var(--font)',fontWeight:700,textAlign:'left',padding:'2px 0'},onClick:function(){setRo(true);sErr('');sOk('');}},'\u{1F511} Olvide mi contrasena'),
-        h('button',{className:'btn btn-primary btn-full',style:{borderRadius:'var(--r-full)',padding:'13px',fontSize:'.9rem',marginTop:4},onClick:doLogin},h(Ic,{n:'check',s:15,c:'white'}),'Ingresar'),
-        h('div',{style:{display:'flex',alignItems:'center',gap:10,margin:'6px 0'}},h('div',{style:{flex:1,height:1,background:'var(--border)'}}),h('span',{style:{fontSize:'.7rem',color:'var(--text3)',fontWeight:700}},'O'),h('div',{style:{flex:1,height:1,background:'var(--border)'}})),
-        h('div',{className:'rh-google-wrap'},
-          h('div',{className:'rh-google-slot',ref:googleButtonRef,'aria-label':'Acceder con Google'}),
-          googleStatus==='loading'&&h('p',{className:'rh-google-note'},'Preparando el acceso con Google…'),
-          googleStatus==='unavailable'&&h('div',{className:'rh-google-error'},
-            h('p',null,'No se pudo cargar el acceso de Google. Verifica tu conexión o los bloqueadores del navegador.'),
-            h('button',{className:'btn btn-outline',onClick:function(){setGoogleRetry(function(n){return n+1;});}},'Reintentar')
-          ),
-          h('button',{className:'rh-google-help-toggle',onClick:function(){setShowGoogleHelp(!showGoogleHelp);},
-            'aria-expanded':showGoogleHelp},'¿Problemas para entrar con Google? ',showGoogleHelp?'−':'+'),
-          showGoogleHelp&&h('div',{className:'rh-google-help'},
-            h('p',null,'Si Google muestra “Error 400: origin_mismatch” o “The given origin is not allowed”, debes revisar el cliente OAuth de Rodme Health en Google Cloud.'),
-            h('p',null,'En “Orígenes de JavaScript autorizados” registra exactamente:'),
-            h('code',null,'https://mariarodme.github.io'),
-            h('p',null,'No incluyas /Rodme-Health/ en ese origen. Verifica también que el ID de cliente sea el mismo que se configuró en Google Cloud y que la aplicación permita usar tu cuenta.'),
-            h('a',{href:'https://console.cloud.google.com/auth/clients',target:'_blank',rel:'noopener noreferrer'},'Abrir configuración de Google Cloud ↗'),
-            h('p',{className:'rh-google-help-foot'},'Si aparece otro mensaje, revisa el texto exacto del error. No compartas contraseñas ni códigos de acceso.')
-          )
-        )
-      ),
-
-      tab==='register'&&h('div',{style:{display:'flex',flexDirection:'column',gap:11}},
-        h('div',null,h('label',null,'Nombre completo'),h('div',{className:'inp-wrap'},h('span',{className:'inp-ico'},h(Ic,{n:'user',s:15,c:'var(--text3)'})),h('input',{style:iSt,value:lf.name,onChange:upd(slf,'name'),placeholder:'Maria Rodriguez'}))),
-        h('div',null,h('label',null,'Usuario'),h('div',{className:'inp-wrap'},h('span',{className:'inp-ico',style:{fontWeight:800,fontSize:'.82rem'}},'@'),h('input',{style:iSt,value:lf.username,onChange:upd(slf,'username'),placeholder:'mariarodriguez'}))),
-        h('div',null,h('label',null,'Correo electronico'),h('div',{className:'inp-wrap'},h('span',{className:'inp-ico'},h(Ic,{n:'mail',s:15,c:'var(--text3)'})),h('input',{style:iSt,type:'email',value:lf.email,onChange:upd(slf,'email'),placeholder:'correo@ejemplo.com'}))),
-        h('div',null,h('label',null,'Contrasena'),h('div',{className:'inp-wrap'},h('span',{className:'inp-ico'},h(Ic,{n:'key',s:15,c:'var(--text3)'})),h('input',{style:iSt,type:showP2?'text':'password',value:lf.password,onChange:upd(slf,'password'),placeholder:'Min. 6 caracteres'}),h('button',{className:'inp-act',onClick:function(){sSP2(!showP2);}},h(Ic,{n:showP2?'eyeoff':'eye',s:14,c:'var(--text3)'})))),
-        h('p',{style:{fontSize:'.7rem',color:'var(--text3)',lineHeight:1.5}},'Esta versión guarda la información en este navegador. No ingreses datos médicos sensibles.'),
-        h('button',{className:'btn btn-primary btn-full',style:{borderRadius:'var(--r-full)',padding:'13px',fontSize:'.9rem'},onClick:doRegister},h(Ic,{n:'check',s:15,c:'white'}),'Crear cuenta')
-      ),
-      h('p',{style:{textAlign:'center',fontSize:'.65rem',color:'var(--text3)',marginTop:20,letterSpacing:'.04em'}},'RODME HEALTH \u00b7 DATOS GUARDADOS EN ESTE NAVEGADOR')
-    ),
-
-    // Reset modal
-    ro&&h('div',{style:{position:'fixed',inset:0,background:'rgba(7,15,11,.6)',backdropFilter:'blur(8px)',zIndex:9999,display:'flex',alignItems:'center',justifyContent:'center',padding:24},onClick:function(e){if(e.target===e.currentTarget)setRo(false);}},
-      h('div',{className:'si',style:{background:'var(--surface)',borderRadius:'var(--r-xl)',padding:'26px 22px',width:'100%',maxWidth:380,boxShadow:'var(--shadow-xl)'}},
-        h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:18}},
-          h('div',null,h('p',{style:{fontSize:'.65rem',fontWeight:700,color:'var(--text3)',textTransform:'uppercase',letterSpacing:'.08em',marginBottom:3}},'Seguridad'),h('h2',{style:{fontFamily:'var(--serif)',fontSize:'1.2rem',fontWeight:600}},'Restablecer contrasena')),
-          h('button',{className:'btn-icon',onClick:function(){setRo(false);sErr('');}},h(Ic,{n:'close',s:16,c:'var(--text2)'}))
-        ),
-        h('div',{className:'rst-steps'},[1,2,3].map(function(i){return h('div',{key:i,className:'rst-step'+(rf.step>=i?' done':'')});})),
-        err&&h('div',{style:{background:'var(--red-bg)',borderRadius:'var(--r)',padding:'9px 12px',fontSize:'.78rem',color:'var(--red)',marginBottom:10,fontWeight:600}},err),
-        ok&&h('div',{style:{background:'var(--green-bg)',borderRadius:'var(--r)',padding:'9px 12px',fontSize:'.78rem',color:'#15803D',marginBottom:10,fontWeight:600}},ok),
-        h('p',{style:{fontSize:'.78rem',color:'var(--text2)',marginBottom:14}},rf.step===1?'Ingresa el correo con el que te registraste.':rf.step===2?'Ingresa el codigo de verificacion.':'Elige tu nueva contrasena.'),
-        rf.step===1&&h('div',{style:{display:'flex',flexDirection:'column',gap:10}},
-          h(Fld,{label:'Correo'},h('div',{className:'inp-wrap'},h('span',{className:'inp-ico'},h(Ic,{n:'mail',s:14,c:'var(--text3)'})),h('input',{style:iSt,type:'email',value:rf.email,onChange:function(e){srf(function(x){return xt(x,{email:e.target.value});});},placeholder:'correo@ejemplo.com'}))),
-          h('button',{className:'btn btn-primary btn-full',style:{borderRadius:'var(--r-full)',padding:'12px'},onClick:rstStep1},'Enviar codigo')
-        ),
-        rf.step===2&&h('div',{style:{display:'flex',flexDirection:'column',gap:10}},
-          h(Fld,{label:'Codigo de 6 digitos'},h('input',{style:i0,value:rf.inputCode,onChange:function(e){srf(function(x){return xt(x,{inputCode:e.target.value});});},placeholder:'123456',maxLength:6})),
-          h('button',{className:'btn btn-primary btn-full',style:{borderRadius:'var(--r-full)',padding:'12px'},onClick:rstStep2},'Verificar')
-        ),
-        rf.step===3&&h('div',{style:{display:'flex',flexDirection:'column',gap:10}},
-          h(Fld,{label:'Nueva contrasena'},h('div',{className:'inp-wrap'},h('span',{className:'inp-ico'},h(Ic,{n:'key',s:14,c:'var(--text3)'})),h('input',{style:iSt,type:showP?'text':'password',value:rf.newPwd,onChange:function(e){srf(function(x){return xt(x,{newPwd:e.target.value});});},placeholder:'Min. 6 caracteres'}),h('button',{className:'inp-act',onClick:function(){sSP(!showP);}},h(Ic,{n:showP?'eyeoff':'eye',s:14,c:'var(--text3)'})))),
-          h('button',{className:'btn btn-primary btn-full',style:{borderRadius:'var(--r-full)',padding:'12px'},onClick:rstStep3},'Actualizar contrasena')
-        )
-      )
-    )
-  );
-}
-
 // ── HOME ── (replica exacta de la imagen)
 function HomeView(p){
   var store=p.store,sm=p.sm,ssa=p.ssa,sv=p.sv,user=p.user;
   var prefs=lsg(uk(user,'prefs'))||{};
   var rec=lsg(uk(user,'rec'))||{};
-  var name=(prefs.ownerName||'').split(' ')[0]||(user&&user.startsWith('g:')?user.slice(2).split('@')[0]:user&&user.startsWith('u:')?user.slice(2):'');
+  var name=(prefs.ownerName||'').split(' ')[0]||'Usuario';
   var today=new Date();
   var pending=store.appointments.filter(function(a){return !a.attended;});
   var upcoming=pending.filter(function(a){var days=du(a.date);return days!==null&&days>=0;}).sort(function(a,b){return new Date(a.date)-new Date(b.date);}).slice(0,4);
@@ -1322,85 +1073,65 @@ function MedCard(p){
 // ── SETTINGS ───────────────────────────────────────────────────────────────
 function SettingsView(p){
   var user=p.user,sv=p.sv,theme=p.theme,setTheme=p.setTheme;
-  var pk=uk(user,'prefs');
-  var saved=lsg(pk)||{};
+  var pk=uk(user,'prefs'),saved=lsg(pk)||{};
   var fs=useState(xt({ownerName:'',email:'',phone:'',language:'es',timezone:'America/Costa_Rica'},saved));
   var form=fs[0],sf=fs[1];
-  var svs=useState(false);var sv2=svs[0],sSv=svs[1];
-  var cpOpen=useState(false);var cpo=cpOpen[0],setCpo=cpOpen[1];
-  var cpf=useState({old:'',newP:'',conf:''});var cpForm=cpf[0],scpf=cpf[1];
-  var cpe=useState('');var cpErr=cpe[0],scpE=cpe[1];
-  var sOld=useState(false);var so=sOld[0],setSo=sOld[1];
-  var sNew2=useState(false);var sn2=sNew2[0],setSn=sNew2[1];
-  function save(){lss(pk,form);sSv(true);setTimeout(function(){sSv(false);},2200);}
-  function chgPwd(){
-    scpE('');
-    if(!cpForm.old||!cpForm.newP||!cpForm.conf){scpE('Completa todos los campos.');return;}
-    if(cpForm.newP!==cpForm.conf){scpE('Las contrasenas no coinciden.');return;}
-    if(cpForm.newP.length<6){scpE('Min. 6 caracteres.');return;}
-    if(user.startsWith('u:')){
-      var key=user.slice(2),users=lsg('rh_users')||{};
-      if(!users[key]||users[key].pwHash!==hash(cpForm.old)){scpE('Contrasena actual incorrecta.');return;}
-      users[key].pwHash=hash(cpForm.newP);lss('rh_users',users);
-      setCpo(false);scpf({old:'',newP:'',conf:''});sSv(true);setTimeout(function(){sSv(false);},2000);
-    } else {scpE('Solo disponible para cuentas con usuario y contrasena.');}
+  var savedState=useState(false),savedOk=savedState[0],setSavedOk=savedState[1];
+  var TZ=[{v:'America/Costa_Rica',l:'Costa Rica'},{v:'America/New_York',l:'Nueva York'},
+    {v:'America/Chicago',l:'Chicago'},{v:'America/Los_Angeles',l:'Los Ángeles'},
+    {v:'Europe/Madrid',l:'Madrid'},{v:'America/Mexico_City',l:'Ciudad de México'},
+    {v:'America/Bogota',l:'Bogotá'}];
+  function save(){lss(pk,form);setSavedOk(true);}
+  function clearSpace(){
+    if(confirm('¿Borrar todos los registros de este espacio en este navegador? Esta acción no se puede deshacer.')){
+      ['p','a','m','rec','prefs'].forEach(function(k){localStorage.removeItem(uk(user,k));});
+      location.reload();
+    }
   }
-  var TZ=[{v:'America/Costa_Rica',l:'(GMT-06:00) Costa Rica'},{v:'America/New_York',l:'(GMT-05:00) New York'},{v:'America/Chicago',l:'(GMT-06:00) Chicago'},{v:'America/Los_Angeles',l:'(GMT-08:00) LA'},{v:'Europe/Madrid',l:'(GMT+01:00) Madrid'},{v:'America/Mexico_City',l:'(GMT-06:00) Mexico'},{v:'America/Bogota',l:'(GMT-05:00) Bogota'}];
-  var inp={border:'none',padding:0,background:'transparent',fontSize:'.875rem',color:'var(--text)',fontFamily:'var(--font)',width:'100%',outline:'none'};
-  function SR(icon,label,col,child){return h('div',{key:label,className:'set-row'},h('div',{className:'set-ico',style:{background:(col||'var(--accent)')+'18'}},h(Ic,{n:icon,s:14,c:col||'var(--accent)'})),h('div',{style:{flex:1,minWidth:0}},h('p',{style:{fontSize:'.63rem',color:'var(--text3)',fontWeight:800,textTransform:'uppercase',letterSpacing:'.08em',marginBottom:2}},label),child));}
-  var uEmail=user.startsWith('g:')?user.slice(2):user.startsWith('u:')?user.slice(2):'';
-  return h('div',null,
-    h('div',{style:{background:'linear-gradient(135deg,var(--accent),var(--accent2))',borderRadius:'var(--r-xl)',padding:'20px 18px',marginBottom:16,display:'flex',alignItems:'center',gap:13}},
-      h('div',{className:'av',style:{width:50,height:50,fontSize:'.95rem',background:'rgba(255,255,255,.2)',flexShrink:0}},ini(form.ownerName||uEmail)),
-      h('div',null,h('p',{style:{fontWeight:800,fontSize:'1rem',color:'white',marginBottom:2}},form.ownerName||uEmail.split('@')[0]||'Usuario'),h('p',{style:{fontSize:'.72rem',color:'rgba(255,255,255,.7)'}},uEmail))
-    ),
-    h('p',{style:{fontSize:'.63rem',fontWeight:800,color:'var(--text3)',textTransform:'uppercase',letterSpacing:'.1em',marginBottom:7}},'Informacion personal'),
-    h('div',{className:'card-flat',style:{padding:'0 14px 2px',marginBottom:13}},
-      SR('user','Nombre',null,h('input',{style:inp,value:form.ownerName||'',onChange:upd(sf,'ownerName'),placeholder:'Tu nombre completo'})),
-      SR('mail','Correo','var(--teal)',h('input',{style:inp,type:'email',value:form.email||'',onChange:upd(sf,'email'),placeholder:'correo@ejemplo.com'})),
-      SR('phone','Telefono','var(--purple)',h('input',{style:inp,type:'tel',value:form.phone||'',onChange:upd(sf,'phone'),placeholder:'+506 8888-8888'}))
-    ),
-    h('p',{style:{fontSize:'.63rem',fontWeight:800,color:'var(--text3)',textTransform:'uppercase',letterSpacing:'.1em',marginBottom:7}},'Preferencias'),
-    h('div',{className:'card-flat',style:{padding:'0 14px 2px',marginBottom:13}},
-      SR('globe','Idioma',null,h('div',{style:{display:'flex',gap:6,paddingTop:4}},h('button',{className:'chip '+(form.language==='es'?'chip-accent':'chip-gray'),style:{cursor:'pointer',border:'none',padding:'5px 12px'},onClick:function(){sf(function(f){return xt(f,{language:'es'});});}},'Espanol'),h('button',{className:'chip '+(form.language==='en'?'chip-accent':'chip-gray'),style:{cursor:'pointer',border:'none',padding:'5px 12px'},onClick:function(){sf(function(f){return xt(f,{language:'en'});});}},'English'))),
-      SR('clock','Zona horaria','var(--text2)',h('select',{style:xt(inp,{cursor:'pointer'}),value:form.timezone||'America/Costa_Rica',onChange:upd(sf,'timezone')},TZ.map(function(t){return h('option',{key:t.v,value:t.v},t.l);}))),
-      SR(theme==='dark'?'sun':'moon','Tema','var(--amber)',h('div',{style:{display:'flex',gap:6,paddingTop:4}},h('button',{className:'chip '+(theme==='light'?'chip-accent':'chip-gray'),style:{cursor:'pointer',border:'none',padding:'5px 12px'},onClick:function(){setTheme('light');}},'\u2600\uFE0F Claro'),h('button',{className:'chip '+(theme==='dark'?'chip-accent':'chip-gray'),style:{cursor:'pointer',border:'none',padding:'5px 12px'},onClick:function(){setTheme('dark');}},'\uD83C\uDF19 Oscuro')))
-    ),
-    h('p',{style:{fontSize:'.63rem',fontWeight:800,color:'var(--text3)',textTransform:'uppercase',letterSpacing:'.1em',marginBottom:7}},'Medico y seguridad'),
-    h('div',{className:'card-flat',style:{overflow:'hidden',marginBottom:13}},
-      h('button',{onClick:function(){sv('record');},style:{width:'100%',display:'flex',alignItems:'center',gap:11,padding:'12px 14px',background:'none',border:'none',cursor:'pointer',borderBottom:'1px solid var(--surface2)'}},
-        h('div',{className:'set-ico',style:{background:'var(--red-bg)'}},h(Ic,{n:'record',s:14,c:'var(--red)'})),
-        h('div',{style:{flex:1,textAlign:'left'}},h('p',{style:{fontWeight:700,fontSize:'.875rem',color:'var(--text)',marginBottom:1}},'Mi Expediente Medico'),h('p',{style:{fontSize:'.7rem',color:'var(--text3)'}},'Historial, alergias, sangre y mas')),
-        h(Ic,{n:'chevron',s:15,c:'var(--text3)'})
+  function settingInput(title,key,type,placeholder){
+    return h('label',{className:'rh-setting-field'},
+      h('span',null,title),
+      h('input',{type:type||'text',value:form[key]||'',
+        onChange:function(e){var val=e.target.value;sf(function(o){var next=xt(o,{});next[key]=val;return next;});setSavedOk(false);},
+        placeholder:placeholder||''})
+    );
+  }
+  return h('div',{className:'rh-local-settings'},
+    h('div',{className:'ph'},h('p',{className:'ph-sub'},'TU ESPACIO'),h('h1',{className:'ph-title'},'Configuración'),
+      h('p',{style:{fontSize:'.81rem',color:'var(--text2)',marginTop:9}},'Personaliza tu espacio. Entras directamente, sin cuenta ni contraseña.')),
+    h('div',{className:'rh-settings-grid'},
+      h('section',{className:'card-flat rh-settings-section'},
+        h('h2',null,'Mi información'),
+        settingInput('Nombre','ownerName','text','Cómo quieres aparecer'),
+        settingInput('Correo (opcional)','email','email','correo@ejemplo.com'),
+        settingInput('Teléfono (opcional)','phone','tel','+506 8888-8888')
       ),
-      h('button',{onClick:function(){setCpo(true);scpE('');},style:{width:'100%',display:'flex',alignItems:'center',gap:11,padding:'12px 14px',background:'none',border:'none',cursor:'pointer'}},
-        h('div',{className:'set-ico',style:{background:'var(--amber-bg)'}},h(Ic,{n:'key',s:14,c:'var(--amber)'})),
-        h('div',{style:{flex:1,textAlign:'left'}},h('p',{style:{fontWeight:700,fontSize:'.875rem',color:'var(--text)',marginBottom:1}},'Cambiar contrasena'),h('p',{style:{fontSize:'.7rem',color:'var(--text3)'}},'Actualiza tu contrasena de acceso')),
-        h(Ic,{n:'chevron',s:15,c:'var(--text3)'})
-      )
-    ),
-    h('button',{className:'btn btn-primary btn-full',style:{borderRadius:'var(--r-full)',marginBottom:9,padding:'13px'},onClick:save},h(Ic,{n:sv2?'check':'shield',s:14,c:'white'}),sv2?'Guardado!':'Guardar preferencias'),
-    h('button',{className:'btn btn-outline btn-full',style:{borderRadius:'var(--r-full)',marginBottom:13},onClick:function(){if(confirm('Cerrar sesion?')){localStorage.removeItem('rh_session');sessionStorage.removeItem('rh_session');location.reload();}}},h(Ic,{n:'logout',s:14,c:'var(--text2)'}),'Cerrar sesion'),
-    h('div',{style:{background:'var(--red-bg)',borderRadius:'var(--r-lg)',padding:'13px 14px',border:'1px solid var(--red-border)'}},
-      h('p',{style:{fontSize:'.63rem',fontWeight:800,color:'var(--red)',textTransform:'uppercase',letterSpacing:'.08em',marginBottom:9}},'\u26A0 Zona de peligro'),
-      h('button',{className:'btn btn-danger',style:{borderRadius:'var(--r-full)'},onClick:function(){if(confirm('Borrar TODOS los datos permanentemente?')){localStorage.clear();location.reload();}}},h(Ic,{n:'trash',s:13,c:'var(--red)'}),'Borrar todos los datos')
-    ),
-    // Change password modal
-    cpo&&h('div',{style:{position:'fixed',inset:0,background:'rgba(7,15,11,.6)',backdropFilter:'blur(8px)',zIndex:9999,display:'flex',alignItems:'center',justifyContent:'center',padding:24},onClick:function(e){if(e.target===e.currentTarget)setCpo(false);}},
-      h('div',{className:'si',style:{background:'var(--surface)',borderRadius:'var(--r-xl)',padding:'24px 22px',width:'100%',maxWidth:380,boxShadow:'var(--shadow-xl)'}},
-        h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:16}},
-          h('h2',{style:{fontFamily:'var(--serif)',fontSize:'1.1rem',fontWeight:600}},'Cambiar contrasena'),
-          h('button',{className:'btn-icon',onClick:function(){setCpo(false);}},h(Ic,{n:'close',s:15,c:'var(--text2)'}))
+      h('section',{className:'card-flat rh-settings-section'},
+        h('h2',null,'Preferencias'),
+        h('label',{className:'rh-setting-field'},h('span',null,'Zona horaria'),
+          h('select',{value:form.timezone||'America/Costa_Rica',onChange:function(e){sf(xt(form,{timezone:e.target.value}));setSavedOk(false);}},
+            TZ.map(function(t){return h('option',{key:t.v,value:t.v},t.l);})
+          )
         ),
-        cpErr&&h('div',{style:{background:'var(--red-bg)',borderRadius:'var(--r)',padding:'8px 12px',fontSize:'.78rem',color:'var(--red)',marginBottom:10,fontWeight:600}},cpErr),
-        sv2&&h('div',{style:{background:'var(--green-bg)',borderRadius:'var(--r)',padding:'8px 12px',fontSize:'.78rem',color:'#15803D',marginBottom:10,fontWeight:600}},'\u2713 Contrasena actualizada!'),
-        h('div',{style:{display:'flex',flexDirection:'column',gap:11}},
-          h(Fld,{label:'Contrasena actual'},h('div',{style:{position:'relative'}},h('input',{type:so?'text':'password',value:cpForm.old,onChange:function(e){scpf(function(f){return xt(f,{old:e.target.value});});},style:{paddingRight:38},placeholder:'\u2022\u2022\u2022\u2022\u2022\u2022'}),h('button',{style:{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'var(--text3)',padding:4},onClick:function(){setSo(!so);}},h(Ic,{n:so?'eyeoff':'eye',s:13,c:'var(--text3)'})))),
-          h(Fld,{label:'Nueva contrasena'},h('div',{style:{position:'relative'}},h('input',{type:sn2?'text':'password',value:cpForm.newP,onChange:function(e){scpf(function(f){return xt(f,{newP:e.target.value});});},style:{paddingRight:38},placeholder:'Min. 6 caracteres'}),h('button',{style:{position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',background:'none',border:'none',cursor:'pointer',color:'var(--text3)',padding:4},onClick:function(){setSn(!sn2);}},h(Ic,{n:sn2?'eyeoff':'eye',s:13,c:'var(--text3)'})))),
-          h(Fld,{label:'Confirmar contrasena'},h('input',{type:'password',value:cpForm.conf,onChange:function(e){scpf(function(f){return xt(f,{conf:e.target.value});});},placeholder:'\u2022\u2022\u2022\u2022\u2022\u2022'})),
-          h('button',{className:'btn btn-primary btn-full',style:{borderRadius:'var(--r-full)',padding:'12px'},onClick:chgPwd},'Actualizar contrasena')
-        )
+        h('div',{className:'rh-setting-field'},h('span',null,'Apariencia'),
+          h('div',{className:'rh-theme-switch'},
+            h('button',{className:'btn '+(theme==='light'?'rh-theme-active':''),onClick:function(){setTheme('light');}},h(Ic,{n:'sun',s:15,c:'currentColor'}),'Claro'),
+            h('button',{className:'btn '+(theme==='dark'?'rh-theme-active':''),onClick:function(){setTheme('dark');}},h(Ic,{n:'moon',s:15,c:'currentColor'}),'Oscuro')
+          )
+        ),
+        h('button',{className:'rh-settings-link',onClick:function(){sv('record');}},
+          h(Ic,{n:'file',s:18,c:'var(--accent)'}),'Abrir mi expediente',h('span',null,'→'))
       )
+    ),
+    h('button',{className:'btn btn-primary btn-full',style:{marginTop:17,marginBottom:15,padding:'13px'},onClick:save},
+      h(Ic,{n:savedOk?'check':'settings',s:15,c:'white'}),savedOk?'Preferencias guardadas':'Guardar cambios'),
+    h('div',{className:'rh-local-warning'},
+      h(Ic,{n:'shield',s:19,c:'var(--accent)'}),
+      h('p',null,'Este espacio no utiliza inicio de sesión. Los registros quedan guardados solo en este navegador, no se sincronizan entre dispositivos y cualquier persona que use este dispositivo puede verlos. Evita ingresar información médica sensible.')
+    ),
+    h('div',{className:'rh-settings-danger'},
+      h('p',null,'Administrar datos locales'),
+      h('button',{className:'btn btn-danger',onClick:clearSpace},h(Ic,{n:'trash',s:14,c:'currentColor'}),'Borrar datos de este espacio')
     )
   );
 }
@@ -1636,10 +1367,22 @@ function App(){
   function setTheme(t){setThState(t);localStorage.setItem('rh_theme',t);document.documentElement.setAttribute('data-theme',t);}
   useEffect(function(){document.documentElement.setAttribute('data-theme',theme);},[theme]);
 
-  function getSess(){try{var raw=sessionStorage.getItem('rh_session')||localStorage.getItem('rh_session');if(raw){var s=JSON.parse(raw);if(s&&s.u)return s;}return null;}catch(e){return null;}}
-  var us=useState(getSess);var sess=us[0],setSess=us[1];
-  var user=sess?sess.u:null;
-  var store=useStore(user||'anon');
+  // Acceso directo: reutilizar los registros existentes de la última sesión local.
+  // No enviar ni verificar identificaciones ante servicios externos.
+  function getLocalWorkspace(){
+    var saved=lsg('rh_local_workspace');
+    if(saved&&typeof saved.u==='string'&&saved.u)return saved;
+    var previous=lsg('rh_session');
+    if(!previous){try{previous=JSON.parse(sessionStorage.getItem('rh_session')||'null');}catch(e){}}
+    var space=(previous&&typeof previous.u==='string'&&previous.u)
+      ?{u:previous.u,name:previous.name||'Mi espacio'}
+      :{u:'local:rodme',name:'Mi espacio'};
+    lss('rh_local_workspace',space);
+    return space;
+  }
+  var sessState=useState(getLocalWorkspace),sess=sessState[0];
+  var user=sess.u;
+  var store=useStore(user);
   var vs=useState('home');var view=vs[0],sv=vs[1];
   var ms=useState(null);var modal=ms[0],sm=ms[1];
   var ps=useState(null);var selP=ps[0],ssp=ps[1];
@@ -1650,20 +1393,10 @@ function App(){
   var nbs=useState(true);var showNb=nbs[0],sNb=nbs[1];
   var notifs=store.appointments.filter(function(a){var d=du(a.date);return d!==null&&d>=0&&d<=7&&!a.attended;});
 
-  function onLogin(u,name){
-    var s={u:u,name:name||'',t:Date.now()};
-    // Always persist to localStorage so session survives browser close
-    localStorage.setItem('rh_session',JSON.stringify(s));
-    sessionStorage.setItem('rh_session',JSON.stringify(s));
-    setSess(s);
-  }
-
-  if(!user){return h(AuthScreen,{onLogin:onLogin});}
-
   var navItems=[{id:'home',n:'home',l:'Inicio'},{id:'patients',n:'user',l:'Pacientes'},{id:'appointments',n:'calendar',l:'Citas'},{id:'medications',n:'pill',l:'Medicamentos'},{id:'settings',n:'settings',l:'Config'}];
   var prefs=lsg(uk(user,'prefs'))||{};
-  var displayName=prefs.ownerName||(sess&&sess.name)||'';
-  var uEmail=user.startsWith('g:')?user.slice(2):user.startsWith('u:')?user.slice(2):'';
+  var displayName=prefs.ownerName||(sess&&sess.name)||'Mi espacio';
+  var uEmail=prefs.email||'';
 
   function NavBtn(q){
     var it=q.item,active=view===it.id,dot=it.id==='appointments'&&notifs.length>0;
@@ -1681,13 +1414,13 @@ function App(){
       ),
       h('div',{className:'sidebar-nav'},navItems.map(function(it){return h(NavBtn,{key:it.id,item:it});})),
       h('div',{className:'sidebar-user'},
-        h('div',{className:'user-row'},
+        h('div',{className:'user-row',onClick:function(){sv('settings');setSideOpen(false);}},
           h('div',{className:'av',style:{width:32,height:32,fontSize:'.66rem',flexShrink:0}},ini(displayName||uEmail)),
           h('div',{style:{flex:1,minWidth:0}},
             h('p',{style:{fontSize:'.78rem',fontWeight:700,color:'var(--text)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},(displayName||uEmail).split(' ')[0]||'Usuario'),
             h('p',{style:{fontSize:'.65rem',color:'var(--text3)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}},uEmail)
           ),
-          h('button',{className:'btn-icon',style:{padding:5},onClick:function(){if(confirm('Cerrar sesion?')){localStorage.removeItem('rh_session');sessionStorage.removeItem('rh_session');location.reload();}}},h(Ic,{n:'logout',s:14,c:'var(--text3)'}))
+          h(Ic,{n:'chevron',s:14,c:'var(--text3)'})
         )
       )
     );
