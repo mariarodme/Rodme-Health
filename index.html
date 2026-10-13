@@ -901,6 +901,31 @@ body{background:var(--bg);color:var(--text)}
 }
 @media(prefers-reduced-motion:reduce){.wix-service-card:hover,.wix-button:hover{transform:none}}
 
+
+/* Sin frases promocionales: diseño editorial compacto y funcional */
+.wix-hero{min-height:clamp(500px,69vh,670px)}
+.wix-hero-body{padding-top:133px;padding-bottom:80px}
+.wix-hero h1{font-size:clamp(5rem,9.2vw,9.5rem);line-height:.98}
+.wix-hero-buttons{margin-top:37px}
+.wix-service-card{min-height:230px}
+.wix-service-card-content h3{margin:0}
+.wix-service-card-bottom{margin-top:22px}
+.wix-stat-band{grid-template-columns:minmax(210px,.6fr) 1.4fr;gap:35px}
+.wix-stat-intro h2{font-size:clamp(2.9rem,4.7vw,5rem)}
+.wix-health-note{grid-template-columns:95px .9fr 1.1fr}
+.wix-home-footer>div:first-child{gap:0}
+@media(max-width:900px){
+ .wix-stat-band{grid-template-columns:1fr}
+ .wix-health-note{grid-template-columns:1fr 1fr}
+}
+@media(max-width:768px){
+ .wix-hero{min-height:570px}
+ .wix-hero-body{padding-top:84px;padding-bottom:60px}
+ .wix-hero h1{font-size:clamp(4.3rem,14vw,6.2rem)}
+ .wix-service-card{min-height:190px}
+ .wix-health-note{grid-template-columns:1fr}
+}
+@media(max-width:400px){.wix-hero{min-height:535px}}
 </style>
 </head>
 <body>
@@ -1000,9 +1025,6 @@ function HomeView(p){
   var store=p.store,sm=p.sm,ssa=p.ssa,sv=p.sv,user=p.user;
   var prefs=lsg(uk(user,'prefs'))||{};
   var rec=lsg(uk(user,'rec'))||{};
-  var name=(prefs.ownerName||'').trim().split(' ')[0]||'';
-  var today=new Date();
-  var formattedDate=today.toLocaleDateString('es-CR',{weekday:'long',day:'numeric',month:'long'});
   var due=store.appointments.filter(function(a){return !a.attended&&du(a.date)!==null&&du(a.date)>=0;})
     .sort(function(a,b){return (a.date+(a.time||''))>(b.date+(b.time||''))?1:-1;}).slice(0,3);
   var meds=store.medications.slice(0,3);
@@ -1020,41 +1042,30 @@ function HomeView(p){
         h('img',{src:'https://images.pexels.com/photos/7446757/pexels-photo-7446757.jpeg?auto=compress&cs=tinysrgb&w=1920',alt:'',loading:'eager',decoding:'async',onError:function(e){e.currentTarget.style.display='none';}})
       ),
       h('div',{className:'wix-hero-body'},
-        h('p',{className:'wix-hero-kicker'},'TU SALUD, A TU MANERA'),
-        h('h1',null,'Tu salud,',h('br'),'a tu ritmo.'),
-        h('p',{className:'wix-hero-description'},'Consulta tus citas, tratamientos y registros familiares desde un espacio pensado para hacer todo más sencillo.'),
+        h('h1',null,'Rodme',h('br'),'Health'),
         h('div',{className:'wix-hero-buttons'},
           h('button',{className:'wix-button wix-button-dark',onClick:function(){sm('add-apt');}},'Agendar una cita',h('span',{'aria-hidden':'true'},'↗')),
           h('button',{className:'wix-button wix-button-outline',onClick:function(){sv('record');}},'Ver mi expediente')
         )
       ),
-      h('span',{className:'wix-hero-sign'},'RODME HEALTH · TU ESPACIO PERSONAL')
-    ),
-    h('section',{className:'wix-intro'},
-      h('div',{className:'wix-section-numeral'},'01 / BIENVENIDA'),
-      h('h2',null,'Lo importante,',h('br'),'siempre a mano.'),
-      h('div',{className:'wix-intro-side'},
-        h('p',null,(name?'Hola, '+name+'. ':'')+'Aquí puedes consultar lo que has registrado, organizar tus próximas citas y tener a mano los datos de tu familia.'),
-        h('button',{className:'wix-text-link',onClick:function(){sv('patients');}},'Ver mis familiares ',h('span',{'aria-hidden':'true'},'↗'))
-      )
+      h('span',{className:'wix-hero-sign'},'RODME HEALTH')
     ),
     h('section',{className:'wix-service-section','aria-label':'Servicios y accesos'},
       h('div',{className:'wix-section-heading'},
         h('div',null,
-          h('span',{className:'wix-section-numeral'},'02 / TUS HERRAMIENTAS'),
-          h('h2',null,'Cada detalle, en su lugar.')
+          h('span',{className:'wix-section-numeral'},'01 / SECCIONES'),
+          h('h2',null,'Explorar')
         ),
-        h('p',null,'Encuentra rápidamente la información que buscas.')
       ),
       h('div',{className:'wix-services'},
         [
-          {n:'calendar',id:'appointments',title:'Citas médicas',description:'Guarda fechas, horarios y médicos para consultar tus próximas visitas.',action:'Ver mis citas',number:'01',tone:'sand'},
-          {n:'pill',id:'medications',title:'Medicamentos',description:'Ten a mano los nombres, las dosis y las notas de tus tratamientos.',action:'Ver tratamientos',number:'02',tone:'sage'},
-          {n:'user',id:'patients',title:'Mi familia',description:'Mantén separados y organizados los registros de cada familiar.',action:'Ver familiares',number:'03',tone:'rose'}
+          {n:'calendar',id:'appointments',title:'Citas médicas',action:'Ver mis citas',number:'01',tone:'sand'},
+          {n:'pill',id:'medications',title:'Medicamentos',action:'Ver tratamientos',number:'02',tone:'sage'},
+          {n:'user',id:'patients',title:'Mi familia',action:'Ver familiares',number:'03',tone:'rose'}
         ].map(function(item){
           return h('button',{key:item.id,className:'wix-service-card '+item.tone,onClick:function(){sv(item.id);}},
             h('div',{className:'wix-service-card-top'},h('span',null,item.number),h(Ic,{n:item.n,s:31,c:'currentColor'})),
-            h('div',{className:'wix-service-card-content'},h('h3',null,item.title),h('p',null,item.description)),
+            h('div',{className:'wix-service-card-content'},h('h3',null,item.title)),
             h('div',{className:'wix-service-card-bottom'},item.action,h('span',{'aria-hidden':'true'},'↗'))
           );
         })
@@ -1062,9 +1073,8 @@ function HomeView(p){
     ),
     h('section',{className:'wix-stat-band','aria-label':'Tu resumen personal'},
       h('div',{className:'wix-stat-intro'},
-        h('span',{className:'wix-section-numeral'},'03 / TU RESUMEN'),
-        h('h2',null,'Lo que llevas',h('br'),'registrado.'),
-        h('p',null,'Estas cifras se actualizan cuando agregas o modificas tus registros.')
+        h('span',{className:'wix-section-numeral'},'02 / REGISTROS'),
+        h('h2',null,'Resumen')
       ),
       h('div',{className:'wix-stat-grid'},
         stats.map(function(x){return h('button',{key:x.title,className:'wix-stat-item',onClick:function(){sv(x.target);}},
@@ -1076,8 +1086,7 @@ function HomeView(p){
     ),
     h('section',{className:'wix-agenda-section'},
       h('div',{className:'wix-section-heading'},
-        h('div',null,h('span',{className:'wix-section-numeral'},'04 / TU AGENDA'),h('h2',null,'Lo próximo en tu agenda.')),
-        h('p',null,'Revisa tus siguientes citas y los medicamentos que tienes anotados.')
+        h('div',null,h('span',{className:'wix-section-numeral'},'03 / AGENDA'),h('h2',null,'Mi agenda')),
       ),
       h('div',{className:'wix-agenda-grid'},
         h('div',{className:'wix-agenda-card'},
@@ -1095,7 +1104,7 @@ function HomeView(p){
             })
             :h('div',{className:'wix-empty-state'},
               h(Ic,{n:'calendar',s:28,c:'var(--accent)'}),
-              h('p',null,'Todavía no hay citas próximas en tu agenda.'),
+              h('p',null,'Sin citas próximas'),
               h('button',{onClick:function(){sm('add-apt');}},'Agregar una cita ↗')
             )
         ),
@@ -1114,7 +1123,7 @@ function HomeView(p){
             })
             :h('div',{className:'wix-empty-state'},
               h(Ic,{n:'pill',s:28,c:'var(--accent)'}),
-              h('p',null,'No has agregado medicamentos a este espacio.'),
+              h('p',null,'Sin medicamentos registrados'),
               h('button',{onClick:function(){sm('add-med');}},'Agregar medicamento ↗')
             )
         )
@@ -1122,8 +1131,7 @@ function HomeView(p){
     ),
     h('section',{className:'wix-health-note'},
       h('div',{className:'wix-note-symbol'},h(Ic,{n:'heart',s:34,c:'currentColor'})),
-      h('div',null,h('span',{className:'wix-section-numeral'},'05 / TU EXPEDIENTE'),h('h2',null,'Tu información,',h('br'),'bien organizada.'),
-        h('p',null,'Consulta aquí las mediciones que hayas anotado en tu expediente. Si no has registrado un dato, aparecerá como pendiente.')),
+      h('div',null,h('span',{className:'wix-section-numeral'},'04 / DATOS'),h('h2',null,'Mi expediente')),
       h('div',{className:'wix-vitals-list'},
         h('div',null,h('span',null,'Frecuencia cardíaca'),h('strong',null,rec.heartRate?rec.heartRate+' bpm':'Sin registrar')),
         h('div',null,h('span',null,'Presión arterial'),h('strong',null,rec.bloodPressure||'Sin registrar')),
@@ -1131,7 +1139,7 @@ function HomeView(p){
       )
     ),
     h('footer',{className:'wix-home-footer'},
-      h('div',null,h('strong',null,'rodme ',h('em',null,'health')),h('span',null,'Tus registros, claros y a tu alcance.')),
+      h('div',null,h('strong',null,'rodme ',h('em',null,'health'))),
       h('div',{className:'wix-home-footer-links'},
         h('button',{onClick:function(){sv('patients');}},'Pacientes'),
         h('button',{onClick:function(){sv('appointments');}},'Citas'),
