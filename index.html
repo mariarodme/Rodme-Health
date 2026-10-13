@@ -679,6 +679,14 @@ body{background:var(--bg)}
 .rh-google-error{padding:12px;border:1px solid var(--amber-border);border-radius:12px;background:var(--amber-bg);text-align:center}
 .rh-google-error p{font-size:.74rem;color:var(--text2);margin-bottom:9px}
 .rh-google-error button{font-size:.75rem;min-height:36px}
+/* Ayuda clara y discreta para identificar errores de Google */
+.rh-google-help-toggle{background:transparent;border:0;padding:8px;color:var(--accent);font-size:.75rem;font-weight:700;cursor:pointer;align-self:center}
+.rh-google-help-toggle:hover{text-decoration:underline}
+.rh-google-help{width:100%;margin-top:5px;padding:14px 16px;border:1px solid var(--border);background:var(--surface2);border-radius:13px;display:flex;flex-direction:column;gap:9px;font-size:.73rem;line-height:1.6;color:var(--text2)}
+.rh-google-help p{margin:0}
+.rh-google-help code{display:block;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:.76rem;padding:9px 11px;overflow-wrap:anywhere;user-select:all}
+.rh-google-help a{color:var(--accent);font-weight:800;text-decoration:underline;word-break:break-word}
+.rh-google-help-foot{font-size:.69rem}
 </style>
 </head>
 <body>
@@ -788,6 +796,7 @@ function AuthScreen(p){
   var googleButtonRef=useRef(null);
   var gs=useState('loading');var googleStatus=gs[0],setGoogleStatus=gs[1];
   var gr=useState(0);var googleRetry=gr[0],setGoogleRetry=gr[1];
+  var gh=useState(false);var showGoogleHelp=gh[0],setShowGoogleHelp=gh[1];
 
   // Google Identity Services necesita inicialización imperativa: las vistas React se montan después del script.
   function gCb(resp){
@@ -836,6 +845,8 @@ function AuthScreen(p){
               if(typeof window._rhGoogleReceiver==='function')window._rhGoogleReceiver(response);
             },
             auto_select:false,
+            button_auto_select:false,
+            use_fedcm_for_button:true,
             cancel_on_tap_outside:true
           });
           window._rhGoogleInitialized=true;
@@ -969,6 +980,16 @@ function AuthScreen(p){
           googleStatus==='unavailable'&&h('div',{className:'rh-google-error'},
             h('p',null,'No se pudo cargar el acceso de Google. Verifica tu conexión o los bloqueadores del navegador.'),
             h('button',{className:'btn btn-outline',onClick:function(){setGoogleRetry(function(n){return n+1;});}},'Reintentar')
+          ),
+          h('button',{className:'rh-google-help-toggle',onClick:function(){setShowGoogleHelp(!showGoogleHelp);},
+            'aria-expanded':showGoogleHelp},'¿Problemas para entrar con Google? ',showGoogleHelp?'−':'+'),
+          showGoogleHelp&&h('div',{className:'rh-google-help'},
+            h('p',null,'Si Google muestra “Error 400: origin_mismatch” o “The given origin is not allowed”, debes revisar el cliente OAuth de Rodme Health en Google Cloud.'),
+            h('p',null,'En “Orígenes de JavaScript autorizados” registra exactamente:'),
+            h('code',null,'https://mariarodme.github.io'),
+            h('p',null,'No incluyas /Rodme-Health/ en ese origen. Verifica también que el ID de cliente sea el mismo que se configuró en Google Cloud y que la aplicación permita usar tu cuenta.'),
+            h('a',{href:'https://console.cloud.google.com/auth/clients',target:'_blank',rel:'noopener noreferrer'},'Abrir configuración de Google Cloud ↗'),
+            h('p',{className:'rh-google-help-foot'},'Si aparece otro mensaje, revisa el texto exacto del error. No compartas contraseñas ni códigos de acceso.')
           )
         )
       ),
