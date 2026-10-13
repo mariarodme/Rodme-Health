@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Rodme Health</title>
+<title>Rodme Health · Tu salud organizada</title>
+<meta name="description" content="Organiza las citas, medicamentos y expedientes de salud familiar en un solo lugar."/>
+<meta name="theme-color" content="#f5f9f7"/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Lora:ital,wght@0,500;0,600;1,400&display=swap" rel="stylesheet"/>
 <style>
 :root{
@@ -259,6 +261,246 @@ textarea{resize:vertical;line-height:1.6}
 .cal-day.has-apt:not(.today){border-color:rgba(26,158,92,.3);background:var(--accent-bg)}
 .cal-dn{font-size:.63rem;font-weight:700;text-transform:uppercase;opacity:.7}
 .cal-dd{font-size:.9rem;font-weight:800}
+
+/* ───────────────────────────────────────────────────────────────
+   RODME HEALTH · Visual refresh 2026
+   Diseño responsivo sobre la aplicación existente (sin perder datos)
+   ─────────────────────────────────────────────────────────────── */
+:root{
+  --bg:#F4F8F7;--surface:#FFFFFF;--surface2:#EFF5F3;--border:#DEE9E6;
+  --text:#17332F;--text2:#586F6B;--text3:#778E89;
+  --accent:#087E73;--accent2:#33B7A1;--accent-bg:#E7F7F1;--accent-light:#F3FBF7;
+  --green:#15976C;--green-bg:#E8F8EF;--green-border:#C6EEDB;
+  --amber:#D98A20;--amber-bg:#FFF6E8;--amber-border:#F5DCB5;
+  --red:#DC5761;--red-bg:#FFF0F1;--red-border:#F8CDD1;
+  --purple:#7F67BD;--purple-bg:#F3EFFE;
+  --teal:#2589A5;--teal-bg:#EDF7FB;
+  --sidebar:258px;--r:12px;--r-lg:19px;--r-xl:28px;
+  --shadow:0 2px 8px rgba(10,46,38,.025),0 12px 34px rgba(10,46,38,.045);
+  --shadow-md:0 10px 30px rgba(9,52,44,.09);
+  --shadow-lg:0 22px 58px rgba(6,38,32,.13);
+  --shadow-xl:0 25px 75px rgba(5,40,35,.2);
+  --nav-h:76px;
+}
+[data-theme=dark]{
+  --bg:#101E1C;--surface:#192B28;--surface2:#233832;--border:#34504A;
+  --text:#EFFAF6;--text2:#B0C5BE;--text3:#92AAA2;
+  --accent:#68D8BE;--accent2:#34B59D;--accent-bg:#1B4137;--accent-light:#16342D;
+  --green-bg:#183E30;--green-border:#28664B;
+  --amber-bg:#3B2D1B;--amber-border:#654922;
+  --red-bg:#3A2328;--red-border:#674048;
+  --purple-bg:#302944;--teal-bg:#223944;
+  --shadow:0 6px 22px rgba(0,0,0,.13);
+  --shadow-md:0 10px 30px rgba(0,0,0,.2);
+}
+html{font-size:15px;scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);line-height:1.5}
+button,input,textarea,select{font:inherit}
+button{touch-action:manipulation}
+:focus-visible{outline:3px solid var(--accent2)!important;outline-offset:3px}
+input,textarea,select{min-height:44px;border-radius:12px}
+label{font-size:.7rem;letter-spacing:.045em;color:var(--text2)}
+.sidebar{
+  background:var(--surface);border-right:1px solid var(--border);
+  box-shadow:5px 0 35px rgba(14,66,54,.025);
+}
+.sidebar-logo{padding:28px 22px 24px;border-bottom:1px solid var(--border)}
+.logo-mark{background:linear-gradient(135deg,#087E73,#28C6A8);border-radius:12px;box-shadow:0 6px 15px rgba(8,126,115,.22)}
+.sidebar-nav{padding:24px 13px;gap:6px}
+.nav-item{padding:11px 12px;min-height:50px;border-radius:13px;font-size:.865rem;color:var(--text2)}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--accent-bg);color:var(--accent);font-weight:800}
+.nav-item.active .nav-ico{background:var(--accent);box-shadow:0 5px 13px rgba(8,126,115,.23)}
+.nav-ico{width:32px;height:32px;border-radius:10px}
+.nav-item.active::after{content:' ';height:6px;width:6px;margin-left:auto;border-radius:100%;background:var(--accent)}
+.nav-badge{margin-left:auto}
+.sidebar-user{padding:15px 13px 22px;background:linear-gradient(180deg,transparent,var(--accent-light))}
+.user-row{padding:11px 9px;border-radius:13px}
+.main-content{min-width:0}
+.top-bar{
+  padding:0 clamp(22px,3vw,46px);background:var(--surface);
+  border-bottom:1px solid var(--border);box-shadow:0 2px 15px rgba(15,59,47,.025);
+}
+.top-bar>p{font-family:var(--font)!important;font-size:1.02rem!important;font-weight:800!important}
+.page-content{max-width:1320px;padding:30px clamp(22px,3vw,46px) 60px;margin:0 auto}
+.card,.card-flat,.stat-card,.pt-card,.apt-row,.med-card{
+  border:1px solid var(--border);box-shadow:var(--shadow);
+}
+.card,.card-flat{border-radius:var(--r-lg)}
+.card:hover,.pt-card:hover,.apt-row:hover,.med-card:hover{box-shadow:var(--shadow-md)}
+.pt-card,.apt-row,.med-card{border-radius:15px}
+.pt-card,.apt-row{padding:16px 18px}
+.btn{min-height:42px}
+.btn-primary{background:linear-gradient(135deg,#0C8479,#0F9D8A);border-radius:12px;box-shadow:0 6px 16px rgba(8,126,115,.17)}
+.btn-primary:hover{background:linear-gradient(135deg,#076D63,#0C8A78);box-shadow:0 8px 23px rgba(8,126,115,.23)}
+.btn-outline{border-color:var(--border);background:var(--surface)}
+.btn-outline:hover{border-color:var(--accent);background:var(--accent-bg)}
+.btn-icon{min-width:40px;min-height:40px}
+.av{background:linear-gradient(140deg,#188F86,#5BCEB3)}
+.ph{margin-bottom:24px}
+.ph-sub{font-size:.69rem;color:var(--accent);margin-bottom:8px}
+.ph-title{font-family:var(--font);font-size:clamp(1.6rem,2.7vw,2.15rem);font-weight:800;letter-spacing:-.045em;line-height:1.15}
+.sec-hdr{margin-bottom:13px;gap:10px}
+.sec-title{font-family:var(--font);font-size:1.06rem;font-weight:800;letter-spacing:-.03em}
+.sheet-title{font-family:var(--font);font-weight:800;font-size:1.35rem;letter-spacing:-.035em}
+.sheet{box-shadow:var(--shadow-xl)}
+.chip{padding:4px 10px;font-size:.68rem}
+.chip-accent{border-color:var(--border)}
+.tab-group{padding:5px;border-radius:13px}
+.tab-btn{border-radius:10px;min-height:38px}
+.stats-row{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:0 0 24px}
+.stat-card{padding:20px 19px 18px;min-height:128px;border-radius:19px;position:relative;overflow:hidden}
+.stat-card::after{content:'';position:absolute;right:-18px;bottom:-28px;width:90px;height:90px;border-radius:50%;background:var(--accent-bg);opacity:.55;pointer-events:none}
+.stat-ico{width:40px;height:40px;border-radius:12px;margin-bottom:13px}
+.stat-num{font-family:var(--font);font-weight:800;font-size:1.85rem;letter-spacing:-.055em;margin-bottom:7px}
+.stat-lbl{font-size:.7rem;letter-spacing:.035em;color:var(--text2)}
+.health-hero{
+  display:grid;grid-template-columns:minmax(0,1.15fr) minmax(280px,.85fr);
+  grid-template-rows:auto 1fr auto;align-items:center;
+  gap:16px 38px;min-height:304px;
+  padding:34px clamp(25px,3.2vw,42px);margin-bottom:22px;
+  border-radius:26px;isolation:isolate;
+  background:radial-gradient(circle at 85% 0%,rgba(93,224,183,.35),transparent 37%),
+             linear-gradient(120deg,#0C514C,#116B60 65%,#238D76);
+  box-shadow:0 20px 46px rgba(8,98,78,.16);
+}
+[data-theme=dark] .health-hero{
+  background:radial-gradient(circle at 85% 0%,rgba(93,224,183,.18),transparent 38%),
+             linear-gradient(120deg,#133D36,#19574A 70%,#1B6659);
+}
+.health-hero::after{content:'';position:absolute;width:310px;height:310px;border:1px solid rgba(255,255,255,.09);border-radius:50%;right:-116px;top:-150px;z-index:0;pointer-events:none}
+.health-hero>*{position:relative;z-index:1;min-width:0}
+.health-hero>div:first-child{grid-column:1;grid-row:1;margin-bottom:0!important}
+.health-hero>div:first-child p{color:#F2FCFA!important;font-size:.85rem!important}
+.health-hero .av{border:2px solid rgba(255,255,255,.45)}
+.health-hero h1{
+  grid-column:1;grid-row:2;font-family:var(--font)!important;
+  font-size:clamp(1.9rem,3.2vw,3.3rem)!important;font-weight:800!important;
+  letter-spacing:-.06em;line-height:1.12!important;color:#fff!important;
+  max-width:540px;margin:0!important;white-space:pre-line;
+}
+.hero-actions{grid-column:1;grid-row:3;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.hero-cta{background:white;color:#0C6257;padding:12px 17px;border-radius:12px;box-shadow:0 5px 16px rgba(0,0,0,.1)}
+.hero-cta:hover{background:#EEFCF7}
+.hero-kicker{font-size:.74rem;color:rgba(255,255,255,.76);font-weight:600}
+.health-hero .vitals-grid{grid-column:2;grid-row:1 / 4;margin:0;gap:13px;align-self:stretch;align-content:center}
+.vital-card{
+  min-width:0;min-height:173px;background:rgba(255,255,255,.96);
+  border:1px solid rgba(255,255,255,.55);border-radius:18px;
+  padding:20px 15px 17px;box-shadow:0 9px 25px rgba(3,51,40,.12);
+  display:flex;flex-direction:column;justify-content:space-between;gap:9px;
+}
+.vital-card p{overflow-wrap:anywhere}
+.vital-card>p:nth-child(2){font-family:var(--font)!important;font-size:clamp(1.25rem,2vw,1.7rem)!important;font-weight:800!important;letter-spacing:-.045em}
+.vital-hint{font-size:.65rem;line-height:1.4;font-weight:600;color:#6F8780}
+[data-theme=dark] .vital-card{background:var(--surface);border-color:var(--border)}
+[data-theme=dark] .vital-hint{color:var(--text2)}
+.quick-section{margin-bottom:25px}
+.quick-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.quick-action{
+  display:flex;align-items:center;gap:12px;width:100%;min-width:0;
+  min-height:100px;padding:17px;border:1px solid var(--border);border-radius:17px;
+  background:var(--surface);text-align:left;color:var(--text);cursor:pointer;
+  box-shadow:var(--shadow);transition:transform .2s var(--ease),box-shadow .2s,border-color .2s;
+}
+.quick-action:hover{transform:translateY(-3px);border-color:var(--accent2);box-shadow:var(--shadow-md)}
+.quick-action:active{transform:translateY(0)}
+.quick-action-icon{width:46px;height:46px;display:grid;place-items:center;flex-shrink:0;border-radius:14px;background:var(--accent-bg);color:var(--accent)}
+.action-med .quick-action-icon{background:var(--purple-bg);color:var(--purple)}
+.action-patient .quick-action-icon{background:var(--teal-bg);color:var(--teal)}
+.quick-action-copy{display:flex;flex-direction:column;flex:1;min-width:0;gap:3px}
+.quick-action-copy strong{font-size:.85rem;letter-spacing:-.015em}
+.quick-action-copy small{font-size:.69rem;color:var(--text2);line-height:1.35}
+.quick-action-arrow{color:var(--text3);font-size:1.2rem;align-self:flex-start}
+.med-item{padding:17px 19px;min-height:75px;gap:14px}
+.med-dot{height:12px;width:12px;background:var(--accent);box-shadow:0 0 0 5px var(--accent-bg)}
+.med-chevron{font-size:1.6rem;line-height:1;color:var(--text3)}
+.apt-avatar{border-radius:12px;background:var(--accent-bg)}
+.apt-row{margin-bottom:10px}
+.auth-wrap{background:var(--bg)}
+.auth-left{
+  background:radial-gradient(circle at 12% 6%,rgba(112,237,193,.23),transparent 36%),
+             linear-gradient(145deg,#0A5049 0%,#11695E 60%,#278D78 100%);
+  padding:clamp(40px,6vw,86px);isolation:isolate;
+}
+.auth-left::before{background:none}
+.auth-left::after{content:'';position:absolute;width:460px;height:460px;right:-180px;bottom:-260px;border:1px solid rgba(255,255,255,.19);border-radius:50%;pointer-events:none}
+.auth-left>*{position:relative;z-index:1;max-width:630px}
+.auth-left h2{font-family:var(--font);font-size:clamp(2.5rem,4.2vw,4.4rem);font-weight:800;letter-spacing:-.06em;white-space:pre-line;line-height:1.13}
+.auth-left p{font-size:1rem;max-width:460px;color:rgba(255,255,255,.85)}
+.auth-feats{gap:18px;margin-top:39px}
+.auth-feat-ico{width:41px;height:41px;border-radius:13px;background:rgba(255,255,255,.15)}
+.auth-right{
+  width:min(490px,44vw);min-width:395px;
+  padding:50px clamp(30px,3.3vw,54px);background:var(--surface);
+  box-shadow:-12px 0 38px rgba(4,45,39,.04);
+}
+.auth-tabs{border-bottom-color:var(--border);margin-bottom:26px}
+.auth-tab{padding:12px 17px}
+.auth-right .btn-primary{min-height:47px}
+.auth-right input{min-height:47px}
+.notif-bar{background:#126F63}
+@media(max-width:1050px){
+  .health-hero{gap:20px;padding:28px}
+  .health-hero .vitals-grid{grid-template-columns:1fr 1fr}
+  .vital-card{padding:15px 11px;min-height:155px}
+  .quick-action{padding:13px;gap:9px}
+}
+@media(max-width:900px){
+  .health-hero{grid-template-columns:1fr;grid-template-rows:auto auto auto auto;gap:18px}
+  .health-hero>div:first-child{grid-column:1;grid-row:1}
+  .health-hero h1{grid-column:1;grid-row:2;max-width:620px}
+  .health-hero .vitals-grid{grid-column:1;grid-row:3}
+  .hero-actions{grid-column:1;grid-row:4}
+  .stats-row{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .quick-grid{gap:10px}
+  .quick-action{min-height:97px}
+}
+@media(max-width:768px){
+  :root{--nav-h:65px}
+  .page-content{padding:20px 16px 108px}
+  .mobile-header{height:65px;padding:0 18px;background:var(--surface);box-shadow:0 2px 15px rgba(0,0,0,.025)}
+  .sidebar{width:min(300px,86vw)}
+  .sidebar-logo{padding-top:31px}
+  .bottom-nav{
+    background:rgba(255,255,255,.96);padding:8px 5px calc(8px + env(safe-area-inset-bottom,0px));
+    box-shadow:0 -9px 33px rgba(15,66,54,.075);border-radius:18px 18px 0 0;
+  }
+  [data-theme=dark] .bottom-nav{background:rgba(25,43,40,.96)}
+  .bn-btn{min-height:51px;justify-content:center;gap:4px;border-radius:12px}
+  .bn-btn.active{background:var(--accent-bg)}
+  .bn-lbl{font-size:.64rem}
+  .health-hero{padding:25px 21px;border-radius:22px}
+  .health-hero h1{font-size:clamp(1.8rem,7vw,2.6rem)!important}
+  .vital-card{min-height:138px}
+  .auth-wrap{min-height:100dvh;align-items:center;justify-content:center;padding:18px;background:linear-gradient(160deg,var(--accent-bg),var(--bg) 42%,var(--bg))}
+  .auth-right{width:min(100%,460px);min-width:0;padding:31px 25px;border:1px solid var(--border);border-radius:24px;box-shadow:var(--shadow-md)}
+}
+@media(max-width:620px){
+  .quick-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .quick-action{min-height:115px;align-items:flex-start;flex-direction:column;gap:8px}
+  .quick-action-icon{height:37px;width:37px;border-radius:11px}
+  .quick-action-arrow{display:none}
+  .quick-action:last-child{grid-column:1 / -1;min-height:79px;flex-direction:row;align-items:center}
+  .stats-row{gap:10px;margin-bottom:22px}
+  .stat-card{min-height:113px;padding:16px}
+  .stat-num{font-size:1.65rem}
+  .stat-ico{width:34px;height:34px;margin-bottom:9px}
+}
+@media(max-width:380px){
+  .page-content{padding-left:12px;padding-right:12px}
+  .health-hero{padding:21px 16px}
+  .vitals-grid{gap:8px}
+  .vital-card{padding:12px 10px}
+  .vital-card>div:first-child p{font-size:.56rem!important}
+  .bn-lbl{font-size:.56rem}
+  .auth-wrap{padding:8px}
+  .auth-right{padding:25px 17px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}
+}
+
 </style>
 </head>
 <body>
@@ -431,7 +673,7 @@ function AuthScreen(p){
       h('h2',null,'Manten el control\nde la salud de tu familia'),
       h('p',null,'Citas, medicamentos y expedientes medicos en un solo lugar, siempre al alcance.'),
       h('div',{className:'auth-feats'},
-        [{ico:'calendar',t:'Citas medicas',d:'Agenda y recordatorios'},{ico:'pill',t:'Medicamentos',d:'Registro de tratamientos'},{ico:'file',t:'Expediente digital',d:'Historial medico completo'},{ico:'shield',t:'Privado y seguro',d:'Tus datos son solo tuyos'}].map(function(f){
+        [{ico:'calendar',t:'Citas medicas',d:'Agenda y recordatorios'},{ico:'pill',t:'Medicamentos',d:'Registro de tratamientos'},{ico:'file',t:'Expediente digital',d:'Historial medico completo'},{ico:'shield',t:'Datos en este dispositivo',d:'Esta versión utiliza almacenamiento local'}].map(function(f){
           return h('div',{key:f.t,className:'auth-feat'},h('div',{className:'auth-feat-ico'},h(Ic,{n:f.ico,s:15,c:'white'})),h('div',null,h('div',{style:{fontWeight:700}},f.t),h('div',{style:{fontSize:'.75rem',opacity:.65,marginTop:1}},f.d)));
         })
       )
@@ -464,10 +706,10 @@ function AuthScreen(p){
         h('div',null,h('label',null,'Usuario'),h('div',{className:'inp-wrap'},h('span',{className:'inp-ico',style:{fontWeight:800,fontSize:'.82rem'}},'@'),h('input',{style:iSt,value:lf.username,onChange:upd(slf,'username'),placeholder:'mariarodriguez'}))),
         h('div',null,h('label',null,'Correo electronico'),h('div',{className:'inp-wrap'},h('span',{className:'inp-ico'},h(Ic,{n:'mail',s:15,c:'var(--text3)'})),h('input',{style:iSt,type:'email',value:lf.email,onChange:upd(slf,'email'),placeholder:'correo@ejemplo.com'}))),
         h('div',null,h('label',null,'Contrasena'),h('div',{className:'inp-wrap'},h('span',{className:'inp-ico'},h(Ic,{n:'key',s:15,c:'var(--text3)'})),h('input',{style:iSt,type:showP2?'text':'password',value:lf.password,onChange:upd(slf,'password'),placeholder:'Min. 6 caracteres'}),h('button',{className:'inp-act',onClick:function(){sSP2(!showP2);}},h(Ic,{n:showP2?'eyeoff':'eye',s:14,c:'var(--text3)'})))),
-        h('p',{style:{fontSize:'.7rem',color:'var(--text3)',lineHeight:1.5}},'Tus datos de salud son privados y confidenciales.'),
+        h('p',{style:{fontSize:'.7rem',color:'var(--text3)',lineHeight:1.5}},'Esta versión guarda la información en este navegador. No ingreses datos médicos sensibles.'),
         h('button',{className:'btn btn-primary btn-full',style:{borderRadius:'var(--r-full)',padding:'13px',fontSize:'.9rem'},onClick:doRegister},h(Ic,{n:'check',s:15,c:'white'}),'Crear cuenta')
       ),
-      h('p',{style:{textAlign:'center',fontSize:'.65rem',color:'var(--text3)',marginTop:20,letterSpacing:'.04em'}},'RODME HEALTH \u00b7 USO PRIVADO Y CONFIDENCIAL')
+      h('p',{style:{textAlign:'center',fontSize:'.65rem',color:'var(--text3)',marginTop:20,letterSpacing:'.04em'}},'RODME HEALTH \u00b7 DATOS GUARDADOS EN ESTE NAVEGADOR')
     ),
 
     // Reset modal
@@ -506,7 +748,7 @@ function HomeView(p){
   var name=(prefs.ownerName||'').split(' ')[0]||(user&&user.startsWith('g:')?user.slice(2).split('@')[0]:user&&user.startsWith('u:')?user.slice(2):'');
   var today=new Date();
   var pending=store.appointments.filter(function(a){return !a.attended;});
-  var upcoming=pending.sort(function(a,b){return new Date(a.date)-new Date(b.date);}).slice(0,4);
+  var upcoming=pending.filter(function(a){var days=du(a.date);return days!==null&&days>=0;}).sort(function(a,b){return new Date(a.date)-new Date(b.date);}).slice(0,4);
   var todayMeds=store.medications.slice(0,5);
   var gp=function(id){return store.patients.find(function(x){return x.id===id;})||null;};
   var hrPts='M0,30 C10,30 15,5 25,5 C35,5 35,50 45,50 C55,50 55,20 65,20 C75,20 80,35 90,35 C100,35 105,10 115,10 C125,10 125,45 135,45 C145,45 150,25 160,25';
@@ -526,9 +768,13 @@ function HomeView(p){
         )
       ),
       h('h1',{style:{fontFamily:'var(--serif)',fontSize:'1.7rem',fontWeight:600,color:'var(--text)',lineHeight:1.22,marginBottom:16}},
-        'Mant\u00e9n el control\nde tu salud hoy.'
+        'Tu salud, organizada\ny siempre a mano.'
       ),
-      // Vitals (Heart Rate + Blood Pressure como en la imagen)
+      h('div',{className:'hero-actions'},
+        h('button',{className:'btn hero-cta',onClick:function(){sv('record');}},h(Ic,{n:'file',s:16,c:'currentColor'}),'Ver mi expediente'),
+        h('span',{className:'hero-kicker'},'Simple, claro y a tu ritmo')
+      ),
+      // Valores registrados por el usuario: nunca mostrar signos vitales inventados
       h('div',{className:'vitals-grid'},
         // Card Frecuencia Cardiaca
         h('div',{className:'vital-card'},
@@ -537,11 +783,9 @@ function HomeView(p){
             h('div',{style:{width:22,height:22,borderRadius:7,background:'#FFE8E8',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12}},'\u2764\uFE0F')
           ),
           h('p',{style:{fontFamily:'var(--serif)',fontSize:'1.3rem',fontWeight:600,color:'var(--text)',lineHeight:1,marginBottom:5}},
-            (rec.heartRate||'72'),h('span',{style:{fontSize:'.68rem',color:'var(--text3)',fontWeight:400,marginLeft:2}},'bpm')
+            (rec.heartRate||'—'),h('span',{style:{fontSize:'.68rem',color:'var(--text3)',fontWeight:400,marginLeft:2}},'bpm')
           ),
-          h('svg',{width:'100%',height:26,viewBox:'0 0 160 50',preserveAspectRatio:'none'},
-            h('path',{d:hrPts,fill:'none',stroke:'#EF4444',strokeWidth:2.5,strokeLinecap:'round',strokeLinejoin:'round'})
-          )
+          h('p',{className:'vital-hint'},rec.heartRate?'Último valor registrado':'Dato aún no registrado')
         ),
         // Card Presion Arterial
         h('div',{className:'vital-card'},
@@ -549,31 +793,49 @@ function HomeView(p){
             h('p',{style:{fontSize:'.63rem',fontWeight:700,color:'var(--text3)',textTransform:'uppercase',letterSpacing:'.04em'}},'Presi\u00f3n Art.'),
             h('div',{style:{width:22,height:22,borderRadius:7,background:'#FFFBEB',display:'flex',alignItems:'center',justifyContent:'center',fontSize:12}},'\uD83D\uDFE1')
           ),
-          h('p',{style:{fontFamily:'var(--serif)',fontSize:'1.3rem',fontWeight:600,color:'var(--text)',lineHeight:1,marginBottom:5}},rec.bloodPressure||'120/80'),
-          h('svg',{width:'100%',height:26,viewBox:'0 0 116 40',preserveAspectRatio:'none'},
-            bpBars.map(function(v,i){return h('rect',{key:i,x:i*13,y:40-v*0.52,width:9,height:v*0.52,rx:2,fill:'#F59E0B',opacity:.6+i*.04});})
-          )
+          h('p',{style:{fontFamily:'var(--serif)',fontSize:'1.3rem',fontWeight:600,color:'var(--text)',lineHeight:1,marginBottom:5}},rec.bloodPressure||'—'),
+          h('p',{className:'vital-hint'},rec.bloodPressure?'Último valor registrado':'Dato aún no registrado')
         )
       )
     ),
 
-    // ── QUICK ACTIONS (replica imagen: 2 botones outline) ──
-    h('div',{style:{marginBottom:14}},
-      h('p',{style:{fontFamily:'var(--serif)',fontSize:'1rem',fontWeight:600,marginBottom:10}},'Acciones R\u00e1pidas'),
-      h('div',{style:{display:'flex',gap:10}},
-        h('button',{className:'btn btn-outline',style:{flex:1,borderRadius:'var(--r-full)',padding:'11px 12px',fontSize:'.82rem',gap:7,justifyContent:'center'},onClick:function(){sm('add-med');}},
-          h('span',{style:{fontSize:14}},'\uD83D\uDC8A'),'Agregar med.'
-        ),
-        h('button',{className:'btn btn-outline',style:{flex:1,borderRadius:'var(--r-full)',padding:'11px 12px',fontSize:'.82rem',gap:7,justifyContent:'center'},onClick:function(){sm('add-apt');}},
-          h('span',{style:{fontSize:14}},'\uD83D\uDCC5'),'Agendar cita'
-        )
+    // ── RESUMEN ──
+    h('div',null,
+      h('p',{className:'sec-title',style:{marginBottom:10}},'Resumen'),
+      h('div',{className:'stats-row',style:{marginBottom:0}},
+        [{l:'Pacientes',v:store.patients.length,c:'var(--accent)',bg:'var(--accent-bg)',ico:'user'},
+         {l:'Pendientes',v:pending.length,c:'var(--amber)',bg:'var(--amber-bg)',ico:'clock'},
+         {l:'Asistidas',v:store.appointments.filter(function(a){return a.attended;}).length,c:'var(--green)',bg:'var(--green-bg)',ico:'check'},
+         {l:'Medicamentos',v:store.medications.length,c:'var(--purple)',bg:'var(--purple-bg)',ico:'pill'}
+        ].map(function(s){
+          return h('div',{key:s.l,className:'stat-card su'},
+            h('div',{className:'stat-ico',style:{background:s.bg}},h(Ic,{n:s.ico,s:16,c:s.c})),
+            h('div',{className:'stat-num',style:{color:s.c,fontSize:'1.5rem'}},s.v),
+            h('div',{className:'stat-lbl'},s.l)
+          );
+        })
+      )
+    ),
+
+    // ── ACCIONES PRINCIPALES ──
+    h('section',{className:'quick-section'},
+      h('div',{className:'sec-hdr'},h('h2',{className:'sec-title'},'Acciones rápidas')),
+      h('div',{className:'quick-grid'},
+        [{label:'Agendar cita',hint:'Organiza tu próxima visita',ico:'calendar',modal:'add-apt',tone:'action-calendar'},
+         {label:'Agregar medicamento',hint:'Registra un tratamiento',ico:'pill',modal:'add-med',tone:'action-med'},
+         {label:'Nuevo paciente',hint:'Incluye a un familiar',ico:'user',modal:'add-patient',tone:'action-patient'}]
+         .map(function(item){return h('button',{key:item.modal,className:'quick-action '+item.tone,onClick:function(){sm(item.modal);}},
+           h('span',{className:'quick-action-icon'},h(Ic,{n:item.ico,s:20,c:'currentColor'})),
+           h('span',{className:'quick-action-copy'},h('strong',null,item.label),h('small',null,item.hint)),
+           h('span',{className:'quick-action-arrow','aria-hidden':'true'},'↗')
+         );})
       )
     ),
 
     // ── TODAY'S MEDICATION (replica exacta de imagen) ──
     h('div',{style:{marginBottom:14}},
       h('div',{className:'sec-hdr'},
-        h('p',{className:'sec-title'},'Medicamento de Hoy'),
+        h('p',{className:'sec-title'},'Medicamentos registrados'),
         h('button',{className:'btn btn-ghost',style:{padding:'4px 10px',fontSize:'.75rem',color:'var(--accent)',fontWeight:700},onClick:function(){sv('medications');}},'Gestionar')
       ),
       todayMeds.length===0
@@ -588,9 +850,7 @@ function HomeView(p){
                   h('p',{style:{fontWeight:700,fontSize:'.875rem',marginBottom:1}},med.name),
                   h('p',{style:{fontSize:'.72rem',color:'var(--text3)'}},(med.dosage||'')+(med.frequency?' \u00b7 '+med.frequency:''))
                 ),
-                i===0
-                  ?h('div',{style:{width:26,height:26,borderRadius:8,background:'var(--accent)',display:'flex',alignItems:'center',justifyContent:'center'}},h(Ic,{n:'check',s:14,c:'white'}))
-                  :h('div',{style:{width:26,height:26,borderRadius:'50%',border:'2px solid var(--border)',flexShrink:0}})
+                h('span',{className:'med-chevron','aria-hidden':'true'},'›')
               );
             })
           )
@@ -622,23 +882,7 @@ function HomeView(p){
           })
     ),
 
-    // ── RESUMEN ──
-    h('div',null,
-      h('p',{className:'sec-title',style:{marginBottom:10}},'Resumen'),
-      h('div',{className:'stats-row',style:{marginBottom:0}},
-        [{l:'Pacientes',v:store.patients.length,c:'var(--accent)',bg:'var(--accent-bg)',ico:'user'},
-         {l:'Pendientes',v:pending.length,c:'var(--amber)',bg:'var(--amber-bg)',ico:'clock'},
-         {l:'Asistidas',v:store.appointments.filter(function(a){return a.attended;}).length,c:'var(--green)',bg:'var(--green-bg)',ico:'check'},
-         {l:'Medicamentos',v:store.medications.length,c:'var(--purple)',bg:'var(--purple-bg)',ico:'pill'}
-        ].map(function(s){
-          return h('div',{key:s.l,className:'stat-card su'},
-            h('div',{className:'stat-ico',style:{background:s.bg}},h(Ic,{n:s.ico,s:16,c:s.c})),
-            h('div',{className:'stat-num',style:{color:s.c,fontSize:'1.5rem'}},s.v),
-            h('div',{className:'stat-lbl'},s.l)
-          );
-        })
-      )
-    )
+
   );
 }
 
