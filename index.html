@@ -1117,6 +1117,21 @@ body{background:var(--bg);color:var(--text)}
 .rh-backup-message{font-size:.79rem;line-height:1.6;font-weight:700;color:var(--text)}
 .rh-backup-foot{font-size:.7rem}
 @media(max-width:770px){.rh-backup-panel{padding:18px}.rh-backup-main{width:100%}}
+
+/* Acceso rápido móvil sin saturar la barra de navegación */
+.rh-quick-add{display:none}
+@media(max-width:768px){
+ .rh-quick-add{display:flex;position:fixed;right:17px;bottom:calc(83px + env(safe-area-inset-bottom,0px));flex-direction:column;align-items:flex-end;gap:9px;z-index:150}
+ .rh-quick-toggle{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:49px;padding:10px 17px;border:0;border-radius:99px;background:#303F34;color:#fff;box-shadow:0 6px 23px rgba(26,45,32,.3);font-weight:800;font-size:.78rem;cursor:pointer}
+ .rh-quick-toggle svg{flex-shrink:0}
+ .rh-quick-menu{display:flex;flex-direction:column;gap:5px;min-width:207px;padding:9px;background:var(--surface);border:1px solid var(--border);border-radius:15px;box-shadow:0 11px 37px rgba(24,35,24,.2)}
+ .rh-quick-menu button{display:flex;align-items:center;gap:11px;background:transparent;border:0;border-radius:10px;padding:13px 10px;cursor:pointer;text-align:left;font-size:.79rem;color:var(--text);font-weight:750}
+ .rh-quick-menu button:hover,.rh-quick-menu button:focus-visible{background:var(--surface2)}
+ .wix-hero{min-height:480px}
+ .wix-hero-body{padding-top:80px}
+}
+@media(max-width:430px){.wix-hero{min-height:440px}}
+@media(min-width:769px){.wix-hero{min-height:clamp(420px,55vh,570px)}}
 </style>
 </head>
 <body>
@@ -1233,41 +1248,9 @@ function HomeView(p){
         h('h1',null,'Rodme',h('br'),'Health'),
         h('div',{className:'wix-hero-buttons'},
           h('button',{className:'wix-button wix-button-dark',onClick:function(){sm('add-apt');}},'Agendar una cita',h('span',{'aria-hidden':'true'},'↗')),
-          h('button',{className:'wix-button wix-button-outline',onClick:function(){sv('record');}},'Ver mi expediente')
+          h('button',{className:'wix-button wix-button-outline',onClick:function(){sv('appointments');}},'Ver calendario')
         )
       ),
-    ),
-    h('section',{className:'wix-service-section','aria-label':'Servicios y accesos'},
-      h('div',{className:'wix-section-heading'},
-        h('div',null,
-          h('h2',null,'Accesos')
-        ),
-      ),
-      h('div',{className:'wix-services'},
-        [
-          {n:'calendar',id:'appointments',title:'Citas médicas',action:'Ver mis citas',tone:'sand'},
-          {n:'pill',id:'medications',title:'Medicamentos',action:'Ver tratamientos',tone:'sage'},
-          {n:'user',id:'patients',title:'Mi familia',action:'Ver familiares',tone:'rose'}
-        ].map(function(item){
-          return h('button',{key:item.id,className:'wix-service-card '+item.tone,onClick:function(){sv(item.id);}},
-            h('div',{className:'wix-service-card-top'},h(Ic,{n:item.n,s:31,c:'currentColor'})),
-            h('div',{className:'wix-service-card-content'},h('h3',null,item.title)),
-            h('div',{className:'wix-service-card-bottom'},h('span',{'aria-hidden':'true'},'Abrir ↗'))
-          );
-        })
-      )
-    ),
-    h('section',{className:'wix-stat-band','aria-label':'Tu resumen personal'},
-      h('div',{className:'wix-stat-intro'},
-        h('h2',null,'Resumen')
-      ),
-      h('div',{className:'wix-stat-grid'},
-        stats.map(function(x){return h('button',{key:x.title,className:'wix-stat-item',onClick:function(){sv(x.target);}},
-          h('span',{className:'wix-stat-item-top'},h(Ic,{n:x.n,s:18,c:'currentColor'}),' ↗'),
-          h('strong',null,x.count),
-          h('span',null,x.title)
-        );})
-      )
     ),
     h('section',{className:'wix-agenda-section'},
       h('div',{className:'wix-section-heading'},
@@ -1312,6 +1295,38 @@ function HomeView(p){
               h('button',{onClick:function(){sm('add-med');}},'Agregar medicamento ↗')
             )
         )
+      )
+    ),
+    h('section',{className:'wix-service-section','aria-label':'Servicios y accesos'},
+      h('div',{className:'wix-section-heading'},
+        h('div',null,
+          h('h2',null,'Accesos')
+        ),
+      ),
+      h('div',{className:'wix-services'},
+        [
+          {n:'calendar',id:'appointments',title:'Citas médicas',action:'Ver mis citas',tone:'sand'},
+          {n:'pill',id:'medications',title:'Medicamentos',action:'Ver tratamientos',tone:'sage'},
+          {n:'user',id:'patients',title:'Mi familia',action:'Ver familiares',tone:'rose'}
+        ].map(function(item){
+          return h('button',{key:item.id,className:'wix-service-card '+item.tone,onClick:function(){sv(item.id);}},
+            h('div',{className:'wix-service-card-top'},h(Ic,{n:item.n,s:31,c:'currentColor'})),
+            h('div',{className:'wix-service-card-content'},h('h3',null,item.title)),
+            h('div',{className:'wix-service-card-bottom'},h('span',{'aria-hidden':'true'},'Abrir ↗'))
+          );
+        })
+      )
+    ),
+    h('section',{className:'wix-stat-band','aria-label':'Tu resumen personal'},
+      h('div',{className:'wix-stat-intro'},
+        h('h2',null,'Resumen')
+      ),
+      h('div',{className:'wix-stat-grid'},
+        stats.map(function(x){return h('button',{key:x.title,className:'wix-stat-item',onClick:function(){sv(x.target);}},
+          h('span',{className:'wix-stat-item-top'},h(Ic,{n:x.n,s:18,c:'currentColor'}),' ↗'),
+          h('strong',null,x.count),
+          h('span',null,x.title)
+        );})
       )
     ),
     h('section',{className:'wix-health-note'},
@@ -1507,7 +1522,7 @@ function ApptsView(p){
       h('div',{className:'rh-calendar-toolbar-actions'},
         h('button',{className:'rh-mini-btn',onClick:function(){rhExportCalendar(all.filter(function(a){return !a.attended;}),p.store.patients);},
           disabled:!all.some(function(a){return !a.attended;})},h(Ic,{n:'calendar',s:15,c:'currentColor'}),' Exportar .ics'),
-        h('button',{className:'rh-mini-btn rh-mini-primary',onClick:function(){p.sm('add-apt');}},h(Ic,{n:'plus',s:15,c:'currentColor'}),' Nueva cita')
+        h('button',{className:'rh-mini-btn rh-mini-primary',onClick:function(){if(p.setDraftDate)p.setDraftDate('');p.sm('add-apt');}},h(Ic,{n:'plus',s:15,c:'currentColor'}),' Nueva cita')
       )
     ),
     h('div',{className:'rh-calendar-mode',role:'group','aria-label':'Vista de citas'},
@@ -1554,7 +1569,7 @@ function LegacyApptsList(p){
   var qs=useState('');var q=qs[0],sq=qs[1];
   var filtered=store.appointments.filter(function(a){return tab==='pending'?!a.attended:a.attended;}).sort(function(a,b){return tab==='pending'?new Date(a.date)-new Date(b.date):new Date(b.date)-new Date(a.date);});
   var gp=function(id){return store.patients.find(function(x){return x.id===id;})||null;};
-  var shown=filtered.filter(function(a){if(!q)return true;var pt=gp(a.patientId);return a.doctor.toLowerCase().includes(q.toLowerCase())||(pt&&pt.name.toLowerCase().includes(q.toLowerCase()));});
+  var shown=filtered.filter(function(a){if(!q)return true;var pt=gp(a.patientId);return [a.doctor,a.reason,a.specialty,a.clinic,pt&&pt.name].some(function(t){return String(t||'').toLowerCase().includes(q.toLowerCase());});});
   return h('div',null,
     h('div',{className:'ph'},
       h('div',{style:{display:'flex',justifyContent:'space-between',alignItems:'flex-end',marginBottom:12}},
@@ -2155,6 +2170,7 @@ function App(){
   var ts=useState('pending');var tab=ts[0],stab=ts[1];
   var sbo=useState(false);var sideOpen=sbo[0],setSideOpen=sbo[1];
   var nbs=useState(true);var showNb=nbs[0],sNb=nbs[1];
+  var quickState=useState(false),quickOpen=quickState[0],setQuickOpen=quickState[1];
   var notifs=store.appointments.filter(function(a){var d=du(a.date);return d!==null&&d>=0&&d<=7&&!a.attended;});
 
 
@@ -2216,7 +2232,7 @@ function App(){
   var uEmail=prefs.email||'';
 
   function NavBtn(q){
-    var it=q.item,active=view===it.id,dot=it.id==='appointments'&&notifs.length>0;
+    var it=q.item,active=view===it.id||(view==='patient'&&it.id==='patients'),dot=it.id==='appointments'&&notifs.length>0;
     return h('button',{className:'nav-item'+(active?' active':''),onClick:function(){sv(it.id);setSideOpen(false);}},
       h('div',{className:'nav-ico'},h(Ic,{n:it.n,s:17,c:active?'white':'var(--text2)'})),
       h('span',null,it.l),
@@ -2265,7 +2281,7 @@ function App(){
           h('span',null,h('strong',null,'rodme',h('em',null,'health')),h('small',null,'SALUD FAMILIAR'))
         ),
         h('nav',{className:'rh-nav-links','aria-label':'Secciones'},
-          navItems.map(function(it){return h('button',{key:it.id,className:'rh-nav-link'+(view===it.id?' active':''),onClick:function(){sv(it.id);}},
+          navItems.map(function(it){return h('button',{key:it.id,className:'rh-nav-link'+((view===it.id||view==='patient'&&it.id==='patients')?' active':''),onClick:function(){sv(it.id);}},
             h(Ic,{n:it.n,s:17,c:'currentColor'}),it.l,
             it.id==='appointments'&&notifs.length>0&&h('span',{className:'rh-nav-count'},notifs.length)
           );})
@@ -2304,7 +2320,7 @@ function App(){
       // Mobile bottom nav
       h('nav',{className:'bottom-nav'},
         h('div',{className:'bn-items'},navItems.map(function(it){
-          var active=view===it.id,dot=it.id==='appointments'&&notifs.length>0;
+          var active=view===it.id||(view==='patient'&&it.id==='patients'),dot=it.id==='appointments'&&notifs.length>0;
           return h('button',{key:it.id,className:'bn-btn'+(active?' active':''),onClick:function(){sv(it.id);}},
             h('span',{style:{position:'relative'}},h(Ic,{n:it.n,s:21,c:active?'var(--accent)':'var(--text3)'}),dot&&h('span',{className:'bn-dot'})),
             h('span',{className:'bn-lbl'},it.l)
@@ -2335,6 +2351,23 @@ function App(){
         )
       )
     ),
+      h('div',{className:'rh-quick-add'},
+        quickOpen&&h('div',{className:'rh-quick-menu'},
+          h('button',{onClick:function(){setQuickOpen(false);setDraftDate('');sm('add-apt');}},
+            h(Ic,{n:'calendar',s:17,c:'currentColor'}),' Nueva cita'),
+          h('button',{onClick:function(){setQuickOpen(false);sm('add-patient');}},
+            h(Ic,{n:'user',s:17,c:'currentColor'}),' Nuevo paciente'),
+          h('button',{onClick:function(){setQuickOpen(false);sm('add-med');}},
+            h(Ic,{n:'pill',s:17,c:'currentColor'}),' Nuevo medicamento'),
+          h('button',{onClick:function(){setQuickOpen(false);sv('settings');}},
+            h(Ic,{n:'shield',s:17,c:'currentColor'}),' Copia de seguridad')
+        ),
+        h('button',{className:'rh-quick-toggle',onClick:function(){setQuickOpen(!quickOpen);},
+          'aria-expanded':quickOpen,'aria-label':quickOpen?'Cerrar accesos rápidos':'Abrir accesos rápidos'},
+          h(Ic,{n:quickOpen?'close':'plus',s:22,c:'white'}),h('span',null,quickOpen?'Cerrar':'Agregar')
+        )
+      ),
+
     // Modals
     modal==='add-patient'&&h(PatientModal,{store:store,onClose:function(){sm(null);}}),
     modal==='edit-patient'&&h(PatientModal,{store:store,patient:selP,onClose:function(){sm(null);}}),
