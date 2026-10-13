@@ -962,6 +962,27 @@ body{background:var(--bg);color:var(--text)}
  .wix-agenda-section{padding-top:50px;padding-bottom:55px}
  .wix-health-note{padding-top:46px;padding-bottom:47px}
 }
+
+.rh-import-overlay{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;overflow-y:auto;padding:18px;background:rgba(20,31,24,.64);backdrop-filter:blur(5px)}
+.rh-import-panel{width:min(100%,470px);max-height:calc(100vh - 24px);overflow:auto;background:var(--surface);border-radius:19px;padding:25px;box-shadow:0 24px 80px rgba(0,0,0,.21)}
+.rh-import-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.rh-import-top h2{font-family:var(--serif);font-size:1.95rem;letter-spacing:-.04em;font-weight:400}
+.rh-import-x{width:37px;height:37px;border:0;border-radius:50%;background:var(--surface2);display:grid;place-items:center;color:var(--text);cursor:pointer}
+.rh-import-help{color:var(--text2);font-size:.78rem;line-height:1.65;margin:14px 0}
+.rh-import-list{display:flex;flex-direction:column;gap:10px}
+.rh-import-entry{display:flex;align-items:center;gap:14px;padding:15px;background:var(--surface2);border:1px solid var(--border);border-radius:12px}
+.rh-import-day{min-width:57px;min-height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-radius:9px;background:var(--surface);color:var(--accent)}
+.rh-import-day strong{font-family:var(--serif);font-size:1.65rem;line-height:1}
+.rh-import-day small{text-transform:uppercase;font-weight:800;font-size:.64rem}
+.rh-import-detail{display:flex;flex-direction:column;gap:3px;min-width:0}
+.rh-import-detail strong{font-size:.88rem}
+.rh-import-detail span{font-size:.78rem}
+.rh-import-detail small{color:var(--text2);font-size:.71rem}
+.rh-import-actions{display:flex;gap:10px;margin-top:17px}
+.rh-import-actions button{min-height:44px;padding:10px;border-radius:100px;font-weight:800;cursor:pointer;font-size:.78rem}
+.rh-import-cancel{background:transparent;border:1px solid var(--border);color:var(--text);flex:1}
+.rh-import-confirm{display:flex;align-items:center;justify-content:center;gap:8px;border:0;background:#354A3A;color:#fff;flex:1.4}
+@media(max-width:450px){.rh-import-panel{padding:21px 17px}}
 </style>
 </head>
 <body>
@@ -1130,7 +1151,7 @@ function HomeView(p){
               var patient=nextPatient(a.patientId);
               return h('button',{key:a.id,className:'wix-entry',onClick:function(){ssa(a);sm('view-apt');}},
                 h('span',{className:'wix-entry-date'},new Date(a.date+'T00:00:00').toLocaleDateString('es-CR',{day:'2-digit',month:'short'})),
-                h('span',{className:'wix-entry-text'},h('strong',null,a.doctor||'Cita médica'),
+                h('span',{className:'wix-entry-text'},h('strong',null,a.doctor||a.reason||'Cita médica'),
                   h('small',null,(patient?patient.name+' · ':'')+fmtD(a.date)+(a.time?' · '+fmtT(a.time):''))),
                 h('span',{className:'wix-entry-arrow','aria-hidden':'true'},'↗')
               );
@@ -1254,7 +1275,7 @@ function ApptsView(p){
             h('div',{className:'apt-time'},apt.time?h('span',null,fmtT(apt.time).split(' ')[0],h('br'),h('span',{style:{fontSize:'.58rem'}},fmtT(apt.time).split(' ')[1])):null),
             h('div',{className:'apt-avatar'},aptIni),
             h('div',{style:{flex:1,minWidth:0}},
-              h('p',{style:{fontWeight:700,fontSize:'.875rem',marginBottom:2}},'Dr. '+apt.doctor),
+              h('p',{style:{fontWeight:700,fontSize:'.875rem',marginBottom:2}},apt.doctor?'Dr. '+apt.doctor:(apt.reason||'Cita médica')),
               apt.specialty&&h('p',{style:{fontSize:'.7rem',color:'var(--accent)',fontWeight:700,marginBottom:2}},apt.specialty),
               h('p',{style:{fontSize:'.72rem',color:'var(--text2)'}},fmtD(apt.date)+(apt.clinic?' \u00b7 '+apt.clinic:''))
             ),
@@ -1477,10 +1498,10 @@ function AptModal(p){
   var fs=useState(appt?xt(appt,{}):def);var form=fs[0],sf=fs[1];
   var sv=useState(false);var saved=sv[0],sSv=sv[1];
   var ref=useRef(null);
-  var valid=!!(form.doctor.trim()&&form.date&&form.patientId);
+  var valid=!!(form.date&&form.patientId&&((form.doctor||'').trim()||(form.reason||'').trim()));
   function setT(t){sf(function(f){return xt(f,{type:t});});}
   function gp(){return store.patients.find(function(x){return x.id===form.patientId;})||null;}
-  function buildMsg(pt){var L=['Recordatorio de cita medica','','Paciente: '+pt.name,'Doctor: Dr. '+form.doctor];if(form.specialty)L.push('Especialidad: '+form.specialty);L.push('Clinica: '+form.clinic);if(form.address)L.push('Direccion: '+form.address);L.push('Fecha: '+fmtDL(form.date),'Hora: '+fmtT(form.time));if(form.type==='private'&&form.amount)L.push('Monto: CRC '+Number(form.amount).toLocaleString());if(form.reason)L.push('','Motivo: '+form.reason);return encodeURIComponent(L.join('\n'));}
+  function buildMsg(pt){var L=['Recordatorio de cita medica','','Paciente: '+pt.name];if(form.doctor)L.push('Doctor: Dr. '+form.doctor);if(form.specialty)L.push('Especialidad: '+form.specialty);L.push('Clinica: '+form.clinic);if(form.address)L.push('Direccion: '+form.address);L.push('Fecha: '+fmtDL(form.date),'Hora: '+fmtT(form.time));if(form.type==='private'&&form.amount)L.push('Monto: CRC '+Number(form.amount).toLocaleString());if(form.reason)L.push('','Motivo: '+form.reason);return encodeURIComponent(L.join('\n'));}
   function persist(){if(!valid)return false;appt?store.setAppointments(function(arr){return arr.map(function(a){return a.id===appt.id?xt(a,form):a;});}):store.setAppointments(function(arr){return arr.concat([xt(form,{id:uid()})]);});return true;}
   function saveOnly(){if(!persist())return;sSv(true);setTimeout(onClose,600);}
   function saveWA(){if(!persist())return;var pt=gp();if(pt&&pt.whatsapp){setTimeout(function(){window.open('https://wa.me/'+pt.whatsapp.replace(/\D/g,'')+'?text='+buildMsg(pt),'_blank');},200);}else{alert('Sin WhatsApp registrado.');}sSv(true);setTimeout(onClose,600);}
@@ -1531,7 +1552,7 @@ function AptDetail(p){
   return h(Sheet,{title:'Detalle de cita',onClose:onClose},
     h('div',{style:{background:'var(--accent-bg)',borderRadius:'var(--r-lg)',padding:'13px 15px',marginBottom:13,border:'1px solid rgba(196,149,106,.2)',display:'flex',gap:11,alignItems:'center'}},
       h('div',{className:'apt-avatar',style:{width:44,height:44}},appt.doctor?appt.doctor.split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase():'Dr'),
-      h('div',null,h('p',{style:{fontFamily:'var(--serif)',fontSize:'1.05rem',fontWeight:600,marginBottom:2}},'Dr. '+appt.doctor),appt.specialty&&h('p',{style:{fontSize:'.75rem',color:'var(--accent)',fontWeight:700}},appt.specialty),appt.attended&&h('span',{className:'chip chip-green',style:{marginTop:5,display:'inline-flex'}},'\u2713 Asistida'))
+      h('div',null,h('p',{style:{fontFamily:'var(--serif)',fontSize:'1.05rem',fontWeight:600,marginBottom:2}},appt.doctor?'Dr. '+appt.doctor:(appt.reason||'Cita médica')),appt.specialty&&h('p',{style:{fontSize:'.75rem',color:'var(--accent)',fontWeight:700}},appt.specialty),appt.attended&&h('span',{className:'chip chip-green',style:{marginTop:5,display:'inline-flex'}},'\u2713 Asistida'))
     ),
     IR('user','Paciente',pt?pt.name:null),
     IR('activity','Motivo',appt.reason),
@@ -1646,6 +1667,59 @@ function App(){
   var nbs=useState(true);var showNb=nbs[0],sNb=nbs[1];
   var notifs=store.appointments.filter(function(a){var d=du(a.date);return d!==null&&d>=0&&d<=7&&!a.attended;});
 
+
+  // Generic private-link import: fragment data are never written into the public source.
+  function readImport(){
+    try{
+      var hash=window.location.hash||'';
+      if(!hash.startsWith('#rh-import=')||hash.length>4500)return null;
+      var x=JSON.parse(decodeURIComponent(hash.slice(11)));
+      if(!x||x.v!==1||!Array.isArray(x.appointments)||!x.appointments.length||x.appointments.length>10)return null;
+      return x.appointments.map(function(a){
+        if(!a||['patient','date','reason','clinic'].some(function(k){return typeof a[k]!=='string';}))throw Error('invalid');
+        var item={patient:a.patient.trim(),date:a.date,reason:a.reason.trim(),clinic:a.clinic.trim(),time:''};
+        if(!item.patient||item.patient.length>120||!item.reason||item.reason.length>150||item.clinic.length>160
+          ||!/^20\d\d-\d\d-\d\d$/.test(item.date)
+          ||new Date(item.date+'T12:00:00').toISOString().slice(0,10)!==item.date)throw Error('invalid');
+        if(typeof a.time==='string'&&/^([01]\d|2[0-3]):[0-5]\d$/.test(a.time))item.time=a.time;
+        return item;
+      });
+    }catch(e){return null;}
+  }
+  var istate=useState(readImport),importItems=istate[0],setImportItems=istate[1];
+  function closeImport(){
+    setImportItems(null);
+    if(window.location.hash.startsWith('#rh-import='))window.history.replaceState(null,'',window.location.pathname+window.location.search);
+  }
+  function addImported(){
+    if(!importItems)return;
+    try{
+      var patients=lsg(uk(user,'p'))||[],appointments=lsg(uk(user,'a'))||[],added=0;
+      if(!Array.isArray(patients)||!Array.isArray(appointments))throw Error('invalid');
+      function norm(x){return String(x||'').trim().replace(/\s+/g,' ').toLowerCase();}
+      importItems.forEach(function(item){
+        var name=norm(item.patient);
+        var pt=patients.find(function(p){return norm(p.name)===name;});
+        if(!pt){
+          var matches=patients.filter(function(p){return norm(p.name).startsWith(name+' ');});
+          if(matches.length===1)pt=matches[0];
+        }
+        if(!pt){pt={id:uid(),name:item.patient,whatsapp:'',notes:'',avatar:'',birthdate:'',gender:''};patients.push(pt);}
+        var exists=appointments.some(function(a){return a.patientId===pt.id&&a.date===item.date&&norm(a.clinic)===norm(item.clinic)&&norm(a.reason||a.specialty)===norm(item.reason);});
+        if(exists)return;
+        appointments.push({id:uid(),patientId:pt.id,doctor:'',specialty:'',reason:item.reason,
+          clinic:item.clinic,address:'',date:item.date,time:item.time,type:'ccss',amount:'',deposit:'',
+          notes:'',attended:false,attendedDoc:'',attendedNotes:''});
+        added++;
+      });
+      store.setPatients(patients);
+      store.setAppointments(appointments);
+      closeImport();
+      sv('appointments');
+      window.alert(added?added+' cita'+(added===1?' agregada':'s agregadas')+' a tu agenda.':'Las citas ya estaban registradas.');
+    }catch(e){window.alert('No se pudieron guardar las citas. Comprueba que el almacenamiento local esté habilitado.');}
+  }
+
   var navItems=[{id:'home',n:'home',l:'Inicio'},{id:'patients',n:'user',l:'Pacientes'},{id:'appointments',n:'calendar',l:'Citas'},{id:'medications',n:'pill',l:'Medicamentos'},{id:'settings',n:'settings',l:'Config'}];
   var prefs=lsg(uk(user,'prefs'))||{};
   var displayName=prefs.ownerName||(sess&&sess.name)||'Mi espacio';
@@ -1748,6 +1822,28 @@ function App(){
       )
     ),
 
+    importItems&&h('div',{className:'rh-import-overlay'},
+      h('section',{className:'rh-import-panel',role:'dialog','aria-modal':true,'aria-label':'Confirmar citas'},
+        h('div',{className:'rh-import-top'},
+          h('h2',null,'Confirmar citas'),
+          h('button',{className:'rh-import-x',onClick:closeImport,'aria-label':'Cerrar'},h(Ic,{n:'close',s:18,c:'currentColor'}))
+        ),
+        h('p',{className:'rh-import-help'},'Revisa la información antes de guardarla en este navegador.'),
+        h('div',{className:'rh-import-list'},importItems.map(function(a,i){
+          return h('div',{className:'rh-import-entry',key:i},
+            h('div',{className:'rh-import-day'},h('strong',null,new Date(a.date+'T12:00:00').toLocaleDateString('es-CR',{day:'numeric'})),
+              h('small',null,new Date(a.date+'T12:00:00').toLocaleDateString('es-CR',{month:'short'}))),
+            h('div',{className:'rh-import-detail'},h('strong',null,a.reason),h('span',null,a.patient),
+              h('small',null,a.clinic),h('small',null,a.time?'Hora: '+a.time:'Hora: sin definir'))
+          );
+        })),
+        h('p',{className:'rh-import-help'},'Si el paciente aún no está registrado, se añadirá automáticamente. Evitaremos crear citas idénticas.'),
+        h('div',{className:'rh-import-actions'},
+          h('button',{className:'rh-import-cancel',onClick:closeImport},'Cancelar'),
+          h('button',{className:'rh-import-confirm',onClick:addImported},h(Ic,{n:'check',s:16,c:'white'}),'Agregar citas')
+        )
+      )
+    ),
     // Modals
     modal==='add-patient'&&h(PatientModal,{store:store,onClose:function(){sm(null);}}),
     modal==='edit-patient'&&h(PatientModal,{store:store,patient:selP,onClose:function(){sm(null);}}),
