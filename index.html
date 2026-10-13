@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Rodme Health · Tu salud organizada</title>
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"/>
+<meta http-equiv="Pragma" content="no-cache"/>
+<meta http-equiv="Expires" content="0"/>
+<title>Rodme Health</title>
 <meta name="description" content="Organiza las citas, medicamentos y expedientes de salud familiar en un solo lugar."/>
 <meta name="theme-color" content="#F7F5F0"/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Lora:ital,wght@0,500;0,600;1,400&display=swap" rel="stylesheet"/>
@@ -926,6 +929,39 @@ body{background:var(--bg);color:var(--text)}
  .wix-health-note{grid-template-columns:1fr}
 }
 @media(max-width:400px){.wix-hero{min-height:535px}}
+
+/* Diseño sin frases informativas. Navegación y datos. */
+.wix-hero{min-height:clamp(375px,58vh,520px)}
+.wix-hero-body{padding:120px 0 65px}
+.wix-hero h1{font-size:clamp(4.5rem,8vw,8.1rem)}
+.wix-hero-buttons{margin-top:25px}
+.wix-service-section{padding-top:62px;padding-bottom:72px}
+.wix-section-heading{margin-bottom:23px}
+.wix-section-heading h2{font-size:clamp(2rem,3.4vw,3.7rem)}
+.wix-services{gap:13px}
+.wix-service-card{min-height:165px;padding:20px 23px}
+.wix-service-card-top{justify-content:flex-end}
+.wix-service-card-top svg{height:25px;width:25px}
+.wix-service-card-content h3{font-size:clamp(1.5rem,2.1vw,2.2rem)}
+.wix-service-card-bottom{padding-top:10px;margin-top:10px;justify-content:flex-end}
+.wix-stat-band{padding-top:56px;padding-bottom:58px}
+.wix-stat-intro h2{font-size:clamp(2.7rem,4.5vw,4.5rem)}
+.wix-agenda-section{padding-top:65px;padding-bottom:75px}
+.wix-health-note{padding-top:60px;padding-bottom:60px}
+.wix-health-note h2{font-size:clamp(2.4rem,3.7vw,3.8rem)}
+.rh-version{font-size:.56rem;opacity:.64;white-space:nowrap}
+@media(max-width:768px){
+ .wix-hero{min-height:455px}
+ .wix-hero-body{padding:66px 24px 55px}
+ .wix-hero h1{font-size:clamp(3.9rem,12vw,6.2rem)}
+ .wix-service-section{padding-top:50px;padding-bottom:54px}
+ .wix-service-card{min-height:130px;padding:18px 19px}
+ .wix-service-card-top{height:26px}
+ .wix-section-heading{margin-bottom:20px}
+ .wix-stat-band{padding-top:47px;padding-bottom:51px}
+ .wix-agenda-section{padding-top:50px;padding-bottom:55px}
+ .wix-health-note{padding-top:46px;padding-bottom:47px}
+}
 </style>
 </head>
 <body>
@@ -1037,7 +1073,7 @@ function HomeView(p){
     {count:done,title:'Consultas asistidas',n:'check',target:'appointments'}
   ];
   return h('div',{className:'wix-home fi'},
-    h('section',{className:'wix-hero','aria-label':'Rodme Health · Tu salud en casa'},
+    h('section',{className:'wix-hero','aria-label':'Rodme Health, inicio'},
       h('div',{className:'wix-hero-photo','aria-hidden':'true'},
         h('img',{src:'https://images.pexels.com/photos/7446757/pexels-photo-7446757.jpeg?auto=compress&cs=tinysrgb&w=1920',alt:'',loading:'eager',decoding:'async',onError:function(e){e.currentTarget.style.display='none';}})
       ),
@@ -1048,32 +1084,29 @@ function HomeView(p){
           h('button',{className:'wix-button wix-button-outline',onClick:function(){sv('record');}},'Ver mi expediente')
         )
       ),
-      h('span',{className:'wix-hero-sign'},'RODME HEALTH')
     ),
     h('section',{className:'wix-service-section','aria-label':'Servicios y accesos'},
       h('div',{className:'wix-section-heading'},
         h('div',null,
-          h('span',{className:'wix-section-numeral'},'01 / SECCIONES'),
-          h('h2',null,'Explorar')
+          h('h2',null,'Accesos')
         ),
       ),
       h('div',{className:'wix-services'},
         [
-          {n:'calendar',id:'appointments',title:'Citas médicas',action:'Ver mis citas',number:'01',tone:'sand'},
-          {n:'pill',id:'medications',title:'Medicamentos',action:'Ver tratamientos',number:'02',tone:'sage'},
-          {n:'user',id:'patients',title:'Mi familia',action:'Ver familiares',number:'03',tone:'rose'}
+          {n:'calendar',id:'appointments',title:'Citas médicas',action:'Ver mis citas',tone:'sand'},
+          {n:'pill',id:'medications',title:'Medicamentos',action:'Ver tratamientos',tone:'sage'},
+          {n:'user',id:'patients',title:'Mi familia',action:'Ver familiares',tone:'rose'}
         ].map(function(item){
           return h('button',{key:item.id,className:'wix-service-card '+item.tone,onClick:function(){sv(item.id);}},
-            h('div',{className:'wix-service-card-top'},h('span',null,item.number),h(Ic,{n:item.n,s:31,c:'currentColor'})),
+            h('div',{className:'wix-service-card-top'},h(Ic,{n:item.n,s:31,c:'currentColor'})),
             h('div',{className:'wix-service-card-content'},h('h3',null,item.title)),
-            h('div',{className:'wix-service-card-bottom'},item.action,h('span',{'aria-hidden':'true'},'↗'))
+            h('div',{className:'wix-service-card-bottom'},h('span',{'aria-hidden':'true'},'Abrir ↗'))
           );
         })
       )
     ),
     h('section',{className:'wix-stat-band','aria-label':'Tu resumen personal'},
       h('div',{className:'wix-stat-intro'},
-        h('span',{className:'wix-section-numeral'},'02 / REGISTROS'),
         h('h2',null,'Resumen')
       ),
       h('div',{className:'wix-stat-grid'},
@@ -1086,7 +1119,7 @@ function HomeView(p){
     ),
     h('section',{className:'wix-agenda-section'},
       h('div',{className:'wix-section-heading'},
-        h('div',null,h('span',{className:'wix-section-numeral'},'03 / AGENDA'),h('h2',null,'Mi agenda')),
+        h('div',null,h('h2',null,'Agenda')),
       ),
       h('div',{className:'wix-agenda-grid'},
         h('div',{className:'wix-agenda-card'},
@@ -1131,7 +1164,7 @@ function HomeView(p){
     ),
     h('section',{className:'wix-health-note'},
       h('div',{className:'wix-note-symbol'},h(Ic,{n:'heart',s:34,c:'currentColor'})),
-      h('div',null,h('span',{className:'wix-section-numeral'},'04 / DATOS'),h('h2',null,'Mi expediente')),
+      h('div',null,h('h2',null,'Expediente')),
       h('div',{className:'wix-vitals-list'},
         h('div',null,h('span',null,'Frecuencia cardíaca'),h('strong',null,rec.heartRate?rec.heartRate+' bpm':'Sin registrar')),
         h('div',null,h('span',null,'Presión arterial'),h('strong',null,rec.bloodPressure||'Sin registrar')),
@@ -1145,7 +1178,7 @@ function HomeView(p){
         h('button',{onClick:function(){sv('appointments');}},'Citas'),
         h('button',{onClick:function(){sv('settings');}},'Configuración')
       ),
-      h('p',null,'Datos guardados en este navegador. Evita registrar información médica sensible.')
+      h('p',null,'Datos guardados en este navegador. Evita registrar información médica sensible.',h('span',{className:'rh-version'},' · 13.10.26 / 2'))
     )
   );
 }
@@ -1630,7 +1663,7 @@ function App(){
     return h(React.Fragment,null,
       h('div',{className:'sidebar-logo'},
         h('div',{className:'logo-mark'},h('svg',{width:17,height:17,viewBox:'0 0 26 26',fill:'none'},h('circle',{cx:'13',cy:'13',r:'10',stroke:'white',strokeWidth:'1.5',fill:'none'}),h('path',{d:'M9 13l3 3 5-6',stroke:'white',strokeWidth:'2',strokeLinecap:'round',strokeLinejoin:'round'}))),
-        h('div',null,h('div',{style:{fontSize:'.88rem',fontWeight:800,letterSpacing:'-.02em'}},'Rodme Health'),h('div',{style:{fontSize:'.6rem',color:'var(--text3)',textTransform:'uppercase',letterSpacing:'.07em'}},'Salud familiar'))
+        h('div',null,h('div',{style:{fontSize:'.88rem',fontWeight:800,letterSpacing:'-.02em'}},'Rodme Health'),null)
       ),
       h('div',{className:'sidebar-nav'},navItems.map(function(it){return h(NavBtn,{key:it.id,item:it});})),
       h('div',{className:'sidebar-user'},
