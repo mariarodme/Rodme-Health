@@ -670,6 +670,15 @@ body{background:var(--bg)}
  .rh-auth-intro h1{font-size:1.8rem}
 }
 
+
+/* Inicio con Google: contenedor estable para el botón generado por la API */
+.rh-google-wrap{display:flex;flex-direction:column;align-items:stretch;gap:7px;margin-top:2px}
+.rh-google-slot{min-height:44px;width:100%;display:flex;justify-content:center;align-items:center}
+.rh-google-slot iframe{max-width:100%}
+.rh-google-note{font-size:.72rem;color:var(--text2);text-align:center}
+.rh-google-error{padding:12px;border:1px solid var(--amber-border);border-radius:12px;background:var(--amber-bg);text-align:center}
+.rh-google-error p{font-size:.74rem;color:var(--text2);margin-bottom:9px}
+.rh-google-error button{font-size:.75rem;min-height:36px}
 </style>
 </head>
 <body>
@@ -698,6 +707,12 @@ function useStore(user){
   var a=useState(function(){return lsg(ak)||[];});
   var m=useState(function(){return lsg(mk)||[];});
   var patients=p[0],setP=p[1];var apts=a[0],setA=a[1];var meds=m[0],setM=m[1];
+  // Cargar los registros de la cuenta correcta después de iniciar sesión sin refrescar la página.
+  useEffect(function(){
+    setP(lsg(pk)||[]);
+    setA(lsg(ak)||[]);
+    setM(lsg(mk)||[]);
+  },[pk,ak,mk]);
   var sp=function(fn){setP(function(prev){var n=typeof fn==='function'?fn(prev):fn;lss(pk,n);return n;});};
   var sa=function(fn){setA(function(prev){var n=typeof fn==='function'?fn(prev):fn;lss(ak,n);return n;});};
   var sm=function(fn){setM(function(prev){var n=typeof fn==='function'?fn(prev):fn;lss(mk,n);return n;});};
@@ -770,18 +785,91 @@ function AuthScreen(p){
   var sps=useState(false);var showP=sps[0],sSP=sps[1];
   var sps2=useState(false);var showP2=sps2[0],sSP2=sps2[1];
   var resetOpen=useState(false);var ro=resetOpen[0],setRo=resetOpen[1];
+  var googleButtonRef=useRef(null);
+  var gs=useState('loading');var googleStatus=gs[0],setGoogleStatus=gs[1];
+  var gr=useState(0);var googleRetry=gr[0],setGoogleRetry=gr[1];
 
+  // Google Identity Services necesita inicialización imperativa: las vistas React se montan después del script.
   function gCb(resp){
-    try{var pts=resp.credential.split('.');var pl=JSON.parse(atob(pts[1].replace(/-/g,'+').replace(/_/g,'/')));if(pl.email){p.onLogin('g:'+pl.email.toLowerCase(),pl.name||'');}else{sErr('Error con Google.');}}catch(e){sErr('Error con Google. Intenta de nuevo.');}
+    try{
+      if(!resp||!resp.credential)throw Error('Sin credencial');
+      var payload=resp.credential.split('.')[1];
+      if(!payload)throw Error('Credencial incompleta');
+      var b=payload.replace(/-/g,'+').replace(/_/g,'/');
+      while(b.length%4)b+='=';
+      var raw=atob(b),bytes=new Uint8Array(raw.length);
+      for(var i=0;i<raw.length;i++)bytes[i]=raw.charCodeAt(i);
+      var pl=JSON.parse(new TextDecoder().decode(bytes));
+      var googleClientId='894449264362-vmm7t215108qgaqu7fs483femv2rnuur.apps.googleusercontent.com';
+      if(!pl.email||pl.email_verified!==true||pl.aud!==googleClientId||
+        (pl.iss!=='https://accounts.google.com'&&pl.iss!=='accounts.google.com')||
+        !pl.exp||Number(pl.exp)*1000<=Date.now())throw Error('Credencial inválida o expirada');
+      sErr('');
+      // Las cuentas locales y Google permanecen separadas; no combinar expedientes automáticamente.
+      // La verificación criptográfica y la protección de datos requieren autenticación en un servidor.
+      p.onLogin('g:'+pl.email.toLowerCase(),pl.name||'');
+    }catch(e){
+      sErr('No se pudo completar el acceso con Google. Prueba de nuevo o ingresa con tu usuario y contraseña.');
+    }
   }
-  window._rhGCb=gCb;
+
+  useEffect(function(){
+    if(tab!=='login')return;
+    var active=true,tries=0,timer=null;
+    setGoogleStatus('loading');
+    function setupGoogle(){
+      if(!active)return;
+      var box=googleButtonRef.current;
+      if(!box)return;
+      if(!window.google||!window.google.accounts||!window.google.accounts.id){
+        if(tries++<48){timer=window.setTimeout(setupGoogle,250);}
+        else setGoogleStatus('unavailable');
+        return;
+      }
+      try{
+        // Inicializar una sola vez; dirigir las respuestas al componente actualmente montado.
+        window._rhGoogleReceiver=function(response){if(active)gCb(response);};
+        if(!window._rhGoogleInitialized){
+          window.google.accounts.id.initialize({
+            client_id:'894449264362-vmm7t215108qgaqu7fs483femv2rnuur.apps.googleusercontent.com',
+            callback:function(response){
+              if(typeof window._rhGoogleReceiver==='function')window._rhGoogleReceiver(response);
+            },
+            auto_select:false,
+            cancel_on_tap_outside:true
+          });
+          window._rhGoogleInitialized=true;
+        }
+        box.replaceChildren();
+        var width=Math.max(220,Math.min(Math.floor(box.getBoundingClientRect().width)||320,340));
+        window.google.accounts.id.renderButton(box,{
+          type:'standard',theme:'outline',size:'large',text:'signin_with',
+          shape:'pill',logo_alignment:'left',locale:'es',width:width
+        });
+        setGoogleStatus('ready');
+      }catch(e){
+        setGoogleStatus('unavailable');
+      }
+    }
+    setupGoogle();
+    return function(){
+      active=false;
+      if(timer!==null)window.clearTimeout(timer);
+      window._rhGoogleReceiver=null;
+    };
+  },[tab,googleRetry]);
 
   function doLogin(){
     sErr('');
     var users=lsg('rh_users')||{};
     var key=lf.username.trim().toLowerCase();
+    // Aceptar tanto el usuario registrado como el correo asociado a esa cuenta local.
+    if(!users[key]&&key.indexOf('@')!==-1){
+      var match=Object.keys(users).find(function(k){return users[k]&&users[k].email===key;});
+      if(match)key=match;
+    }
     var user=users[key];
-    if(!user){sErr('Usuario no encontrado.');return;}
+    if(!user){sErr('No encontramos esa cuenta en este navegador. Si entraste con Google, usa el botón de Google.');return;}
     if(user.pwHash!==hash(lf.password)){sErr('Contrasena incorrecta.');return;}
     p.onLogin('u:'+key,user.name||key);
   }
@@ -870,13 +958,19 @@ function AuthScreen(p){
       err&&h('div',{style:{background:'var(--red-bg)',border:'1px solid var(--red-border)',borderRadius:'var(--r)',padding:'10px 14px',fontSize:'.82rem',color:'var(--red)',marginBottom:14,fontWeight:600}},'\u26A0 '+err),
 
       tab==='login'&&h('div',{style:{display:'flex',flexDirection:'column',gap:12}},
-        h('div',null,h('label',null,'Usuario'),h('div',{className:'inp-wrap'},h('span',{className:'inp-ico'},h(Ic,{n:'user',s:15,c:'var(--text3)'})),h('input',{style:iSt,value:lf.username,onChange:upd(slf,'username'),placeholder:'tu_usuario',onKeyDown:function(e){if(e.key==='Enter')document.getElementById('lp')&&document.getElementById('lp').focus();}}))),
+        h('div',null,h('label',null,'Usuario o correo electrónico'),h('div',{className:'inp-wrap'},h('span',{className:'inp-ico'},h(Ic,{n:'user',s:15,c:'var(--text3)'})),h('input',{style:iSt,value:lf.username,onChange:upd(slf,'username'),placeholder:'Usuario o correo',onKeyDown:function(e){if(e.key==='Enter')document.getElementById('lp')&&document.getElementById('lp').focus();}}))),
         h('div',null,h('label',null,'Contrasena'),h('div',{className:'inp-wrap'},h('span',{className:'inp-ico'},h(Ic,{n:'key',s:15,c:'var(--text3)'})),h('input',{id:'lp',style:iSt,type:showP?'text':'password',value:lf.password,onChange:upd(slf,'password'),placeholder:'\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022',onKeyDown:function(e){if(e.key==='Enter')doLogin();}}),h('button',{className:'inp-act',onClick:function(){sSP(!showP);}},h(Ic,{n:showP?'eyeoff':'eye',s:14,c:'var(--text3)'})))),
         h('button',{style:{background:'none',border:'none',color:'var(--accent)',fontSize:'.8rem',cursor:'pointer',fontFamily:'var(--font)',fontWeight:700,textAlign:'left',padding:'2px 0'},onClick:function(){setRo(true);sErr('');sOk('');}},'\u{1F511} Olvide mi contrasena'),
         h('button',{className:'btn btn-primary btn-full',style:{borderRadius:'var(--r-full)',padding:'13px',fontSize:'.9rem',marginTop:4},onClick:doLogin},h(Ic,{n:'check',s:15,c:'white'}),'Ingresar'),
         h('div',{style:{display:'flex',alignItems:'center',gap:10,margin:'6px 0'}},h('div',{style:{flex:1,height:1,background:'var(--border)'}}),h('span',{style:{fontSize:'.7rem',color:'var(--text3)',fontWeight:700}},'O'),h('div',{style:{flex:1,height:1,background:'var(--border)'}})),
-        h('div',{id:'g_id_onload','data-client_id':'894449264362-vmm7t215108qgaqu7fs483femv2rnuur.apps.googleusercontent.com','data-callback':'_rhGCb','data-auto_prompt':'true','data-cancel_on_tap_outside':'false'}),
-        h('div',{style:{display:'flex',justifyContent:'center'}},h('div',{className:'g_id_signin','data-type':'standard','data-size':'large','data-theme':'outline','data-text':'signin_with','data-shape':'rectangular','data-logo_alignment':'left','data-width':'320'}))
+        h('div',{className:'rh-google-wrap'},
+          h('div',{className:'rh-google-slot',ref:googleButtonRef,'aria-label':'Acceder con Google'}),
+          googleStatus==='loading'&&h('p',{className:'rh-google-note'},'Preparando el acceso con Google…'),
+          googleStatus==='unavailable'&&h('div',{className:'rh-google-error'},
+            h('p',null,'No se pudo cargar el acceso de Google. Verifica tu conexión o los bloqueadores del navegador.'),
+            h('button',{className:'btn btn-outline',onClick:function(){setGoogleRetry(function(n){return n+1;});}},'Reintentar')
+          )
+        )
       ),
 
       tab==='register'&&h('div',{style:{display:'flex',flexDirection:'column',gap:11}},
