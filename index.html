@@ -983,6 +983,50 @@ body{background:var(--bg);color:var(--text)}
 .rh-import-cancel{background:transparent;border:1px solid var(--border);color:var(--text);flex:1}
 .rh-import-confirm{display:flex;align-items:center;justify-content:center;gap:8px;border:0;background:#354A3A;color:#fff;flex:1.4}
 @media(max-width:450px){.rh-import-panel{padding:21px 17px}}
+
+/* Calendario interactivo */
+.rh-calendar-area{max-width:1200px;margin:auto}
+.rh-calendar-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:19px}
+.rh-calendar-toolbar h1{font-family:var(--serif);font-size:2.35rem;font-weight:400;letter-spacing:-.055em;line-height:1.2}
+.rh-calendar-toolbar>div:first-child>span{font-size:.75rem;color:var(--text2)}
+.rh-calendar-toolbar-actions{display:flex;flex-wrap:wrap;gap:7px}
+.rh-mini-btn{border:1px solid var(--border);border-radius:99px;background:var(--surface);color:var(--text);min-height:43px;padding:9px 14px;display:inline-flex;align-items:center;justify-content:center;gap:4px;font-weight:700;font-size:.76rem;cursor:pointer}
+.rh-mini-btn:disabled{opacity:.45;cursor:not-allowed}
+.rh-mini-primary{background:var(--accent);color:#fff;border-color:var(--accent)}
+.rh-calendar-mode{display:inline-flex;align-items:center;background:var(--surface2);border-radius:99px;padding:4px;margin-bottom:17px;gap:3px}
+.rh-calendar-mode button{border:0;border-radius:99px;min-height:37px;padding:8px 20px;cursor:pointer;background:transparent;color:var(--text2);font-size:.8rem;font-weight:700}
+.rh-calendar-mode button.active{background:var(--accent);color:#fff}
+.rh-calendar-shell{background:var(--surface);border:1px solid var(--border);border-radius:17px;overflow:hidden}
+.rh-calendar-switcher{padding:17px;display:flex;align-items:center;gap:12px}
+.rh-calendar-switcher>button{border:1px solid var(--border);background:var(--surface2);color:var(--text);border-radius:50%;height:37px;min-width:37px;cursor:pointer;font-size:1.3rem}
+.rh-calendar-switcher strong{font-weight:800;font-size:.91rem;text-transform:capitalize;flex:1;text-align:center}
+.rh-calendar-switcher .rh-calendar-today{border-radius:99px;font-size:.75rem;min-width:53px}
+.rh-calendar-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr))}
+.rh-calendar-weekday{text-align:center;border-bottom:1px solid var(--border);background:var(--surface2);color:var(--text2);padding:12px 2px;font-weight:800;font-size:.7rem}
+.rh-calendar-cell{border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:7px;min-width:0;min-height:118px;display:flex;flex-direction:column;gap:3px}
+.rh-calendar-cell:nth-child(7n){border-right:0}
+.rh-calendar-cell.is-outside{background:var(--surface2);opacity:.55}
+.rh-calendar-day{display:grid;place-items:center;border:0;background:transparent;color:var(--text);font-weight:800;font-size:.78rem;width:29px;height:29px;cursor:pointer;border-radius:50%;align-self:flex-end}
+.rh-calendar-cell.is-today .rh-calendar-day{background:var(--accent);color:#fff}
+.rh-calendar-event{border:0;border-left:3px solid var(--green);background:var(--green-bg);text-align:left;border-radius:5px;padding:6px 5px;display:flex;flex-direction:column;gap:2px;color:var(--text);cursor:pointer;min-width:0;font-size:.67rem}
+.rh-calendar-event>span,.rh-calendar-event small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.rh-calendar-event small{font-size:.59rem;color:var(--text2)}
+.rh-calendar-event.is-done{background:var(--surface2);border-left-color:var(--text3);opacity:.75}
+.rh-cal-more{font-size:.66rem;color:var(--text2)}
+.rh-cal-hint{padding:10px 15px;font-size:.7rem;color:var(--text2)}
+@media(max-width:770px){
+ .rh-calendar-toolbar h1{font-size:1.85rem}
+ .rh-calendar-toolbar-actions{width:100%}
+ .rh-calendar-toolbar-actions>button{flex:1}
+ .rh-calendar-cell{min-height:78px;padding:3px;gap:2px}
+ .rh-calendar-day{font-size:.7rem;width:27px;height:27px}
+ .rh-calendar-event{padding:4px 3px;font-size:.57rem}
+ .rh-calendar-event small{display:none}
+ .rh-calendar-switcher{padding:12px}
+ .rh-calendar-switcher strong{font-size:.78rem}
+}
+@media(max-width:460px){.rh-calendar-cell{min-height:67px}.rh-calendar-event{max-height:34px}.rh-calendar-weekday{font-size:.59rem}}
+
 </style>
 </head>
 <body>
@@ -1244,8 +1288,108 @@ function PatientsView(p){
   );
 }
 
+
+function rhCalDay(date){return date.getFullYear()+'-'+String(date.getMonth()+1).padStart(2,'0')+'-'+String(date.getDate()).padStart(2,'0');}
+function rhCalDate(v){var d=new Date(v+'T12:00:00');return isNaN(d.getTime())?new Date():d;}
+function rhIcsEscape(s){return String(s||'').replace(/\\/g,'\\\\').replace(/\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');}
+function rhDownload(content,name,type){
+  var blob=new Blob([content],{type:type||'application/octet-stream'}),url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(function(){URL.revokeObjectURL(url);},10000);
+}
+function rhExportCalendar(apts,patients){
+  var lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Rodme Health//Calendario personal//ES','CALSCALE:GREGORIAN','METHOD:PUBLISH'];
+  var stamp=new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,'');
+  (apts||[]).forEach(function(a){
+    if(!a.date||!/^20\d\d-\d\d-\d\d$/.test(a.date))return;
+    var patient=(patients||[]).find(function(p){return p.id===a.patientId;});
+    var title=(a.reason||a.specialty||'Cita médica')+(patient?' · '+patient.name:'');
+    var description=[a.doctor?'Doctor: '+a.doctor:'',a.notes?'Notas: '+a.notes:'',a.prepInstructions?'Indicaciones: '+a.prepInstructions:''].filter(Boolean).join('\n');
+    var start=a.date.replace(/-/g,''),timed=a.time&&/^\d\d:\d\d$/.test(a.time),end;
+    if(timed){
+      var d=rhCalDate(a.date);d.setHours(Number(a.time.slice(0,2))+1,Number(a.time.slice(3,5)),0);
+      end=rhCalDay(d).replace(/-/g,'')+'T'+String(d.getHours()).padStart(2,'0')+String(d.getMinutes()).padStart(2,'0')+'00';
+      start+='T'+a.time.replace(':','')+'00';
+    }else{var dn=rhCalDate(a.date);dn.setDate(dn.getDate()+1);end=rhCalDay(dn).replace(/-/g,'');}
+    lines.push('BEGIN:VEVENT','UID:rodme-'+String(a.id||uid()).replace(/[^a-zA-Z0-9_-]/g,'')+'@local','DTSTAMP:'+stamp,
+      'SUMMARY:'+rhIcsEscape(title),'LOCATION:'+rhIcsEscape(a.clinic||''),'DESCRIPTION:'+rhIcsEscape(description),
+      (timed?'DTSTART:':'DTSTART;VALUE=DATE:')+start,(timed?'DTEND:':'DTEND;VALUE=DATE:')+end);
+    if(timed&&!a.attended){
+      var minutes=Number(a.reminderMinutes);
+      if(![0,60,180,1440,2880].includes(minutes))minutes=1440;
+      if(minutes>0)lines.push('BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:'+rhIcsEscape(title),'TRIGGER:-PT'+minutes+'M','END:VALARM');
+    }
+    lines.push('END:VEVENT');
+  });
+  lines.push('END:VCALENDAR');
+  rhDownload(lines.join('\r\n')+'\r\n','rodme-citas.ics','text/calendar;charset=utf-8');
+}
+
 // ── APPOINTMENTS ───────────────────────────────────────────────────────────
+
 function ApptsView(p){
+  var modeState=useState('month'),mode=modeState[0],setMode=modeState[1];
+  var dState=useState(function(){return rhCalDay(new Date());}),focus=dState[0],setFocus=dState[1];
+  var current=rhCalDate(focus),today=rhCalDay(new Date());
+  var all=p.store.appointments||[];
+  var weekdays=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
+  var first=new Date(current.getFullYear(),current.getMonth(),1,12);
+  var offset=(first.getDay()+6)%7;
+  var beginning=new Date(first);beginning.setDate(first.getDate()-offset);
+  var count=mode==='week'?7:42;
+  var weekBegin=rhCalDate(focus);weekBegin.setDate(weekBegin.getDate()-(weekBegin.getDay()+6)%7);
+  function move(dir){var d=rhCalDate(focus);if(mode==='month'){d.setDate(1);d.setMonth(d.getMonth()+dir);}else d.setDate(d.getDate()+7*dir);setFocus(rhCalDay(d));}
+  function openA(a){p.ssa(a);p.sm('view-apt');}
+  function patient(a){return (p.store.patients||[]).find(function(x){return x.id===a.patientId;});}
+  return h('div',{className:'rh-calendar-area'},
+    h('div',{className:'rh-calendar-toolbar'},
+      h('div',null,h('h1',null,'Citas y calendario'),h('span',null,all.filter(function(a){return !a.attended;}).length+' citas pendientes')),
+      h('div',{className:'rh-calendar-toolbar-actions'},
+        h('button',{className:'rh-mini-btn',onClick:function(){rhExportCalendar(all.filter(function(a){return !a.attended;}),p.store.patients);},
+          disabled:!all.some(function(a){return !a.attended;})},h(Ic,{n:'calendar',s:15,c:'currentColor'}),' Exportar .ics'),
+        h('button',{className:'rh-mini-btn rh-mini-primary',onClick:function(){p.sm('add-apt');}},h(Ic,{n:'plus',s:15,c:'currentColor'}),' Nueva cita')
+      )
+    ),
+    h('div',{className:'rh-calendar-mode',role:'group','aria-label':'Vista de citas'},
+      [['month','Mes'],['week','Semana'],['list','Lista']].map(function(x){
+        return h('button',{key:x[0],className:mode===x[0]?'active':'',onClick:function(){setMode(x[0]);}},x[1]);
+      })
+    ),
+    mode==='list'?h(LegacyApptsList,p):
+    h('div',{className:'rh-calendar-shell'},
+      h('div',{className:'rh-calendar-switcher'},
+        h('button',{onClick:function(){move(-1);},'aria-label':'Periodo anterior'},'‹'),
+        h('strong',null,mode==='month'?current.toLocaleDateString('es-CR',{month:'long',year:'numeric'}):
+          rhCalDate(rhCalDay(weekBegin)).toLocaleDateString('es-CR',{day:'numeric',month:'long',year:'numeric'})),
+        h('button',{onClick:function(){move(1);},'aria-label':'Periodo siguiente'},'›'),
+        h('button',{className:'rh-calendar-today',onClick:function(){setFocus(today);}},'Hoy')
+      ),
+      h('div',{className:'rh-calendar-grid',role:'grid','aria-label':'Calendario de citas'},
+        weekdays.map(function(w){return h('div',{key:w,className:'rh-calendar-weekday'},w);}),
+        Array.from({length:count},function(_,i){
+          var d=new Date(mode==='week'?weekBegin:beginning);d.setDate(d.getDate()+i);
+          var day=rhCalDay(d),events=all.filter(function(a){return a.date===day;});
+          return h('div',{key:day,className:'rh-calendar-cell'+(day===today?' is-today':'')+(d.getMonth()!==current.getMonth()&&mode==='month'?' is-outside':'')},
+            h('button',{className:'rh-calendar-day',onClick:function(){setFocus(day);p.sm('add-apt');},
+              title:'Agregar cita el '+day},d.getDate()),
+            events.slice(0,mode==='week'?8:3).map(function(a){
+              return h('button',{key:a.id,className:'rh-calendar-event'+(a.attended?' is-done':''),
+                title:(a.reason||a.doctor||'Cita')+' · '+(patient(a)?.name||''),
+                onClick:function(){openA(a);}},
+                h('span',null,a.time?a.time+' · ':'',a.reason||a.specialty||a.doctor||'Cita'),
+                h('small',null,patient(a)?.name||'')
+              );
+            }),
+            events.length>(mode==='week'?8:3)&&h('small',{className:'rh-cal-more'},'+'+(events.length-(mode==='week'?8:3))+' más')
+          );
+        })
+      ),
+      h('p',{className:'rh-cal-hint'},'Selecciona una cita para ver sus detalles. Los días sin citas permiten agregar una nueva.')
+    )
+  );
+}
+
+function LegacyApptsList(p){
   var store=p.store,sm=p.sm,tab=p.tab,stab=p.stab,ssa=p.ssa;
   var qs=useState('');var q=qs[0],sq=qs[1];
   var filtered=store.appointments.filter(function(a){return tab==='pending'?!a.attended:a.attended;}).sort(function(a,b){return tab==='pending'?new Date(a.date)-new Date(b.date):new Date(b.date)-new Date(a.date);});
