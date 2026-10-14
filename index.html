@@ -1685,6 +1685,27 @@ function HomeView(p){
 }
 
 // ── PATIENTS ───────────────────────────────────────────────────────────────
+function rhEmergencyCard(patient,medical,medications){
+  if(!patient)return;
+  if(!window.confirm('La ficha de emergencia contiene información personal. Se abrirá para imprimir y cualquier persona con acceso a la impresión podría verla. ¿Continuar?'))return;
+  function esc(v){return String(v===undefined||v===null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+  var meds=(medications||[]).filter(function(m){return m.patientId===patient.id&&m.status!=='completed';});
+  function row(name,value){return '<div class="rh-erow"><small>'+esc(name)+'</small><strong>'+esc(value||'No registrado')+'</strong></div>';}
+  var html='<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Ficha de emergencia</title>'+
+    '<style>*{box-sizing:border-box}body{font-family:Arial,system-ui,sans-serif;color:#27352C;max-width:780px;margin:22px auto;padding:16px;background:#fff}header{background:#E7EFE5;padding:25px;border-radius:13px}h1{margin:0 0 12px;font-size:24px}h2{font-size:17px;margin:24px 0 13px}.rh-erow{display:flex;flex-direction:column;gap:6px;padding:12px 0;border-bottom:1px solid #E5E9E4}.rh-erow small{color:#697469;font-size:12px}.rh-erow strong{font-size:16px;white-space:pre-wrap;overflow-wrap:anywhere}section{margin:18px 0}p{font-size:12px;color:#647167;line-height:1.6}.np{display:flex;gap:9px;margin-top:22px}.np button{padding:13px 20px;background:#344A37;border:0;color:white;border-radius:99px;cursor:pointer}@media print{.np{display:none}body{margin:0;padding:0}}<\/style></head><body>'+
+    '<header><h1>Ficha de emergencia · Rodme Health</h1><strong>'+esc(patient.name)+'</strong><p>Generada el '+esc(new Date().toLocaleDateString('es-CR'))+' · Información proporcionada por el usuario</p></header>'+
+    '<section><h2>Información importante</h2>'+
+    row('Grupo sanguíneo',medical.bloodType)+row('Alergias y reacciones registradas',medical.allergies)+row('Condiciones conocidas',medical.chronicConditions)+
+    row('Contacto de emergencia',medical.emergencyContact)+row('Teléfono de emergencia',medical.emergencyPhone)+'</section>'+
+    '<section><h2>Tratamientos actuales anotados</h2>'+
+    (meds.length?meds.map(function(m){return row(m.name,(m.dosage||'')+' · '+(m.frequency||''));}).join(''):'<p>No hay tratamientos activos registrados.</p>')+'</section>'+
+    '<p>Esta ficha no es un expediente oficial; los datos no están verificados. En caso de emergencia, solicita atención médica profesional. Conserva el documento en un lugar privado.</p>'+
+    '<div class="np"><button onclick="window.print()">Imprimir / Guardar PDF</button><button onclick="window.close()">Cerrar</button></div></body></html>';
+  var win=window.open('','_blank');
+  if(!win){window.alert('Permite ventanas emergentes para abrir la ficha.');return;}
+  win.opener=null;win.document.write(html);win.document.close();
+}
+
 function PatientProfile(p){
   var store=p.store,pt=p.patient;
   var user=p.user;
@@ -1698,6 +1719,9 @@ function PatientProfile(p){
   var labs=(store.labs||[]).filter(function(v){return v.patientId===pt.id;});
   var vaccines=(store.vaccines||[]).filter(function(v){return v.patientId===pt.id;});
   var documents=(store.documents||[]).filter(function(v){return v.patientId===pt.id;});
+  var vitals=(store.vitals||[]).filter(function(v){return v.patientId===pt.id;});
+  var symptoms=(store.symptoms||[]).filter(function(v){return v.patientId===pt.id;});
+  var followups=(store.followups||[]).filter(function(v){return v.patientId===pt.id;});
   var events=[];
   apts.forEach(function(a){events.push({id:'a'+a.id,at:a.date+(a.time?'T'+a.time:'T12:00'),title:a.reason||a.specialty||(a.doctor?'Consulta con Dr. '+a.doctor:'Cita médica'),
     meta:(a.clinic||'')+(a.time?' · '+fmtT(a.time):''),status:rhAppointmentLabel(a),kind:'apt',apt:a});});
@@ -1706,6 +1730,10 @@ function PatientProfile(p){
   labs.forEach(function(x){events.push({id:'l'+x.id,at:x.date+'T12:00',title:'Laboratorio: '+x.title,meta:x.provider||'',kind:'med'});});
   vaccines.forEach(function(x){events.push({id:'v'+x.id,at:x.date+'T12:00',title:'Vacuna: '+x.title,meta:x.dose||'',kind:'med'});});
   documents.forEach(function(x){events.push({id:'doc'+x.id,at:x.date+'T12:00',title:'Documento: '+x.title,meta:x.fileName||'',kind:'med'});});
+  vitals.forEach(function(x){var metric=RH_METRICS.find(function(m){return m.id===x.metric;});
+    events.push({id:'vital'+x.id,at:x.date+'T12:00',title:metric?metric.label:'Medición',meta:x.value+(x.metric==='pressure'?'/'+x.value2:'')+' '+(x.unit||''),kind:'med'});});
+  symptoms.forEach(function(x){events.push({id:'symptom'+x.id,at:x.date+'T12:00',title:'Síntoma: '+x.title,meta:'Intensidad '+x.severity+'/10',kind:'med'});});
+  followups.forEach(function(x){events.push({id:'followup'+x.id,at:x.date+'T12:00',title:'Seguimiento: '+x.title,meta:x.status==='done'?'Completado':'Pendiente',kind:'med'});});
   events.sort(function(a,b){return b.at.localeCompare(a.at);});
   var next=apts.filter(function(a){return rhAppointmentActive(a)&&a.date>=rhCalDay(new Date());}).sort(function(a,b){return a.date.localeCompare(b.date);});
   return h('div',{className:'rh-profile'},
@@ -1745,6 +1773,10 @@ function PatientProfile(p){
       ),
       h('p',{className:'rh-health-record-note'},'Estos datos son los que has anotado. No se verifican con ningún centro médico.')
     ),
+    h('div',{className:'rh-patient-track-actions'},
+      h('button',{className:'rh-mini-btn rh-mini-primary',onClick:p.onTracking},'Ver signos vitales y síntomas →'),
+      h('button',{className:'rh-mini-btn',onClick:p.onEmergency},'Imprimir ficha de emergencia')
+    ),
     h('div',{className:'rh-profile-columns'},
       h('section',{className:'rh-profile-panel'},
         h('div',{className:'rh-profile-panel-head'},h('h2',null,'Próximas citas')),
@@ -1770,7 +1802,7 @@ function PatientProfile(p){
       h('div',{className:'rh-profile-panel-head'},h('h2',null,'Otros registros'),
         h('button',{onClick:p.onHealth},'Ver centro de salud ↗')),
       h('div',{className:'rh-profile-counts'},
-        [[labs.length,'Laboratorios'],[vaccines.length,'Vacunas'],[documents.length,'Documentos']].map(function(x){
+        [[labs.length,'Laboratorios'],[vaccines.length,'Vacunas'],[documents.length+vitals.length+symptoms.length+followups.length,'Otros registros']].map(function(x){
           return h('div',{key:x[1]},h('strong',null,x[0]),h('span',null,x[1]));
         })
       )
@@ -3347,7 +3379,7 @@ function App(){
       h('div',{className:'page-content'},
         view==='home'&&h(HomeView,{store:store,sv:sv,sm:sm,ssa:ssa,ssp:ssp,user:user}),
         view==='patients'&&h(PatientsView,{store:store,sm:sm,ssp:ssp,sv:sv,user:user}),
-        view==='patient'&&h(PatientProfile,{store:store,patient:(store.patients.find(function(x){return selP&&x.id===selP.id;})||selP),onBack:function(){sv('patients');},onEdit:function(pt){ssp(pt);sm('edit-patient');},onAddApt:function(){setDraftDate('');sm('add-apt');},onRecord:function(){if(selP)lss(uk(user,'record_patient'),selP.id);sv('record');},onHealth:function(){setHealthPatient(selP?.id||'all');sv('health');},user:user,onAddMed:function(){sm('add-med');},onApt:function(apt){ssa(apt);sm('view-apt');}}),
+        view==='patient'&&h(PatientProfile,{store:store,patient:(store.patients.find(function(x){return selP&&x.id===selP.id;})||selP),onBack:function(){sv('patients');},onEdit:function(pt){ssp(pt);sm('edit-patient');},onAddApt:function(){setDraftDate('');sm('add-apt');},onRecord:function(){if(selP)lss(uk(user,'record_patient'),selP.id);sv('record');},onTracking:function(){openTracking(selP?.id||'all','vitals');},onEmergency:function(){if(selP)rhEmergencyCard(selP,rhReadRecord(user,selP.id,store.patients),store.medications);},onHealth:function(){setHealthPatient(selP?.id||'all');sv('health');},user:user,onAddMed:function(){sm('add-med');},onApt:function(apt){ssa(apt);sm('view-apt');}}),
         view==='appointments'&&h(ApptsView,{store:store,sm:sm,tab:tab,stab:stab,ssa:ssa,setDraftDate:setDraftDate}),
         view==='medications'&&h(MedsView,{store:store,sm:sm,ssm:ssm}),
         view==='health'&&h(HealthCenterView,{store:store,user:user,initialPatientId:healthPatient,initialTab:healthTab,
