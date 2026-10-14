@@ -2343,8 +2343,16 @@ function generatePDF(record,store,directPt){
   var patient=directPt||null;
   if(!patient){for(var i=0;i<store.patients.length;i++){if(store.patients[i].id===record.patientId){patient=store.patients[i];break;}}}
   if(!patient){alert('Selecciona un paciente primero.');return;}
-  var apts=store.appointments.filter(function(a){return a.patientId===patient.id;});
-  var meds=store.medications.filter(function(m){return m.patientId===patient.id;});
+  // Los valores introducidos por el usuario se convierten en texto inerte antes
+  // de insertarlos en el HTML del informe imprimible.
+  function safeHTML(v){return String(v===undefined||v===null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+  function safeObject(obj){var out={};Object.keys(obj||{}).forEach(function(k){
+    var v=obj[k];out[k]=typeof v==='string'?safeHTML(v):v;
+  });return out;}
+  var apts=store.appointments.filter(function(a){return a.patientId===patient.id;}).map(safeObject);
+  var meds=store.medications.filter(function(m){return m.patientId===patient.id;}).map(safeObject);
+  patient=safeObject(patient);
+  record=safeObject(record);
   var pen=apts.filter(function(a){return !a.attended;}).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
   var att=apts.filter(function(a){return a.attended;}).sort(function(a,b){return new Date(b.date)-new Date(a.date);});
   function row(l,v){if(!v)return'';return '<tr><td style="padding:6px 12px;font-weight:700;color:#6B7280;font-size:11px;text-transform:uppercase;letter-spacing:.05em;width:140px;vertical-align:top;border-bottom:1px solid #F3F4F6">'+l+'</td><td style="padding:6px 12px;color:#111827;font-size:13px;border-bottom:1px solid #F3F4F6">'+v+'</td></tr>';}
@@ -2368,7 +2376,7 @@ function generatePDF(record,store,directPt){
     +'<div style="margin-top:18px;padding-top:10px;border-top:1px solid #E5E7EB;display:flex;justify-content:space-between"><span style="font-size:10px;color:#9CA3AF">Rodme Health \u00b7 '+today+'</span><span style="font-size:10px;color:#9CA3AF">Confidencial</span></div>'
     +'<div class="np" style="margin-top:18px;display:flex;gap:10px;justify-content:center"><button onclick="window.print()" style="padding:10px 24px;background:#C4956A;border:none;color:white;font-size:13px;font-weight:800;border-radius:999px;cursor:pointer">Descargar PDF</button><button onclick="window.close()" style="padding:10px 18px;background:#F3F4F6;border:1px solid #E5E7EB;color:#374151;font-size:13px;border-radius:999px;cursor:pointer">Cerrar</button></div>'
     +'</body></html>';
-  var win=window.open('','_blank');win.document.write(html);win.document.close();
+  var win=window.open('','_blank');if(!win){alert('El navegador bloqueó la ventana del informe. Permite ventanas emergentes para imprimir.');return;}win.opener=null;win.document.write(html);win.document.close();
 }
 
 // ── MAIN APP ───────────────────────────────────────────────────────────────
