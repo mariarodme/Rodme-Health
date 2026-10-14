@@ -8,7 +8,12 @@
 <meta http-equiv="Expires" content="0"/>
 <title>Rodme Health</title>
 <meta name="description" content="Organiza las citas, medicamentos y expedientes de salud familiar en un solo lugar."/>
-<meta name="theme-color" content="#F7F5F0"/>
+<meta name="theme-color" content="#343D32"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<link rel="manifest" href="./manifest.webmanifest"/>
+<link rel="icon" type="image/svg+xml" href="./app-icon.svg"/>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Lora:ital,wght@0,500;0,600;1,400&display=swap" rel="stylesheet"/>
 <style>
 :root{
@@ -1326,6 +1331,13 @@ outline:3px solid #8AAB8C!important;outline-offset:3px
 .rh-med-missed{align-self:flex-start;border:1px solid var(--border);border-radius:99px;padding:8px 13px;background:var(--surface);color:var(--text2);font-size:.73rem;font-weight:800;cursor:pointer;min-height:39px}
 .rh-med-missed:disabled{opacity:.4}
 .rh-med-extra-settings{display:flex;flex-direction:column;gap:10px;padding:15px;background:var(--surface2);border-radius:12px}
+
+.rh-install-panel{border:1px solid var(--border);border-radius:13px;padding:23px;background:var(--surface);display:flex;flex-direction:column;gap:13px;margin-bottom:15px}
+.rh-install-panel h2{font-family:var(--serif);font-size:1.5rem;font-weight:400}
+.rh-install-panel p{color:var(--text2);font-size:.77rem;line-height:1.65;margin-top:5px}
+.rh-install-panel .rh-mini-btn{align-self:flex-start}
+.rh-install-help{font-size:.72rem!important;color:var(--text2)}
+@media(max-width:650px){.rh-install-panel{padding:18px}}
 </style>
 </head>
 <body>
@@ -2316,6 +2328,31 @@ function HealthCenterView(p){
   );
 }
 
+function InstallAppPanel(){
+  var ps=useState(!!window._rhInstallPrompt),installable=ps[0],setInstallable=ps[1];
+  var ss=useState(''),state=ss[0],setState=ss[1];
+  useEffect(function(){
+    function available(){setInstallable(!!window._rhInstallPrompt);}
+    window.addEventListener('rh-install-ready',available);
+    return function(){window.removeEventListener('rh-install-ready',available);};
+  },[]);
+  async function install(){
+    var prompt=window._rhInstallPrompt;
+    if(!prompt)return;
+    window._rhInstallPrompt=null;setInstallable(false);
+    try{prompt.prompt();var answer=await prompt.userChoice;setState(answer&&answer.outcome==='accepted'?'Solicitud enviada al navegador.':'Puedes instalarla desde el menú de tu navegador.');}
+    catch(e){setState('Usa el menú de tu navegador para instalar la aplicación.');}
+  }
+  return h('section',{className:'rh-install-panel'},
+    h('div',null,h('h2',null,'Rodme Health en tu celular'),
+      h('p',null,'Abre tu agenda como aplicación desde la pantalla de inicio, sin usar una cuenta de Google.')),
+    installable&&h('button',{className:'rh-mini-btn rh-mini-primary',onClick:install},h(Ic,{n:'plus',s:15,c:'currentColor'}),' Instalar aplicación'),
+    !installable&&h('p',{className:'rh-install-help'},'En iPhone: Safari → Compartir → Añadir a pantalla de inicio. En Android: menú del navegador → Instalar aplicación.'),
+    h('p',{className:'rh-install-help'},'Puede abrirse sin conexión después de haberla utilizado en línea. Los archivos externos o algunas funciones podrían requerir conexión.'),
+    state&&h('p',{className:'rh-install-help',role:'status'},state)
+  );
+}
+
 function SettingsView(p){
   var user=p.user,sv=p.sv,theme=p.theme,setTheme=p.setTheme;
   var pk=uk(user,'prefs'),saved=lsg(pk)||{};
@@ -2370,6 +2407,7 @@ function SettingsView(p){
     ),
     h('button',{className:'btn btn-primary btn-full',style:{marginTop:17,marginBottom:15,padding:'13px'},onClick:save},
       h(Ic,{n:savedOk?'check':'settings',s:15,c:'white'}),savedOk?'Preferencias guardadas':'Guardar cambios'),
+    h(InstallAppPanel),
     h(BackupPanel,{user:user}),
     h('div',{className:'rh-local-warning'},
       h(Ic,{n:'shield',s:19,c:'var(--accent)'}),
@@ -2979,6 +3017,13 @@ function App(){
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(h(App));
+if('serviceWorker' in navigator&&location.protocol==='https:'){
+  window.addEventListener('load',function(){navigator.serviceWorker.register('./sw.js',{scope:'./'}).catch(function(){});
+  });
+}
+window.addEventListener('beforeinstallprompt',function(e){
+  e.preventDefault();window._rhInstallPrompt=e;window.dispatchEvent(new Event('rh-install-ready'));
+});
 </script>
 </body>
 </html>
