@@ -1,6 +1,6 @@
 # Rodme Health
 
-Aplicación web para organizar información personal de salud familiar. Interfaz estática en React 18, publicada mediante GitHub Pages. Diseño de la portada y de la interfaz renovado con inspiración visual en la plantilla Wix «Clínica médica» (html/1820), adaptada para uso personal sin integrar los servicios comerciales ni sistemas de Wix.
+Aplicación web para organizar información personal de salud familiar. Interfaz estática en React 18, publicada mediante GitHub Pages. Diseño unificado en **toda la aplicación** (portada, pacientes, citas, medicamentos, expediente, centro de salud, seguimiento y configuración) inspirado en el lenguaje visual de la plantilla Wix «Clínica médica» (html/1820): turquesa, azul, fondos claros, tipografía Manrope/Plus Jakarta Sans y tarjetas clínicas. Se mantiene la lógica original y no se integran los servicios ni sistemas comerciales de Wix. La fotografía decorativa del encabezado muestra un espacio médico, no una persona.
 
 ## Funciones
 - Panel de salud familiar y buscador local.
