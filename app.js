@@ -2005,9 +2005,70 @@ function RodmeLocalApp(){
     return function(){window.removeEventListener('rh-cloud-data',redraw);};
   },[]);
   var store=useStore(user);
-  var vs=useState('home');var view=vs[0],sv=vs[1];
+  var vs=useState('home');var view=vs[0],setView=vs[1];
   var adt=useState(''),draftDate=adt[0],setDraftDate=adt[1];
-  var ms=useState(null);var modal=ms[0],sm=ms[1];
+  var ms=useState(null);var modal=ms[0],setModal=ms[1];
+  // El historial incluye vistas y formularios: funciona el botón Volver del celular.
+  var routeRef=useRef({view:'home',modal:null});
+  var routeEntries=useRef([{view:'home',modal:null}]);
+  var routeIndex=useRef(0);
+  var routeRender=useState(0),tickRoute=routeRender[1];
+  var browserActive=useRef(false);
+  var allowedViews=['home','patients','patient','appointments','medications','health','tracking','settings','record'];
+  function showRoute(next){
+    var previous=routeRef.current;
+    routeRef.current=next;
+    setView(next.view);setModal(next.modal);
+    tickRoute(function(n){return n+1;});
+    setSideOpen(false);setQuickOpen(false);
+    if(previous.view!==next.view)window.scrollTo(0,0);
+  }
+  function pushRoute(next){
+    var from=routeRef.current;
+    if(from.view===next.view&&from.modal===next.modal)return;
+    routeEntries.current=routeEntries.current.slice(0,routeIndex.current+1);
+    routeEntries.current.push(next);
+    routeIndex.current=routeEntries.current.length-1;
+    if(browserActive.current){
+      window.history.pushState({rhRodmeNavigation:true,step:routeIndex.current},'');
+    }
+    showRoute(next);
+  }
+  function sv(nextView){
+    var target=typeof nextView==='function'?nextView(routeRef.current.view):nextView;
+    if(!allowedViews.includes(target))return;
+    pushRoute({view:target,modal:null});
+  }
+  function sm(nextModal){
+    if(nextModal===null){
+      if(routeRef.current.modal!==null)goBack();
+      return;
+    }
+    pushRoute({view:routeRef.current.view,modal:nextModal});
+  }
+  function goBack(){
+    if(routeIndex.current>0){
+      if(browserActive.current)window.history.back();
+      else{routeIndex.current--;showRoute(routeEntries.current[routeIndex.current]);}
+    }else if(routeRef.current.view!=='home'||routeRef.current.modal!==null){
+      showRoute({view:'home',modal:null});
+    }
+  }
+  useEffect(function(){
+    var old=window.history.state||{};
+    window.history.replaceState(Object.assign({},old,{rhRodmeNavigation:true,step:0}),'');
+    browserActive.current=true;
+    function onPopState(e){
+      var state=e.state;
+      if(!state||!state.rhRodmeNavigation||!Number.isInteger(state.step))return;
+      var next=routeEntries.current[state.step];
+      if(!next)return;
+      routeIndex.current=state.step;
+      showRoute(next);
+    }
+    window.addEventListener('popstate',onPopState);
+    return function(){browserActive.current=false;window.removeEventListener('popstate',onPopState);};
+  },[]);
   var ps=useState(null);var selP=ps[0],ssp=ps[1];
   var as2=useState(null);var selA=as2[0],ssa=as2[1];
   var smS=useState(null);var selM=smS[0],ssm=smS[1];
