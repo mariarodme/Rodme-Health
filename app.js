@@ -812,6 +812,7 @@ function BackupPanel(p){
   var statusState=useState(''),status=statusState[0],setStatus=statusState[1];
   var busyState=useState(false),busy=busyState[0],setBusy=busyState[1];
   var modeState=useState('export'),mode=modeState[0],setMode=modeState[1];
+  var lastExport=lsg(uk(p.user,'last_backup_export'));
   async function exportBackup(){
     if(busy)return;
     if(!window.crypto||!crypto.subtle){setStatus('Este navegador no admite copias cifradas.');return;}
@@ -823,10 +824,16 @@ function BackupPanel(p){
       var key=await rhDeriveBackupKey(password,salt);
       var plaintext=new TextEncoder().encode(JSON.stringify(rhBackupPayload(p.user)));
       var encrypted=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv:iv},key,plaintext));
+      // Verify that the encrypted archive can be decrypted and validated
+      // before making it available for download.
+      var verified=await crypto.subtle.decrypt({name:'AES-GCM',iv:iv},key,encrypted);
+      var verifiedPayload=JSON.parse(new TextDecoder().decode(verified));
+      rhValidateBackup(verifiedPayload);
       var wrapper={format:'rodme-health-encrypted',version:1,kdf:'PBKDF2-SHA256',iterations:250000,
         cipher:'AES-256-GCM',createdAt:new Date().toISOString(),
         salt:rhToB64(salt),iv:rhToB64(iv),payload:rhToB64(encrypted)};
       rhDownload(JSON.stringify(wrapper,null,2),'rodme-backup-'+rhCalDay(new Date())+'.rhbackup','application/json');
+      lss(uk(p.user,'last_backup_export'),new Date().toISOString());
       setStatus('Copia cifrada descargada. Guarda la contraseña en un lugar seguro: no podremos recuperarla.');
       setPassword('');setAgain('');
     }catch(e){setStatus('No se pudo generar la copia. Comprueba el espacio disponible y los permisos del navegador.');}
@@ -863,12 +870,16 @@ function BackupPanel(p){
   function switchMode(m){setMode(m);setStatus('');setPassword('');setAgain('');}
   return h('section',{className:'rh-backup-panel'},
     h('div',{className:'rh-backup-title'},h(Ic,{n:'shield',s:19,c:'var(--accent)'}),
-      h('div',null,h('h2',null,'Copias de seguridad'),h('p',null,'Protege tus registros con una copia cifrada y recuperable.'))),
+      h('div',null,h('h2',null,'Copias de seguridad'),h('p',null,'Protege tus registros con una copia cifrada y recuperable.'),
+        h('p',{className:'rh-backup-last'},lastExport
+          ?'Última exportación iniciada: '+new Date(lastExport).toLocaleDateString('es-CR')+
+            ' (comprueba que guardaste el archivo).'
+          :'Todavía no hay una exportación registrada en este navegador.'))),
     h('div',{className:'rh-backup-tabs',role:'group','aria-label':'Copia o restauración'},
       h('button',{className:mode==='export'?'active':'',onClick:function(){switchMode('export');}},'Guardar copia'),
       h('button',{className:mode==='import'?'active':'',onClick:function(){switchMode('import');}},'Restaurar copia')
     ),
-    mode==='export'?h('p',{className:'rh-backup-description'},'Descarga un archivo cifrado con pacientes, expedientes, citas, tratamientos, signos vitales, síntomas, seguimientos, laboratorios, vacunas, documentos y preferencias. La copia no se envía a ningún servidor.')
+    mode==='export'?h('p',{className:'rh-backup-description'},'Descarga un archivo cifrado con pacientes, expedientes, citas, tratamientos, signos vitales, síntomas, seguimientos, laboratorios, vacunas, documentos y preferencias. La copia se comprueba mediante descifrado antes de descargarla. No se envía a ningún servidor.')
       :h('p',{className:'rh-backup-description'},'Selecciona un archivo .rhbackup generado en Rodme Health. Antes de reemplazar información se solicitará confirmación.'),
     mode==='import'&&h('label',{className:'rh-backup-field'},h('span',null,'Archivo de copia'),
       h('input',{type:'file',accept:'.rhbackup,application/json',onChange:function(e){setFile(e.target.files&&e.target.files[0]||null);setStatus('');}})),
