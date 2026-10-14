@@ -2084,3 +2084,105 @@ body{letter-spacing:-.012em}
  .rh-board-med-pill-icon{width:36px;height:36px}
  .med1820-interior .rh-med-top .chip{font-size:.61rem}
 }
+
+/* Acabados finales Rodme Health: misma identidad clínica en todas las pantallas */
+.rh-patient-directory{max-width:1170px;margin-inline:auto}
+.rh-patient-directory .pt-card{padding:18px 20px;min-height:100px;border-radius:15px;gap:16px;box-shadow:0 4px 18px rgba(22,74,95,.035)}
+.rh-patient-directory .pt-card .av{border-radius:50%;overflow:hidden;flex-shrink:0;border:3px solid var(--surface);box-shadow:0 0 0 1px var(--border)}
+.rh-patient-directory .pt-card .av img{width:100%;height:100%;object-fit:cover}
+.rh-patient-directory .pt-card:focus-within{border-color:var(--accent2);box-shadow:0 0 0 3px var(--accent-bg)}
+.rh-patient-directory .pt-card>div:nth-child(2){min-width:0}
+.rh-patient-directory .pt-card>div:nth-child(2)>p:first-child{overflow-wrap:anywhere;line-height:1.35}
+.rh-patient-directory .pt-card>div:last-child{flex-shrink:0}
+.rh-patient-directory .pt-card .rh-patient-history{min-height:38px;border-radius:9px}
+.rh-board-summary-card,.rh-board-panel,.rh-board-family,.rh-board-patient-panel{box-shadow:0 3px 20px rgba(20,70,94,.04)}
+.rh-board-panel-head h2,.rh-board-section-head h2{letter-spacing:-.025em;line-height:1.35}
+.rh-board-family-person:hover,.rh-board-family-person:focus-visible{border-color:var(--accent2);background:var(--accent-bg)}
+.med1820-interior .rh-board-profile .rh-profile-hero{background:var(--surface)}
+.med1820-interior .rh-board-profile .rh-profile-photo{display:grid;place-items:center;background:var(--accent-bg);color:var(--accent);font-size:1.65rem}
+.med1820-interior .rh-board-profile .rh-profile-info h1{font-weight:800;overflow-wrap:anywhere}
+.med1820-interior .rh-board-profile .rh-profile-counts{overflow:visible}
+.med1820-interior .rh-board-profile .rh-profile-tabbar{display:flex;align-items:stretch;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:thin;overscroll-behavior-x:contain;border-radius:12px;margin:10px 0 0}
+.med1820-interior .rh-board-profile .rh-profile-tab{flex:0 0 auto;min-height:48px;white-space:nowrap;font-size:.77rem;border-bottom:3px solid transparent;border-radius:0}
+.med1820-interior .rh-board-profile .rh-profile-tab.active{border-bottom:3px solid var(--accent)}
+.rh-board-patient-panel .rh-board-panel-head{min-height:30px}
+.rh-board-patient-panel,.rh-profile-panel{transition:border-color .2s ease}
+.rh-board-patient-panel:hover,.rh-profile-panel:hover{border-color:var(--accent2)}
+.rh-profile-muted,.rh-board-patient-empty{line-height:1.65}
+.rh-board-calendar-day-panel{background:var(--surface);border-radius:0 0 13px 13px}
+.rh-board-cal-item{border-radius:8px;transition:background .15s}
+.rh-calendar-cell:focus-within{position:relative;z-index:1;box-shadow:inset 0 0 0 2px var(--accent2)}
+.rh-calendar-day-count{display:none}
+.rh-board-cal-state{padding:6px 9px;background:var(--accent-bg);border-radius:999px}
+.rh-board-med-filters button{transition:background .15s,border-color .15s}
+.rh-board-med-filters button:not(.active):hover{background:var(--accent-bg);border-color:var(--accent2);color:var(--accent)}
+.med1820-interior .med-card:focus-within{border-color:var(--accent2)}
+.rh-med-details-btn{display:flex;align-items:center;justify-content:space-between;gap:7px;width:100%;min-height:42px;margin-top:11px;padding:9px 2px 3px;border:0;border-top:1px solid var(--border);background:transparent;color:var(--accent);font-size:.73rem;font-weight:800;text-align:left;cursor:pointer}
+.rh-med-details-btn svg{transition:transform .18s}
+.rh-med-details-btn[aria-expanded="true"] svg{transform:rotate(180deg)}
+.rh-med-details-btn:hover{color:var(--text)}
+.med1820-interior .rh-med-expanded{margin-top:2px}
+.rh-board-primary:focus-visible,.rh-board-secondary:focus-visible,.rh-board-summary-card:focus-visible,.rh-board-panel button:focus-visible,.rh-board-family button:focus-visible,.rh-board-profile button:focus-visible,.rh-calendar-day:focus-visible,.rh-board-cal-item:focus-visible,.rh-med-details-btn:focus-visible,.rh-dose-btn:focus-visible,.rh-board-med-filters button:focus-visible,.rh-quick-toggle:focus-visible,.rh-board-header-search:focus-visible,.nav-item:focus-visible,.mobile-header button:focus-visible,.rh-nav-theme:focus-visible{outline:3px solid var(--accent2)!important;outline-offset:2px}
+@media(max-width:850px){.rh-board-patient-columns{gap:10px}}
+@media(max-width:768px){
+ .rh-board-hero-image{display:block;min-height:105px;height:105px}
+ .rh-board-hero-image img{object-position:center 54%}
+ .rh-board-hero-image::before{background:linear-gradient(180deg,rgba(240,248,253,.05),rgba(240,248,253,.34))}
+ .rh-board-hero-quote{display:none}
+ .rh-board-summary{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ .rh-board-summary-card{flex-direction:row;justify-content:flex-start;text-align:left;gap:10px;min-height:83px;padding:12px 13px;border-radius:12px}
+ .rh-board-stat-copy{gap:1px}
+ .rh-board-stat-icon{width:39px;height:39px}
+ .rh-board-stat-copy strong{font-size:.72rem}
+ .rh-board-stat-copy b{font-size:1.4rem}
+ .rh-board-family-person{min-height:67px}
+ .med1820-interior .rh-board-profile .rh-profile-hero{gap:12px;padding:17px 15px}
+ .med1820-interior .rh-board-profile .rh-profile-photo{width:68px;height:68px}
+ .med1820-interior .rh-board-profile .rh-profile-tools{width:100%;margin-left:0}
+ .med1820-interior .rh-board-profile .rh-profile-tools button{flex:1}
+ .med1820-interior .rh-board-profile .rh-profile-counts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin:12px 0}
+ .med1820-interior .rh-board-profile .rh-profile-counts>div{flex-direction:column;gap:4px;text-align:center;padding:10px 6px;min-width:0}
+ .med1820-interior .rh-board-profile .rh-profile-counts span{font-size:.66rem;line-height:1.35;overflow-wrap:anywhere}
+ .med1820-interior .rh-board-profile .rh-profile-tabbar{margin:10px -1px 0;padding:0 5px}
+ .med1820-interior .rh-board-profile .rh-profile-tab{padding:12px 15px;font-size:.76rem}
+ .rh-calendar-grid .rh-calendar-event,.rh-calendar-grid .rh-cal-more{display:none}
+ .rh-calendar-grid .rh-calendar-cell{align-items:center;padding:6px 2px;min-height:66px;gap:4px}
+ .rh-calendar-grid .rh-calendar-day{align-self:center;width:33px;height:33px;font-size:.8rem}
+ .rh-calendar-day-count{display:grid;place-items:center;min-width:19px;height:19px;padding:0 5px;border-radius:99px;background:var(--accent-bg);color:var(--accent);font-size:.62rem;font-weight:800;line-height:1}
+ .rh-calendar-cell.is-outside .rh-calendar-day-count{opacity:.6}
+ .rh-board-calendar-day-panel{padding:15px}
+ .rh-board-cal-item{gap:8px;flex-wrap:wrap}
+ .rh-board-cal-time{width:66px}
+ .rh-board-cal-text{flex:1 1 calc(100% - 115px)}
+ .rh-board-cal-state{display:inline-block;font-size:.6rem}
+ .rh-board-med-filters{flex-wrap:nowrap;overflow-x:auto;padding-bottom:5px}
+ .rh-board-med-filters button{flex:0 0 auto;white-space:nowrap}
+ .bottom-nav{box-shadow:0 -5px 24px rgba(20,72,92,.06);backdrop-filter:blur(18px)}
+ .bottom-nav .bn-btn{border-radius:11px;min-width:0;min-height:60px;justify-content:center;gap:5px}
+ .bottom-nav .bn-btn.active{background:var(--accent-bg)}
+ .bottom-nav .bn-lbl{font-size:clamp(.57rem,1.8vw,.7rem);white-space:nowrap}
+ .rh-quick-toggle{min-width:52px;min-height:52px}
+ .rh-med-details-btn{min-height:45px}
+}
+@media(max-width:540px){
+ .rh-patient-directory .pt-card{display:grid;grid-template-columns:58px minmax(0,1fr);align-items:start;gap:12px;padding:15px 14px}
+ .rh-patient-directory .pt-card>.av{grid-row:1;grid-column:1}
+ .rh-patient-directory .pt-card>div:last-child{grid-column:1/-1;display:flex!important;flex-direction:row!important;align-items:center;gap:8px!important;justify-content:flex-end;border-top:1px solid var(--border);padding-top:11px}
+ .rh-patient-directory .pt-card>div:last-child .rh-patient-history{margin-right:auto}
+ .rh-board-summary-card{padding:11px}
+ .rh-board-stat-icon{width:35px;height:35px}
+ .rh-board-stat-copy strong{font-size:.7rem}
+ .med1820-interior .rh-board-profile .rh-profile-counts strong{font-size:1.35rem}
+ .rh-board-cal-item>span:last-child{display:none}
+ .rh-board-cal-time{width:59px;font-size:.68rem}
+ .rh-board-cal-state{margin-left:66px}
+}
+@media(max-width:350px){
+ .rh-board-summary-card{gap:7px;padding:9px}
+ .rh-board-stat-icon{width:31px;height:31px}
+ .rh-board-stat-copy strong{font-size:.64rem}
+ .rh-board-stat-copy b{font-size:1.23rem}
+ .rh-board-primary,.rh-board-secondary{flex:1;padding:10px 8px}
+}
+[data-theme=dark] .rh-board-hero-image::before{background:linear-gradient(180deg,rgba(16,33,44,0),rgba(16,33,44,.23))}
+[data-theme=dark] .rh-board-cal-state{color:var(--accent)}
