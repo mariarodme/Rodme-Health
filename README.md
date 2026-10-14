@@ -31,10 +31,20 @@ Los recordatorios dentro de la aplicación dependen del permiso del navegador y 
 ## Para un uso clínico real
 Antes de utilizar datos médicos reales de familiares o pacientes, implementar un backend privado autenticado, cifrado de datos en reposo, permisos familiares y auditoría, control de sesiones, copias automatizadas verificables, eliminación segura y políticas de protección de datos aplicables en Costa Rica. No se debe considerar que GitHub Pages por sí solo proporciona estas funciones.
 
+## Organización y mejoras de interfaz
+- Diseño de Wix 1820 unificado en todas las pantallas y estilos anteriores sin uso eliminados.
+- Perfil familiar organizado por pestañas de Resumen, Citas, Tratamientos, Historial y Documentos.
+- Formularios con comprobación de datos y confirmación antes de descartar cambios.
+- Menú móvil, zonas táctiles accesibles y portada compacta para visualizar acciones sin desplazarse tanto.
+- Archivos de estilos y código por separado para favorecer la reutilización de caché.
+- Copias cifradas con comprobación de descifrado antes de exportar; recordatorio local si no se inició una exportación reciente. La fecha de exportación no garantiza que el usuario haya guardado el archivo.
+
 ## Archivos
-- `index.html`: interfaz, estilos y lógica local.
+- `index.html`: estructura HTML reducida.
+- `styles.css`: diseño unificado y estilos responsivos.
+- `app.js`: lógica React y almacenamiento local.
 - `manifest.webmanifest`: instalación como PWA.
 - `app-icon.svg`: icono original de la aplicación.
-- `sw.js`: caché limitada a recursos estáticos.
+- `sw.js`: caché limitada a recursos públicos estáticos, incluidos CSS y JS.
 
 No incluir nunca expedientes ni datos reales de pacientes en el repositorio público.
