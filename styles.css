@@ -2445,3 +2445,273 @@ small{line-height:1.48}
   .rh-board-cal-state{margin-left:0}
   .med1820-interior .rh-board-profile .rh-profile-counts span{font-size:12.5px}
 }
+
+
+/* Rodme Health v10 - Letra visiblemente mas grande y ajustable.
+   Las reglas importantes también corrigen tamaños pequeños en estilos inline. */
+:root{
+  --rh-copy-size:18px;
+  --rh-caption-size:16px;
+  --rh-control-size:17px;
+  --rh-section-title:23px;
+}
+:root[data-rh-font="xlarge"]{
+  --rh-copy-size:20px;
+  --rh-caption-size:18px;
+  --rh-control-size:19px;
+  --rh-section-title:25px;
+}
+html{font-size:18px}
+body{font-size:var(--rh-copy-size)}
+/* La opción de tipografía se aplica a todas las vistas, sin alterar los registros. */
+#root .page-content p,
+#root .page-content li,
+#root .page-content td,
+#root .page-content th{
+  font-size:var(--rh-copy-size)!important;
+  line-height:1.62;
+  overflow-wrap:anywhere;
+}
+#root .page-content span,
+#root .page-content strong{
+  font-size:var(--rh-copy-size)!important;
+  line-height:1.5;
+}
+#root .page-content small,
+#root .page-content label{
+  font-size:var(--rh-caption-size)!important;
+  line-height:1.5;
+}
+#root .page-content button,
+#root .page-content input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+#root .page-content select,
+#root .page-content textarea,
+#root .sheet button,
+#root .sheet input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+#root .sheet select,#root .sheet textarea{
+  font-size:var(--rh-control-size)!important;
+  line-height:1.45;
+}
+#root .page-content h2{
+  font-size:var(--rh-section-title)!important;
+  line-height:1.3;
+}
+#root .page-content h3{
+  font-size:calc(var(--rh-section-title) - 2px)!important;
+  line-height:1.34;
+}
+#root .page-content .ph-sub,
+#root .page-content .rh-center-kicker,
+#root .page-content .rh-board-greeting{
+  font-size:var(--rh-caption-size)!important;
+  letter-spacing:.025em;
+}
+#root .page-content .rh-board-hero h1{
+  font-size:clamp(40px,4vw,63px)!important;
+  line-height:1.1;
+}
+#root .page-content .rh-board-hero h2{
+  font-size:var(--rh-section-title)!important;
+  line-height:1.32;
+}
+#root .page-content .rh-board-summary-card{
+  padding:20px;min-height:132px;gap:16px;
+}
+#root .page-content .rh-board-stat-copy strong{
+  font-size:var(--rh-copy-size)!important;line-height:1.35;
+  white-space:normal;overflow:visible;
+}
+#root .page-content .rh-board-stat-copy b{font-size:35px!important;line-height:1.1}
+#root .page-content .rh-board-stat-copy small{
+  font-size:var(--rh-caption-size)!important;
+  white-space:normal;overflow:visible;
+}
+#root .page-content .rh-board-cards{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;
+}
+#root .page-content .rh-board-pendings{grid-column:1/-1}
+#root .page-content .rh-board-panel{
+  padding:25px 23px;
+}
+#root .page-content .rh-board-panel-head{gap:12px;flex-wrap:wrap}
+#root .page-content .rh-board-panel-head h2,
+#root .page-content .rh-board-section-head h2{
+  font-size:var(--rh-section-title)!important;
+}
+#root .page-content .rh-board-date{
+  min-width:80px;width:80px;min-height:120px;
+}
+#root .page-content .rh-board-date span{font-size:var(--rh-caption-size)!important}
+#root .page-content .rh-board-date strong{font-size:41px!important;line-height:1.1}
+#root .page-content .rh-board-pending-count,
+#root .page-content .rh-board-pending-date,
+#root .page-content .rh-board-status,
+#root .page-content .rh-board-tag,
+#root .page-content .chip{
+  font-size:var(--rh-caption-size)!important;
+}
+#root .page-content .rh-board-treat-name strong,
+#root .page-content .rh-board-pending-main strong,
+#root .page-content .rh-board-family-person strong{
+  font-size:var(--rh-copy-size)!important;
+  line-height:1.45;white-space:normal;overflow-wrap:anywhere;
+}
+#root .page-content .rh-board-family-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;
+}
+#root .page-content .rh-board-family-person{min-height:95px;padding:20px;gap:15px}
+#root .page-content .rh-board-avatar{width:52px;height:52px}
+#root .page-content .rh-board-patient-columns{
+  grid-template-columns:repeat(2,minmax(0,1fr));gap:17px;
+}
+#root .page-content .rh-board-patient-timeline{grid-column:1/-1}
+#root .page-content .rh-board-patient-field{display:block}
+#root .page-content .rh-board-patient-field span,
+#root .page-content .rh-board-patient-field strong{
+  display:block;text-align:left;max-width:100%;overflow-wrap:anywhere;
+}
+#root .page-content .rh-board-patient-field strong{margin-top:5px}
+#root .page-content .rh-board-patient-mini-stats strong{
+  font-size:34px!important;line-height:1.1
+}
+#root .page-content .rh-board-profile .rh-profile-counts strong{
+  font-size:35px!important;line-height:1.1
+}
+#root .page-content .rh-board-profile .rh-profile-tab{
+  font-size:var(--rh-control-size)!important;
+  padding:15px 20px;min-height:55px;
+}
+#root .page-content .rh-calendar-day{font-size:var(--rh-control-size)!important}
+#root .page-content .rh-calendar-weekday{font-size:var(--rh-caption-size)!important}
+#root .page-content .rh-calendar-event{
+  font-size:15px!important;line-height:1.3;
+}
+#root .page-content .rh-calendar-event small{
+  font-size:13px!important;line-height:1.3;
+}
+#root .page-content .rh-calendar-day-count{font-size:var(--rh-caption-size)!important}
+#root .page-content .rh-center-result strong{
+  font-size:32px!important;line-height:1.2;
+}
+#root .page-content .stat-num{font-size:35px!important;line-height:1.1}
+#root .page-content .rh-patient-directory .pt-card{
+  padding:21px 23px;gap:17px;min-height:120px;
+}
+#root .page-content .rh-patient-directory .pt-card>div:nth-child(2)>p:first-child{
+  font-size:calc(var(--rh-copy-size) + 1px)!important;
+}
+#root .page-content .rh-patient-directory .pt-card .av{
+  width:68px!important;height:68px!important;
+}
+#root .page-content .rh-board-med-filters button{min-height:50px}
+#root .page-content .rh-med-details-btn{min-height:50px}
+#root .page-content .rh-dose-actions{
+  gap:14px;
+}
+#root .page-content .rh-dose-btn{padding:13px 17px;min-height:49px}
+#root .page-content .rh-calendar-toolbar-actions button{min-height:50px}
+
+/* Texto legible también en hojas emergentes y avisos */
+#root .sheet p,#root .sheet li,#root .rh-import-panel p{
+  font-size:var(--rh-copy-size)!important;line-height:1.6;
+}
+#root .sheet span,#root .sheet label,#root .sheet small,
+#root .rh-import-panel span,#root .rh-import-panel small{
+  font-size:var(--rh-caption-size)!important;line-height:1.5;
+}
+#root .sheet .sheet-title{font-size:var(--rh-section-title)!important}
+#root .sheet h3{font-size:calc(var(--rh-section-title) - 2px)!important}
+#root .rh-import-panel button{font-size:var(--rh-control-size)!important}
+
+/* Barra de navegación lateral y móvil */
+.sidebar .nav-item{font-size:var(--rh-control-size)!important;min-height:51px}
+.sidebar .user-row p{font-size:var(--rh-caption-size)!important}
+.top-bar .rh-board-header-search,
+.top-bar .rh-nav-cta{font-size:var(--rh-control-size)!important}
+.mobile-header span{font-size:var(--rh-control-size)!important}
+.bottom-nav .bn-lbl{
+  font-size:14px!important;line-height:1.2;white-space:normal;
+  overflow-wrap:anywhere;text-align:center;letter-spacing:0;
+}
+.rh-quick-menu button,.rh-quick-toggle{
+  font-size:var(--rh-control-size)!important;
+}
+
+/* Selector personal de tipografía */
+.rh-font-setting{margin-top:18px}
+.rh-font-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:8px}
+#root .rh-font-option{
+  display:flex;align-items:center;justify-content:center;
+  min-width:0;min-height:53px;padding:12px;
+  border:1.5px solid var(--border);border-radius:11px;
+  background:var(--surface2);color:var(--text);cursor:pointer;
+  font-size:var(--rh-control-size)!important;font-weight:800;
+  white-space:normal;text-align:center;
+}
+#root .rh-font-option.active{
+  background:var(--accent-bg);color:var(--accent);border-color:var(--accent)
+}
+#root .rh-font-option:focus-visible{outline:3px solid var(--accent2);outline-offset:2px}
+#root .rh-font-setting-help{
+  margin-top:10px;color:var(--text2);
+  font-size:var(--rh-caption-size)!important;line-height:1.5;
+}
+@media(max-width:1120px){
+  #root .page-content .rh-board-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #root .page-content .rh-board-patient-columns{grid-template-columns:1fr}
+  #root .page-content .rh-board-patient-timeline{grid-column:auto}
+}
+@media(max-width:768px){
+  #root .page-content .rh-board-cards{display:flex;flex-direction:column;gap:14px}
+  #root .page-content .rh-board-panel{padding:22px 18px}
+  #root .page-content .rh-board-family-grid{grid-template-columns:1fr}
+  #root .page-content .rh-board-family-person{min-height:92px;padding:15px}
+  #root .page-content .rh-board-hero h1{font-size:clamp(37px,9vw,48px)!important}
+  #root .page-content .rh-board-hero-copy{padding:25px 19px}
+  #root .page-content .rh-board-hero h2{font-size:var(--rh-section-title)!important}
+  #root .page-content .rh-board-summary-card{
+    min-height:150px;padding:16px;display:flex;
+    flex-direction:column;align-items:flex-start;gap:9px;
+  }
+  #root .page-content .rh-board-stat-copy b{font-size:32px!important}
+  #root .page-content .rh-board-stat-copy small{display:none}
+  #root .page-content .rh-board-date{
+    width:80px;min-width:80px;min-height:118px
+  }
+  #root .page-content .rh-board-profile .rh-profile-counts strong{font-size:28px!important}
+  #root .page-content .rh-board-patient-mini-stats strong{font-size:28px!important}
+  #root .page-content .rh-board-profile .rh-profile-tab{font-size:var(--rh-control-size)!important;padding:12px 15px}
+  #root .page-content .rh-board-patient-mini-stats{grid-template-columns:1fr 1fr}
+  #root .page-content .rh-calendar-grid .rh-calendar-day{
+    font-size:var(--rh-caption-size)!important;min-width:34px;min-height:34px;
+  }
+  #root .page-content .rh-calendar-grid .rh-calendar-cell{min-height:80px;gap:5px}
+  #root .page-content .rh-calendar-day-count{min-width:23px;min-height:23px}
+  #root .page-content .rh-calendar-weekday{font-size:14px!important}
+  #root .page-content .rh-calendar-toolbar-actions button{min-height:53px}
+  #root .page-content .rh-board-cal-time{width:75px;flex-shrink:0}
+  #root .page-content .rh-board-cal-item{gap:11px;flex-wrap:wrap}
+  #root .page-content .rh-board-cal-text{flex:1 1 150px}
+  #root .page-content .rh-board-cal-state{margin-left:0}
+  #root .page-content .rh-patient-directory .pt-card{
+    padding:17px;min-height:110px;
+  }
+  #root .page-content .rh-patient-directory .pt-card .av{
+    width:62px!important;height:62px!important;
+  }
+  .bottom-nav .bn-btn{min-height:75px;gap:5px}
+  .rh-quick-add{bottom:calc(111px + env(safe-area-inset-bottom,0px))}
+  .med1820-home.rh-board-home{padding-bottom:145px}
+}
+@media(max-width:430px){
+  #root .page-content .rh-board-summary{gap:9px}
+  #root .page-content .rh-board-summary-card{min-height:146px;padding:12px}
+  #root .page-content .rh-board-stat-copy strong{font-size:var(--rh-caption-size)!important}
+  #root .page-content .rh-board-date{width:67px;min-width:67px}
+  #root .page-content .rh-board-date strong{font-size:32px!important}
+  #root .page-content .rh-board-patient-mini-stats{grid-template-columns:1fr}
+  #root .page-content .rh-board-patient-mini-stats>div{min-height:85px}
+  #root .page-content .rh-board-pending-date{white-space:normal}
+  .bottom-nav .bn-lbl{font-size:13px!important}
+  #root .page-content .rh-calendar-weekday{font-size:12px!important}
+}
