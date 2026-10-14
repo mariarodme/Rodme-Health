@@ -1134,6 +1134,11 @@ body{background:var(--bg);color:var(--text)}
 @media(min-width:769px){.wix-hero{min-height:clamp(420px,55vh,570px)}}
 
 .rh-no-patient{font-size:.81rem;line-height:1.6;color:var(--text2);padding:12px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px}
+
+.rh-record-context{display:flex;align-items:flex-start;flex-direction:column;gap:9px;background:var(--accent-bg);border:1px solid var(--border);border-radius:13px;padding:15px;margin-bottom:15px}
+.rh-record-context label{font-size:.75rem;font-weight:800;color:var(--text)}
+.rh-record-context select{width:100%;min-height:48px;font-size:.92rem;font-weight:800;background:var(--surface)}
+.rh-record-context p{font-size:.73rem;color:var(--text2);line-height:1.55}
 </style>
 </head>
 <body>
@@ -1233,7 +1238,10 @@ function Sheet(p){
 function HomeView(p){
   var store=p.store,sm=p.sm,ssa=p.ssa,sv=p.sv,user=p.user;
   var prefs=lsg(uk(user,'prefs'))||{};
-  var rec=lsg(uk(user,'rec'))||{};
+  var records=lsg(uk(user,'records'))||{};
+  var legacyRec=lsg(uk(user,'rec'))||{};
+  var selectedRecordPatient=(store.patients||[]).find(function(p){return p.id===(lsg(uk(user,'record_patient'))||store.patients[0]?.id);});
+  var rec=selectedRecordPatient?rhReadRecord(user,selectedRecordPatient.id,store.patients):{};
   var due=store.appointments.filter(function(a){return !a.attended&&du(a.date)!==null&&du(a.date)>=0;})
     .sort(function(a,b){return (a.date+(a.time||''))>(b.date+(b.time||''))?1:-1;}).slice(0,3);
   var meds=store.medications.slice(0,3);
@@ -1711,7 +1719,8 @@ function rhBackupPayload(user){
       m:lsg(uk(user,'m'))||[],
       d:lsg(uk(user,'d'))||[],
       prefs:lsg(uk(user,'prefs'))||{},
-      rec:lsg(uk(user,'rec'))||{}
+      rec:lsg(uk(user,'rec'))||{},
+      records:lsg(uk(user,'records'))||{}
     }
   };
 }
@@ -1719,6 +1728,11 @@ function rhValidateBackup(data){
   if(!data||data.app!=='rodme-health'||data.version!==1||!data.data||typeof data.data!=='object')throw Error('El archivo no es una copia compatible');
   ['p','a','m','d'].forEach(function(k){if(!Array.isArray(data.data[k])||data.data[k].length>20000)throw Error('Datos inválidos: '+k);});
   ['prefs','rec'].forEach(function(k){var v=data.data[k];if(!v||typeof v!=='object'||Array.isArray(v))throw Error('Datos inválidos: '+k);});
+  if(data.data.records!==undefined&&(!data.data.records||typeof data.data.records!=='object'||Array.isArray(data.data.records)))throw Error('Expedientes incompatibles');
+  if(data.data.records){Object.keys(data.data.records).forEach(function(pid){
+    if(!data.data.p.some(function(p){return p.id===pid}))throw Error('Expediente sin paciente');
+    var v=data.data.records[pid];if(!v||typeof v!=='object'||Array.isArray(v))throw Error('Expediente inválido');
+  });}
   // Verificar asociaciones antes de restaurar.
   var patientIds=new Set();
   data.data.p.forEach(function(v){if(!v||typeof v.id!=='string'||!v.id||typeof v.name!=='string')throw Error('Paciente inválido');patientIds.add(v.id);});
@@ -1769,9 +1783,9 @@ function BackupPanel(p){
       if(salt.length!==16||iv.length!==12)throw Error('Parámetros inválidos');
       var key=await rhDeriveBackupKey(password,salt);
       var plaintext=await crypto.subtle.decrypt({name:'AES-GCM',iv:iv},key,rhFromB64(envelope.payload));
-      var payload=JSON.parse(new TextDecoder().decode(plaintext)),data=rhValidateBackup(payload);
+      var payload=JSON.parse(new TextDecoder().decode(plaintext)),data=rhValidateBackup(payload);data.records=data.records||{};
       if(!window.confirm('La restauración reemplazará los registros de este espacio en este navegador. ¿Ya guardaste una copia de los datos actuales y deseas continuar?')){setStatus('Restauración cancelada; no se cambió ningún dato.');return;}
-      var keys=['p','a','m','d','prefs','rec'],old={};
+      var keys=['p','a','m','d','prefs','rec','records'],old={};
       keys.forEach(function(k){old[k]=localStorage.getItem(uk(p.user,k));});
       try{keys.forEach(function(k){localStorage.setItem(uk(p.user,k),JSON.stringify(data[k]));});}
       catch(e){
@@ -1820,7 +1834,7 @@ function SettingsView(p){
   function save(){lss(pk,form);setSavedOk(true);}
   function clearSpace(){
     if(confirm('¿Borrar todos los registros de este espacio en este navegador? Esta acción no se puede deshacer.')){
-      ['p','a','m','d','rec','prefs'].forEach(function(k){localStorage.removeItem(uk(user,k));});
+      ['p','a','m','d','rec','records','prefs','record_patient'].forEach(function(k){localStorage.removeItem(uk(user,k));});
       location.reload();
     }
   }
@@ -1874,14 +1888,46 @@ function SettingsView(p){
 }
 
 // ── RECORD VIEW ────────────────────────────────────────────────────────────
+// Expedientes por paciente. El formato anterior se conserva y solo se atribuye
+// a un paciente si existía una vinculación explícita o si era el único paciente.
+function rhReadRecord(user,patientId,patients){
+  if(!patientId)return {};
+  var map=lsg(uk(user,'records'))||{};
+  if(Object.prototype.hasOwnProperty.call(map,patientId))return xt({},map[patientId]);
+  var legacy=lsg(uk(user,'rec'))||{};
+  if(legacy&&typeof legacy==='object'&&!Array.isArray(legacy)&&
+    ((legacy.patientId&&legacy.patientId===patientId)||
+     (!legacy.patientId&&patients&&patients.length===1&&patients[0].id===patientId))){
+    return xt({},legacy);
+  }
+  return {};
+}
+function rhSaveRecord(user,patientId,data){
+  if(!patientId)return false;
+  var map=lsg(uk(user,'records'))||{};
+  map[patientId]=xt(data,{patientId:patientId});
+  return lss(uk(user,'records'),map);
+}
+
 function RecordView(p){
   var store=p.store,sv=p.sv,user=p.user;
-  var rk=uk(user,'rec');
-  var saved=lsg(rk)||{};
-  var pid=store.patients.length>0?store.patients[0].id:'';
-  var fs=useState(xt({patientId:pid},saved));var form=fs[0],sf=fs[1];
+  var storedPid=lsg(uk(user,'record_patient'));
+  var pid=store.patients.some(function(pt){return pt.id===storedPid;})?storedPid:
+    (store.patients.length?store.patients[0].id:'');
+  var fs=useState(function(){return xt({patientId:pid},rhReadRecord(user,pid,store.patients));});
+  var form=fs[0],sf=fs[1];
   var svs=useState(false);var sv2=svs[0],sSv=svs[1];
-  function save(){lss(rk,form);sSv(true);setTimeout(function(){sSv(false);},2200);}
+  function selectPatient(nextId){
+    var original=xt({patientId:form.patientId},rhReadRecord(user,form.patientId,store.patients));
+    if(JSON.stringify(form)!==JSON.stringify(original)&&!confirm('Hay cambios sin guardar en este expediente. ¿Cambiar de paciente y descartarlos?'))return;
+    sf(xt({patientId:nextId},rhReadRecord(user,nextId,store.patients)));
+    lss(uk(user,'record_patient'),nextId);
+    sSv(false);
+  }
+  function save(){
+    if(!form.patientId){alert('Primero debes agregar un paciente.');return;}
+    if(rhSaveRecord(user,form.patientId,form)){sSv(true);setTimeout(function(){sSv(false);},2200);}
+  }
   var BT=['A+','A-','B+','B-','AB+','AB-','O+','O-'];
   var bmi=null,bL='',bC='var(--text2)';
   if(form.weight&&form.height){bmi=(Number(form.weight)/Math.pow(Number(form.height)/100,2)).toFixed(1);bL=bmi<18.5?'Bajo peso':bmi<25?'Normal':bmi<30?'Sobrepeso':'Obesidad';bC=bmi<18.5?'var(--teal)':bmi<25?'var(--accent)':bmi<30?'var(--amber)':'var(--red)';}
@@ -1889,9 +1935,16 @@ function RecordView(p){
   return h('div',null,
     h('div',{style:{display:'flex',alignItems:'center',gap:11,marginBottom:16}},
       h('button',{className:'btn-icon',style:{background:'var(--surface)',border:'1px solid var(--border)'},onClick:function(){sv('settings');}},h(Ic,{n:'back',s:17,c:'var(--text)'})),
-      h('div',null,h('p',{className:'ph-sub'},'Historial'),h('h1',{className:'ph-title',style:{fontSize:'1.3rem'}},'Expediente Medico'))
+      h('div',null,h('p',{className:'ph-sub'},'Historial'),h('h1',{className:'ph-title',style:{fontSize:'1.3rem'}},'Expediente médico'))
     ),
-    store.patients.length>0&&h('div',{style:{marginBottom:11}},h('label',null,'Paciente'),h('select',{value:form.patientId||'',onChange:function(e){sf(function(f){return xt(f,{patientId:e.target.value});});}},store.patients.map(function(pt){return h('option',{key:pt.id,value:pt.id},pt.name);}))),
+    store.patients.length>0?h('div',{className:'rh-record-context'},
+      h('label',null,'Expediente de'),
+      h('select',{value:form.patientId||'',onChange:function(e){selectPatient(e.target.value);},
+        'aria-label':'Seleccionar paciente del expediente'},
+        store.patients.map(function(pt){return h('option',{key:pt.id,value:pt.id},pt.name);})
+      ),
+      h('p',null,'Los datos de este formulario corresponden únicamente al paciente seleccionado.')
+    ):h('div',{className:'rh-record-context'},'Primero agrega un paciente para crear su expediente.'),
     Blk('activity','var(--red)','Datos vitales',[
       h('div',{key:'bt'},h('label',null,'Tipo de sangre'),h('div',{className:'bt-grid'},BT.map(function(b){return h('button',{key:b,className:'bt-btn'+(form.bloodType===b?' on':''),onClick:function(){sf(function(f){return xt(f,{bloodType:b});})}},b);}))),
       h('div',{key:'hrbp',className:'fg'},
@@ -1917,7 +1970,7 @@ function RecordView(p){
     h('div',{className:'card-flat',style:{padding:'12px 14px',marginBottom:11}},h(Fld,{label:'Notas'},h('textarea',{value:form.notes||'',onChange:upd(sf,'notes'),placeholder:'Informacion medica adicional...',rows:3}))),
     h('div',{style:{display:'flex',gap:8}},
       h('button',{className:'btn btn-primary',style:{flex:1,borderRadius:'var(--r-full)',padding:'12px'},onClick:save},h(Ic,{n:sv2?'check':'record',s:14,c:'white'}),sv2?'Guardado!':'Guardar expediente'),
-      h('button',{className:'btn',style:{padding:'12px 15px',borderRadius:'var(--r-full)',background:'var(--red-bg)',border:'1px solid var(--red-border)',color:'var(--red)',fontWeight:700},onClick:function(){generatePDF(form,store,null);}},h(Ic,{n:'file',s:14,c:'var(--red)'}),'PDF')
+      h('button',{className:'btn',style:{padding:'12px 15px',borderRadius:'var(--r-full)',background:'var(--red-bg)',border:'1px solid var(--red-border)',color:'var(--red)',fontWeight:700},onClick:function(){var chosen=store.patients.find(function(x){return x.id===form.patientId;});if(chosen)generatePDF(form,store,chosen);}},h(Ic,{n:'file',s:14,c:'var(--red)'}),'PDF')
     )
   );
 }
