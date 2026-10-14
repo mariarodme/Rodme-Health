@@ -2025,6 +2025,15 @@ function RodmeLocalApp(){
     var previous=routeRef.current;
     routeRef.current=next;
     setView(next.view);setModal(next.modal);
+    if(Object.prototype.hasOwnProperty.call(next,'patient')){
+      selectedPatientRef.current=next.patient;setSelP(next.patient);
+    }
+    if(Object.prototype.hasOwnProperty.call(next,'appointment')){
+      selectedAppointmentRef.current=next.appointment;setSelA(next.appointment);
+    }
+    if(Object.prototype.hasOwnProperty.call(next,'medication')){
+      selectedMedicationRef.current=next.medication;setSelM(next.medication);
+    }
     setSearchOpenState(next.modal==='search');
     tickRoute(function(n){return n+1;});
     setSideOpen(false);setQuickOpen(false);
@@ -2033,13 +2042,18 @@ function RodmeLocalApp(){
   function pushRoute(next){
     var from=routeRef.current;
     if(from.view===next.view&&from.modal===next.modal)return;
+    var snapshot=Object.assign({},next,{
+      patient:selectedPatientRef.current,
+      appointment:selectedAppointmentRef.current,
+      medication:selectedMedicationRef.current
+    });
     routeEntries.current=routeEntries.current.slice(0,routeIndex.current+1);
-    routeEntries.current.push(next);
+    routeEntries.current.push(snapshot);
     routeIndex.current=routeEntries.current.length-1;
     if(browserActive.current){
       window.history.pushState({rhRodmeNavigation:true,step:routeIndex.current},'');
     }
-    showRoute(next);
+    showRoute(snapshot);
   }
   function sv(nextView){
     var target=typeof nextView==='function'?nextView(routeRef.current.view):nextView;
@@ -2076,9 +2090,12 @@ function RodmeLocalApp(){
     window.addEventListener('popstate',onPopState);
     return function(){browserActive.current=false;window.removeEventListener('popstate',onPopState);};
   },[]);
-  var ps=useState(null);var selP=ps[0],ssp=ps[1];
-  var as2=useState(null);var selA=as2[0],ssa=as2[1];
-  var smS=useState(null);var selM=smS[0],ssm=smS[1];
+  var ps=useState(null);var selP=ps[0],setSelP=ps[1],selectedPatientRef=useRef(null);
+  function ssp(value){selectedPatientRef.current=value;setSelP(value);}
+  var as2=useState(null);var selA=as2[0],setSelA=as2[1],selectedAppointmentRef=useRef(null);
+  function ssa(value){selectedAppointmentRef.current=value;setSelA(value);}
+  var smS=useState(null);var selM=smS[0],setSelM=smS[1],selectedMedicationRef=useRef(null);
+  function ssm(value){selectedMedicationRef.current=value;setSelM(value);}
   var ts=useState('pending');var tab=ts[0],stab=ts[1];
   var sbo=useState(false);var sideOpen=sbo[0],setSideOpen=sbo[1];
   var nbs=useState(true);var showNb=nbs[0],sNb=nbs[1];
