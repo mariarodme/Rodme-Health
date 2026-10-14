@@ -1297,17 +1297,23 @@ var lss=function(k,v){
 var uk=function(u,s){return'rh_'+(u||'x').replace(/[^a-z0-9]/gi,'_').toLowerCase()+'_'+s;};
 
 function useStore(user){
-  var pk=uk(user,'p'),ak=uk(user,'a'),mk=uk(user,'m'),dk=uk(user,'d');
-  var p=useState(function(){return lsg(pk)||[];}),a=useState(function(){return lsg(ak)||[];});
-  var m=useState(function(){return lsg(mk)||[];}),d=useState(function(){return lsg(dk)||[];});
-  var patients=p[0],setP=p[1],apts=a[0],setA=a[1],meds=m[0],setM=m[1],doseLogs=d[0],setD=d[1];
-  useEffect(function(){setP(lsg(pk)||[]);setA(lsg(ak)||[]);setM(lsg(mk)||[]);setD(lsg(dk)||[]);},[pk,ak,mk,dk]);
-  function createSetter(fn,key){return function(next){fn(function(prev){var value=typeof next==='function'?next(prev):next;lss(key,value);return value;});};}
-  return{
-    patients:patients,setPatients:createSetter(setP,pk),
-    appointments:apts,setAppointments:createSetter(setA,ak),
-    medications:meds,setMedications:createSetter(setM,mk),
-    doseLogs:doseLogs,setDoseLogs:createSetter(setD,dk)
+  var keys={patients:'p',appointments:'a',medications:'m',doseLogs:'d',labs:'labs',vaccines:'vaccines',documents:'docs'};
+  var p=useState(function(){return lsg(uk(user,'p'))||[];}),a=useState(function(){return lsg(uk(user,'a'))||[];});
+  var m=useState(function(){return lsg(uk(user,'m'))||[];}),d=useState(function(){return lsg(uk(user,'d'))||[];});
+  var l=useState(function(){return lsg(uk(user,'labs'))||[];}),v=useState(function(){return lsg(uk(user,'vaccines'))||[];});
+  var docs=useState(function(){return lsg(uk(user,'docs'))||[];});
+  var all=[p,a,m,d,l,v,docs];
+  useEffect(function(){Object.keys(keys).forEach(function(name,i){all[i][1](lsg(uk(user,keys[name]))||[]);});},[user]);
+  function setter(state,key){return function(next){state(function(prev){var value=typeof next==='function'?next(prev):next;
+    if(lss(uk(user,key),value)===false)return prev;return value;});};}
+  return {
+    patients:p[0],setPatients:setter(p[1],'p'),
+    appointments:a[0],setAppointments:setter(a[1],'a'),
+    medications:m[0],setMedications:setter(m[1],'m'),
+    doseLogs:d[0],setDoseLogs:setter(d[1],'d'),
+    labs:l[0],setLabs:setter(l[1],'labs'),
+    vaccines:v[0],setVaccines:setter(v[1],'vaccines'),
+    documents:docs[0],setDocuments:setter(docs[1],'docs')
   };
 }
 
@@ -2037,7 +2043,7 @@ function SettingsView(p){
   function save(){lss(pk,form);setSavedOk(true);}
   function clearSpace(){
     if(confirm('¿Borrar todos los registros de este espacio en este navegador? Esta acción no se puede deshacer.')){
-      ['p','a','m','d','rec','records','prefs','record_patient'].forEach(function(k){localStorage.removeItem(uk(user,k));});
+      ['p','a','m','d','labs','vaccines','docs','rec','records','prefs','record_patient'].forEach(function(k){localStorage.removeItem(uk(user,k));});
       location.reload();
     }
   }
@@ -2515,7 +2521,7 @@ function App(){
     }catch(e){window.alert('No se pudieron guardar las citas. Comprueba que el almacenamiento local esté habilitado.');}
   }
 
-  var navItems=[{id:'home',n:'home',l:'Inicio'},{id:'patients',n:'user',l:'Pacientes'},{id:'appointments',n:'calendar',l:'Citas'},{id:'medications',n:'pill',l:'Medicamentos'},{id:'settings',n:'settings',l:'Config'}];
+  var navItems=[{id:'home',n:'home',l:'Inicio'},{id:'patients',n:'user',l:'Pacientes'},{id:'appointments',n:'calendar',l:'Citas'},{id:'medications',n:'pill',l:'Medicamentos'},{id:'health',n:'file',l:'Salud'}];
   var prefs=lsg(uk(user,'prefs'))||{};
   var displayName=prefs.ownerName||(sess&&sess.name)||'Mi espacio';
   var uEmail=prefs.email||'';
@@ -2594,6 +2600,7 @@ function App(){
         view==='patient'&&h(PatientProfile,{store:store,patient:(store.patients.find(function(x){return selP&&x.id===selP.id;})||selP),onBack:function(){sv('patients');},onEdit:function(pt){ssp(pt);sm('edit-patient');},onAddApt:function(){setDraftDate('');sm('add-apt');},onRecord:function(){if(selP)lss(uk(user,'record_patient'),selP.id);sv('record');},user:user,onAddMed:function(){sm('add-med');},onApt:function(apt){ssa(apt);sm('view-apt');}}),
         view==='appointments'&&h(ApptsView,{store:store,sm:sm,tab:tab,stab:stab,ssa:ssa,setDraftDate:setDraftDate}),
         view==='medications'&&h(MedsView,{store:store,sm:sm,ssm:ssm}),
+        view==='health'&&h(HealthCenterView,{store:store,user:user}),
         view==='settings'&&h(SettingsView,{store:store,sv:sv,user:user,theme:theme,setTheme:setTheme}),
         view==='record'&&h(RecordView,{store:store,sv:sv,user:user})
       ),
