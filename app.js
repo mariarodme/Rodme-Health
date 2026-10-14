@@ -8,9 +8,27 @@ var b64=function(f){return new Promise(function(r,j){var x=new FileReader();x.on
 var uid=function(){return Math.random().toString(36).slice(2,10);};
 var ini=function(n){return(n||'').split(' ').map(function(w){return w[0]||'';}).join('').slice(0,2).toUpperCase()||'?';};
 var xt=function(a,b){return Object.assign({},a,b);};
-var lsg=function(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):(d!==undefined?d:null);}catch(e){return d!==undefined?d:null;}};
+var rhCloudSuffix=function(k){
+  var session=window.RH_ACTIVE_CLOUD;
+  if(!session)return null;
+  var prefix=uk(session.workspace,'');
+  if(k.indexOf(prefix)!==0)return null;
+  var suffix=k.slice(prefix.length);
+  return Object.prototype.hasOwnProperty.call(session.data,suffix)?suffix:null;
+};
+var lsg=function(k,d){
+  var suffix=rhCloudSuffix(k);
+  if(suffix!==null)return window.RH_ACTIVE_CLOUD.data[suffix];
+  try{var v=localStorage.getItem(k);return v?JSON.parse(v):(d!==undefined?d:null);}
+  catch(e){return d!==undefined?d:null;}
+};
 var rhStorageWarned=false;
 var lss=function(k,v){
+  var suffix=rhCloudSuffix(k);
+  if(suffix!==null){
+    try{return window.RHCloud.writeKey(suffix,v);}
+    catch(e){window.alert('No se guardó en línea: '+(e.message||'Comprueba tu conexión.'));return false;}
+  }
   try{localStorage.setItem(k,JSON.stringify(v));return true;}
   catch(e){if(!rhStorageWarned){rhStorageWarned=true;window.alert('No fue posible guardar los datos en este navegador. Revisa el espacio disponible o la configuración de almacenamiento.');}return false;}
 };
@@ -19,7 +37,12 @@ var uk=function(u,s){return'rh_'+(u||'x').replace(/[^a-z0-9]/gi,'_').toLowerCase
 function useStore(user){
   var keys={patients:'p',appointments:'a',medications:'m',doseLogs:'d',labs:'labs',vaccines:'vaccines',documents:'docs',vitals:'vitals',symptoms:'symptoms',followups:'followups'};
   var values=Object.keys(keys).map(function(name){return useState(function(){return lsg(uk(user,keys[name]))||[];});});
-  useEffect(function(){Object.keys(keys).forEach(function(name,i){values[i][1](lsg(uk(user,keys[name]))||[]);});},[user]);
+  useEffect(function(){
+    function refresh(){Object.keys(keys).forEach(function(name,i){values[i][1](lsg(uk(user,keys[name]))||[]);});}
+    refresh();
+    window.addEventListener('rh-cloud-data',refresh);
+    return function(){window.removeEventListener('rh-cloud-data',refresh);};
+  },[user]);
   function setter(state,key){return function(next){state(function(prev){var value=typeof next==='function'?next(prev):next;
     if(lss(uk(user,key),value)===false)return prev;return value;});};}
   var result={};
@@ -871,6 +894,7 @@ function BackupPanel(p){
   }
   async function restore(){
     if(busy)return;
+    if(window.RH_ACTIVE_CLOUD){setStatus('En el espacio familiar en línea la restauración directa está desactivada para evitar sobrescribir expedientes de otros dispositivos. Puedes descargar un respaldo cifrado.');return;}
     if(!file||!password){setStatus('Selecciona un archivo y escribe su contraseña.');return;}
     if(file.size>19000000){setStatus('El archivo supera el límite de 19 MB.');return;}
     if(!window.crypto||!crypto.subtle){setStatus('Este navegador no permite descifrar la copia.');return;}
@@ -1399,6 +1423,7 @@ function SettingsView(p){
     {v:'America/Bogota',l:'Bogotá'}];
   function save(){lss(pk,form);setSavedOk(true);}
   function clearSpace(){
+    if(window.RH_ACTIVE_CLOUD){window.alert('Para proteger los datos compartidos, la eliminación masiva no está disponible en el espacio familiar.');return;}
     if(confirm('¿Borrar todos los registros de este espacio en este navegador? Esta acción no se puede deshacer.')){
       ['p','a','m','d','labs','vaccines','docs','vitals','symptoms','followups','rec','records','prefs','record_patient','notifications','notices_sent'].forEach(function(k){localStorage.removeItem(uk(user,k));});
       location.reload();
@@ -1415,6 +1440,7 @@ function SettingsView(p){
   return h('div',{className:'rh-local-settings med1820-settings'},
     h('div',{className:'ph'},h('p',{className:'ph-sub'},'TU ESPACIO'),h('h1',{className:'ph-title'},'Configuración'),
       h('p',{style:{fontSize:'.81rem',color:'var(--text2)',marginTop:9}},'Personaliza tu espacio. Entras directamente, sin cuenta ni contraseña.')),
+    window.RH_ACTIVE_CLOUD&&h(CloudFamilyPanel),
     h('div',{className:'rh-settings-grid'},
       h('section',{className:'card-flat rh-settings-section'},
         h('h2',null,'Mi información'),
@@ -1458,9 +1484,11 @@ function SettingsView(p){
     h(BackupPanel,{user:user}),
     h('div',{className:'rh-local-warning'},
       h(Ic,{n:'shield',s:19,c:'var(--accent)'}),
-      h('p',null,'Este espacio no utiliza inicio de sesión. Los registros quedan guardados solo en este navegador, no se sincronizan entre dispositivos y cualquier persona que use este dispositivo puede verlos. Evita ingresar información médica sensible.')
+      h('p',null,window.RH_ACTIVE_CLOUD
+        ?'Espacio familiar en línea: cada persona entra con una cuenta verificada. Todos los miembros autorizados ven los registros de la familia según sus permisos. Los administradores del proyecto Firebase pueden acceder a los datos. Conserva respaldos cifrados periódicos.'
+        :'Este espacio todavía guarda los registros solo en este navegador. No está conectado con una base de datos en línea; evita ingresar información médica sensible.')
     ),
-    h('div',{className:'rh-settings-danger'},
+    !window.RH_ACTIVE_CLOUD&&h('div',{className:'rh-settings-danger'},
       h('p',null,'Administrar datos locales'),
       h('button',{className:'btn btn-danger',onClick:clearSpace},h(Ic,{n:'trash',s:14,c:'currentColor'}),'Borrar datos de este espacio')
     )
@@ -1935,7 +1963,7 @@ function GlobalHealthSearch(p){
   );
 }
 
-function App(){
+function RodmeLocalApp(){
   var th=useState(function(){return localStorage.getItem('rh_theme')||'light';});
   var theme=th[0],setThState=th[1];
   function setTheme(t){setThState(t);localStorage.setItem('rh_theme',t);document.documentElement.setAttribute('data-theme',t);}
@@ -1968,7 +1996,14 @@ function App(){
     return space;
   }
   var sessState=useState(getLocalWorkspace),sess=sessState[0];
-  var user=sess.u;
+  var cloudSession=window.RH_ACTIVE_CLOUD;
+  var user=cloudSession?cloudSession.workspace:sess.u;
+  var cloudRefresh=useState(0),setCloudRefresh=cloudRefresh[1];
+  useEffect(function(){
+    function redraw(){setCloudRefresh(function(n){return n+1;});}
+    window.addEventListener('rh-cloud-data',redraw);
+    return function(){window.removeEventListener('rh-cloud-data',redraw);};
+  },[]);
   var store=useStore(user);
   var vs=useState('home');var view=vs[0],sv=vs[1];
   var adt=useState(''),draftDate=adt[0],setDraftDate=adt[1];
@@ -2146,6 +2181,14 @@ function App(){
 
       // Page content
       h('div',{className:'page-content'+(view==='home'?' med1820-landing':' med1820-interior')},
+        h('div',{className:'rh-cloud-banner'+(cloudSession?' active':'')},
+          h(Ic,{n:cloudSession?'shield':'alert',s:18,c:'currentColor'}),
+          cloudSession
+            ?(window.RHCloud.getState().error?'Error al sincronizar: '+window.RHCloud.getState().error:
+               !navigator.onLine?'Sin conexión: no podrás guardar cambios hasta volver a conectarte.':
+               window.RHCloud.getState().pending?'Sincronizando cambios con la familia…':
+               cloudSession.role==='viewer'?'Espacio familiar · Solo lectura':'Espacio familiar · Datos en línea')
+            :'Datos guardados únicamente en este navegador. La sincronización familiar aún no está activada.'),
         view==='home'&&h(HomeView,{store:store,sv:sv,sm:sm,ssa:ssa,ssp:ssp,user:user,onPending:function(){openTracking('all','pending');}}),
         view==='patients'&&h(PatientsView,{store:store,sm:sm,ssp:ssp,sv:sv,user:user}),
         view==='patient'&&h(PatientProfile,{store:store,patient:(store.patients.find(function(x){return selP&&x.id===selP.id;})||selP),onBack:function(){sv('patients');},onEdit:function(pt){ssp(pt);sm('edit-patient');},onAddApt:function(){setDraftDate('');sm('add-apt');},onRecord:function(){if(selP)lss(uk(user,'record_patient'),selP.id);sv('record');},onTracking:function(){openTracking(selP?.id||'all','vitals');},onEmergency:function(){if(selP)rhEmergencyCard(selP,rhReadRecord(user,selP.id,store.patients),store.medications);},onHealth:function(){setHealthPatient(selP?.id||'all');sv('health');},user:user,onAddMed:function(){sm('add-med');},onApt:function(apt){ssa(apt);sm('view-apt');}}),
@@ -2182,7 +2225,7 @@ function App(){
           h('h2',null,'Confirmar citas'),
           h('button',{className:'rh-import-x',onClick:closeImport,'aria-label':'Cerrar'},h(Ic,{n:'close',s:18,c:'currentColor'}))
         ),
-        h('p',{className:'rh-import-help'},'Revisa la información antes de guardarla en este navegador.'),
+        h('p',{className:'rh-import-help'},'Revisa la información antes de agregarla a tu espacio de salud.'),
         h('div',{className:'rh-import-list'},importItems.map(function(a,i){
           return h('div',{className:'rh-import-entry',key:i},
             h('div',{className:'rh-import-day'},h('strong',null,new Date(a.date+'T12:00:00').toLocaleDateString('es-CR',{day:'numeric'})),
@@ -2225,6 +2268,159 @@ function App(){
     modal==='add-med'&&h(MedModal,{store:store,initialPatientId:view==='patient'&&selP?selP.id:null,onClose:function(){sm(null);}}),
     modal==='edit-med'&&h(MedModal,{store:store,med:selM,onClose:function(){sm(null);}})
   );
+}
+
+
+/* Acceso con cuentas verificadas y controles familiares. Este componente
+   solo se usa después de configurar Firebase y publicar reglas privadas. */
+function CloudGate(){
+  var cloud=window.RHCloud;
+  var ss=useState(cloud.getState()),s=ss[0],setS=ss[1];
+  var fields=useState({email:'',password:'',familyName:'Mi familia',familyCode:''}),f=fields[0],setF=fields[1];
+  var modeState=useState('signin'),mode=modeState[0],setMode=modeState[1];
+  var pending=useState(false),busy=pending[0],setBusy=pending[1];
+  var msgState=useState(''),msg=msgState[0],setMsg=msgState[1];
+  useEffect(function(){return cloud.subscribe(setS);},[]);
+  function patch(name,val){setF(function(p){var n=xt(p,{});n[name]=val;return n;});}
+  function doAction(fn,success){
+    if(busy)return;
+    setBusy(true);setMsg('');
+    Promise.resolve().then(fn).then(function(result){if(success)setMsg(typeof success==='function'?success(result):success);})
+      .catch(function(err){setMsg(err&&err.message||'No se pudo completar la operación.');})
+      .finally(function(){setBusy(false);});
+  }
+  function field(label,key,type,placeholder){
+    return h('label',{className:'rh-cloud-field'},h('span',null,label),
+      h('input',{type:type||'text',autoComplete:key==='email'?'email':key==='password'?(mode==='signup'?'new-password':'current-password'):'off',
+        placeholder:placeholder||'',value:f[key],onChange:function(e){patch(key,e.target.value);}})
+    );
+  }
+  if(s.phase==='ready')return h(RodmeLocalApp,{key:s.familyId});
+  return h('div',{className:'rh-cloud-login'},
+    h('div',{className:'rh-cloud-login-card'},
+      h('div',{className:'rh-cloud-login-mark'},h(Ic,{n:'heart',s:28,c:'currentColor'})),
+      h('p',{className:'rh-cloud-eyebrow'},'RODME HEALTH · ACCESO PRIVADO'),
+      h('h1',null,s.phase==='verify'?'Verifica tu correo':
+        s.phase==='choose'?'Tu espacio familiar':
+        s.phase==='loading'||s.phase==='syncing'?'Conectando datos…':
+        'Salud familiar, en cualquier dispositivo'),
+      h('p',{className:'rh-cloud-explain'},
+        s.phase==='verify'?'Te enviamos un enlace de verificación. Ábrelo desde tu correo y regresa para continuar.':
+        s.phase==='choose'?'Crea un espacio privado o entra a uno al que tu familia te haya invitado.':
+        'Los expedientes se comparten únicamente con las personas autorizadas.'),
+      (s.phase==='loading'||s.phase==='syncing')&&h('p',{className:'rh-cloud-busy'},'Consultando tu espacio seguro…'),
+      s.phase==='error'&&h('p',{className:'rh-cloud-error'},s.error),
+      s.phase==='verify'&&h(React.Fragment,null,
+        h('p',null,'Correo: ',h('strong',null,s.email)),
+        h('div',{className:'rh-cloud-buttons'},
+          h('button',{className:'btn btn-primary',disabled:busy,onClick:function(){doAction(function(){return cloud.refreshVerification();});}},'Ya verifiqué mi correo'),
+          h('button',{className:'btn btn-outline',disabled:busy,onClick:function(){doAction(function(){return cloud.sendVerification();},'Te enviamos otro correo.');}},'Reenviar correo'),
+          h('button',{className:'btn btn-ghost',disabled:busy,onClick:function(){doAction(function(){return cloud.signOut();});}},'Cerrar sesión')
+        )
+      ),
+      s.phase==='login'&&h(React.Fragment,null,
+        h('div',{className:'rh-cloud-switch'},
+          h('button',{className:mode==='signin'?'active':'',onClick:function(){setMode('signin');setMsg('');}},'Ingresar'),
+          h('button',{className:mode==='signup'?'active':'',onClick:function(){setMode('signup');setMsg('');}},'Crear cuenta')
+        ),
+        field('Correo electrónico','email','email','tu@correo.com'),
+        field('Contraseña','password','password','Mínimo 6 caracteres'),
+        h('button',{className:'btn btn-primary rh-cloud-submit',disabled:busy||!f.email||f.password.length<6,onClick:function(){
+          doAction(function(){return mode==='signup'?cloud.signUp(f.email,f.password):cloud.signIn(f.email,f.password);});
+        }},busy?'Conectando…':mode==='signup'?'Crear cuenta y verificar correo':'Ingresar'),
+        h('p',{className:'rh-cloud-security'},'Cada familiar necesita su propia cuenta y correo verificado.'),
+        h('p',{className:'rh-cloud-security'},'Si olvidaste tu contraseña, solicita un restablecimiento desde Firebase Authentication.')
+      ),
+      s.phase==='choose'&&h(React.Fragment,null,
+        h('div',{className:'rh-cloud-choice'},
+          h('h2',null,'Crear mi familia'),
+          field('Nombre del espacio','familyName','text','Mi familia'),
+          h('button',{className:'btn btn-primary',disabled:busy,onClick:function(){doAction(function(){return cloud.createFamily(f.familyName);});}},'Crear espacio privado')
+        ),
+        h('div',{className:'rh-cloud-choice'},
+          h('h2',null,'Unirme a mi familia'),
+          h('p',null,'La persona administradora debe invitar tu correo y compartirte el código de familia.'),
+          field('Código familiar','familyCode','text','Código proporcionado por tu familia'),
+          h('button',{className:'btn btn-outline',disabled:busy||!f.familyCode.trim(),onClick:function(){doAction(function(){return cloud.joinFamily(f.familyCode.trim());});}},'Unirme con invitación')
+        ),
+        h('button',{className:'btn btn-ghost',disabled:busy,onClick:function(){doAction(function(){return cloud.signOut();});}},'Cerrar sesión')
+      ),
+      msg&&h('p',{className:'rh-cloud-feedback',role:'status'},msg)
+    )
+  );
+}
+function CloudFamilyPanel(){
+  var cloud=window.RHCloud;
+  var s=cloud.getState(),owner=s.role==='owner';
+  var emailState=useState(''),email=emailState[0],setEmail=emailState[1];
+  var roleState=useState('editor'),role=roleState[0],setRole=roleState[1];
+  var membersState=useState([]),members=membersState[0],setMembers=membersState[1];
+  var busyState=useState(false),busy=busyState[0],setBusy=busyState[1];
+  var noticeState=useState(''),notice=noticeState[0],setNotice=noticeState[1];
+  var local=lsg('rh_local_workspace')||{u:'local:rodme'};
+  var localCount=cloud.countLocal(local.u);
+  function loadMembers(){if(owner)cloud.listMembers().then(setMembers).catch(function(e){setNotice(e.message);});}
+  useEffect(function(){loadMembers();},[]);
+  function act(fn,success){
+    if(busy)return;
+    setBusy(true);setNotice('');
+    Promise.resolve().then(fn).then(function(res){setNotice(success||'Listo.');loadMembers();})
+      .catch(function(e){setNotice(e.message||'No se pudo completar.');})
+      .finally(function(){setBusy(false);});
+  }
+  return h('section',{className:'card-flat rh-cloud-family-panel'},
+    h('div',{className:'rh-cloud-family-top'},
+      h('div',null,h('p',{className:'ph-sub'},'SINCRONIZACIÓN PRIVADA'),
+        h('h2',null,'Mi familia en línea'),
+        h('p',null,'Sesión: ',h('strong',null,s.email),' · ',owner?'Administración':s.role==='editor'?'Puede editar':'Solo lectura')),
+      h('button',{className:'btn btn-outline',onClick:function(){act(function(){return cloud.signOut();},'Sesión cerrada.');}},'Cerrar sesión')
+    ),
+    h('p',{className:'rh-cloud-note'},'Los cambios se comparten entre los dispositivos de los miembros con permiso. No compartas tus contraseñas.'),
+    owner&&h(React.Fragment,null,
+      h('div',{className:'rh-cloud-family-code'},
+        h('div',null,h('strong',null,'Código familiar'),h('p',null,s.familyId)),
+        h('button',{className:'btn btn-outline',onClick:function(){
+          if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(s.familyId)
+            .then(function(){setNotice('Código copiado.');}).catch(function(){setNotice('Copia el código manualmente.');});
+        }},'Copiar código')
+      ),
+      h('div',{className:'rh-cloud-invite'},
+        h('h3',null,'Invitar familiar'),
+        h('p',null,'Invita primero su correo. Después comparte el código familiar por un canal privado. Invitación válida por 7 días.'),
+        h('div',{className:'rh-cloud-invite-row'},
+          h('input',{type:'email',value:email,placeholder:'Correo del familiar',onChange:function(e){setEmail(e.target.value);},'aria-label':'Correo del familiar'}),
+          h('select',{value:role,onChange:function(e){setRole(e.target.value);},'aria-label':'Permiso del familiar'},
+            h('option',{value:'editor'},'Puede editar'),
+            h('option',{value:'viewer'},'Solo lectura')),
+          h('button',{className:'btn btn-primary',disabled:busy||!email.trim(),onClick:function(){
+            act(function(){return cloud.invite(email,role);},'Invitación creada. Envía el código familiar a esa persona.');
+          }},'Invitar')
+        )
+      ),
+      members.length>0&&h('div',{className:'rh-cloud-members'},
+        h('h3',null,'Miembros con acceso'),
+        members.map(function(m){return h('div',{className:'rh-cloud-member',key:m.id},
+          h('span',null,m.email,' · ',m.role==='editor'?'Puede editar':'Solo lectura'),
+          h('button',{className:'btn btn-outline',disabled:busy,onClick:function(){
+            if(!window.confirm('¿Quitar el acceso de '+m.email+'?'))return;
+            act(function(){return cloud.removeMember(m.id);},'Acceso retirado.');
+          }},'Retirar acceso')
+        );})
+      ),
+      localCount>0&&h('div',{className:'rh-cloud-import'},
+        h('h3',null,'Registros existentes de este navegador'),
+        h('p',null,'Encontramos '+localCount+' registros locales. Puedes subirlos al espacio familiar si está vacío. Tus datos locales originales no se borran.'),
+        h('button',{className:'btn btn-primary',disabled:busy,onClick:function(){
+          if(!window.confirm('¿Subir '+localCount+' registros de este navegador a la nube familiar? Confirma que este espacio en línea está vacío.'))return;
+          act(function(){return cloud.importLocal(local.u);},'Importación enviada a la nube. Comprueba los registros antes de borrar copias locales.');
+        }},'Subir registros locales a mi familia')
+      )
+    ),
+    notice&&h('p',{className:'rh-cloud-feedback',role:'status'},notice)
+  );
+}
+function App(){
+  return window.RHCloud&&window.RHCloud.configured?h(CloudGate):h(RodmeLocalApp);
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(h(App));
