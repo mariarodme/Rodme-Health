@@ -2072,3 +2072,15 @@ body{letter-spacing:-.012em}
  .rh-board-summary-card{transition:none}
  .rh-board-summary-card:hover{transform:none}
 }
+
+/* Medication card icon and readable status */
+.rh-board-med-card-heading{display:flex;gap:13px;align-items:center;min-width:0}
+.rh-board-med-card-heading>div{min-width:0}
+.rh-board-med-pill-icon{width:43px;height:43px;border-radius:12px;display:grid;place-items:center;flex-shrink:0;background:var(--accent-bg);color:var(--accent)}
+.med1820-interior .rh-med-top{align-items:center}
+.med1820-interior .med-card .rh-med-top strong{font-size:.85rem}
+@media(max-width:420px){
+ .rh-board-med-card-heading{gap:9px}
+ .rh-board-med-pill-icon{width:36px;height:36px}
+ .med1820-interior .rh-med-top .chip{font-size:.61rem}
+}
