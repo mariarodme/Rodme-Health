@@ -2316,8 +2316,9 @@ function rhPendingList(store,patientId){
   function include(item){if(!patientId||patientId==='all'||item.patientId===patientId)result.push(item);}
   (store.followups||[]).forEach(function(f){if(f.status==='done')return;
     include({id:'f'+f.id,kind:'followup',patientId:f.patientId,title:f.title,date:f.dueDate||f.date,detail:'Seguimiento · '+name(f.patientId),source:f});});
-  (store.labs||[]).forEach(function(x){if(x.status==='done'||x.status==='reviewed')return;
-    include({id:'l'+x.id,kind:'lab',patientId:x.patientId,title:x.title,date:x.date,detail:'Laboratorio pendiente · '+name(x.patientId),source:x});});
+  (store.labs||[]).forEach(function(x){if(x.status==='reviewed')return;
+    include({id:'l'+x.id,kind:'lab',patientId:x.patientId,title:x.title,date:x.date,
+      detail:(x.status==='done'?'Resultado pendiente de revisión':'Laboratorio pendiente')+' · '+name(x.patientId),source:x});});
   (store.vaccines||[]).forEach(function(x){if(!x.nextDate)return;
     include({id:'v'+x.id,kind:'vaccine',patientId:x.patientId,title:x.title,date:x.nextDate,detail:'Próxima vacuna · '+name(x.patientId),source:x});});
   (store.appointments||[]).forEach(function(x){if(!rhAppointmentActive(x)||x.date<today)return;
@@ -2351,7 +2352,7 @@ function TrackingView(p){
     (lists[tab]||[]).filter(function(x){return pid==='all'||x.patientId===pid;})
       .sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''));});
   var selectedMetric=RH_METRICS.find(function(x){return x.id===metric;})||RH_METRICS[0];
-  var readings=(store.vitals||[]).filter(function(v){return v.metric===metric&&(pid==='all'||v.patientId===pid);})
+  var readings=(store.vitals||[]).filter(function(v){return v.metric===metric&&pid!=='all'&&v.patientId===pid;})
     .sort(function(a,b){return a.date.localeCompare(b.date);}).slice(-15);
   function patientName(id){var pt=patients.find(function(x){return x.id===id;});return pt?pt.name:'Paciente no encontrado';}
   function field(k,label,type,placeholder){
@@ -2420,7 +2421,7 @@ function TrackingView(p){
       h('label',null,'Gráfico de mediciones',h('select',{value:metric,onChange:function(e){setMetric(e.target.value);}},
         RH_METRICS.map(function(m){return h('option',{value:m.id,key:m.id},m.label);})
       )),
-      readings.length>=2?rhSparkline(readings):h('p',null,'Agrega dos o más mediciones para visualizar la tendencia.'),
+      readings.length>=2?rhSparkline(readings):h('p',null,pid==='all'?'Selecciona un paciente para ver su gráfico individual.':'Agrega dos o más mediciones para visualizar la tendencia.'),
       readings.length>=2&&h('p',null,readings.length+' mediciones · Valores registrados, sin interpretación clínica.')
     ),
     warning&&!editing&&h('p',{className:'rh-track-warning',role:'status'},warning),
@@ -3247,6 +3248,13 @@ function GlobalHealthSearch(p){
     push('Cita',v.reason||v.specialty||v.doctor||'Cita médica',[person&&person.name,v.clinic,fmtD(v.date)].filter(Boolean).join(' · '),'appointment',v);});
   (store.medications||[]).forEach(function(v){var person=store.patients.find(function(x){return x.id===v.patientId;});
     push('Medicamento',v.name,[person&&person.name,v.dosage].filter(Boolean).join(' · '),'medications',v);});
+  [['vitals','Medición','vitals'],['symptoms','Síntoma','symptoms'],['followups','Seguimiento','followups']].forEach(function(x){
+    (store[x[0]]||[]).forEach(function(v){
+      var pt=store.patients.find(function(y){return y.id===v.patientId;});
+      var label=x[0]==='vitals'?(RH_METRICS.find(function(m){return m.id===v.metric;})?.label||'Medición'):v.title;
+      push(x[1],label,[pt?.name,fmtD(v.date)].filter(Boolean).join(' · '),'tracking',v);
+    });
+  });
   [['labs','Laboratorio'],['vaccines','Vacuna'],['documents','Documento']].forEach(function(pair){
     (store[pair[0]]||[]).forEach(function(v){var person=store.patients.find(function(x){return x.id===v.patientId;});
       push(pair[1],v.title,[person&&person.name,fmtD(v.date)].filter(Boolean).join(' · '),'health',v);});
@@ -3316,6 +3324,11 @@ function App(){
     if(entry.route==='patient'){ssp(entry.item);sv('patient');}
     else if(entry.route==='appointment'){ssa(entry.item);sm('view-apt');}
     else if(entry.route==='health'){sv('health');}
+    else if(entry.route==='tracking'){
+      setHealthPatient(entry.item.patientId||'all');
+      setTrackTab(entry.kind==='Medición'?'vitals':entry.kind==='Síntoma'?'symptoms':'followups');
+      setAptForTracking(null);sv('tracking');
+    }
     else{sv(entry.route);}
   }
   var notifs=store.appointments.filter(function(a){var d=du(a.date);return d!==null&&d>=0&&d<=7&&rhAppointmentActive(a);});
