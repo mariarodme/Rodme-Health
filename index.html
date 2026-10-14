@@ -1411,6 +1411,14 @@ outline:3px solid #8AAB8C!important;outline-offset:3px
 .rh-detail-followup-row{padding:9px 0;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px}
 .rh-detail-followup-row span{font-size:.78rem;font-weight:700}
 .rh-detail-followup-row small{font-size:.7rem;color:var(--text2)}
+
+.rh-care-pending-panel{background:var(--surface);border:1px solid var(--border);border-radius:17px;padding:20px 24px;margin-top:17px}
+.rh-care-pending-panel .rh-care-section-head{margin-bottom:12px}
+.rh-care-pending-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.rh-care-pending-item{display:flex;flex-direction:column;gap:5px;min-height:84px;text-align:left;border:1px solid var(--border);border-radius:12px;background:var(--surface2);padding:12px 14px;color:var(--text);cursor:pointer}
+.rh-care-pending-item strong{font-size:.81rem;overflow-wrap:anywhere}.rh-care-pending-item small{font-size:.7rem;color:var(--text2);line-height:1.4}
+.rh-care-pending-item span{font-size:.68rem;color:var(--accent);font-weight:800}
+@media(max-width:650px){.rh-care-pending-panel{padding:17px}.rh-care-pending-grid{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -1533,6 +1541,7 @@ function HomeView(p){
   var upcoming=all.filter(function(a){return rhAppointmentActive(a)&&a.date>=today;})
     .sort(function(a,b){return (a.date+'T'+(a.time||'23:59')).localeCompare(b.date+'T'+(b.time||'23:59'));});
   var next=upcoming[0]||null;
+  var pendings=rhPendingList(store,'all');
   var olderPending=all.filter(function(a){return rhAppointmentActive(a)&&a.date&&a.date<today;});
   var nextPatient=next?store.patients.find(function(pt){return pt.id===next.patientId;}):null;
   var treatments=(store.medications||[]).filter(function(m){return m.status!=='completed'&&m.status!=='paused';});
@@ -1672,6 +1681,21 @@ function HomeView(p){
           h('button',{onClick:function(){sm('add-patient');}},'Agregar paciente ↗')
         )
       )
+    ),
+    h('section',{className:'rh-care-pending-panel','aria-labelledby':'rh-pending-title'},
+      h('div',{className:'rh-care-section-head'},
+        h('h2',{id:'rh-pending-title'},'Pendientes de salud'),
+        h('button',{className:'rh-care-inline-link',onClick:p.onPending},'Ver todos →')
+      ),
+      pendings.length?h('div',{className:'rh-care-pending-grid'},
+        pendings.slice(0,4).map(function(item){
+          return h('button',{className:'rh-care-pending-item',key:item.id,onClick:p.onPending},
+            h('strong',null,item.title),
+            h('small',null,item.detail),
+            h('span',null,item.date?fmtD(item.date):'Sin fecha')
+          );
+        })
+      ):h('p',{className:'rh-care-empty-text'},'No tienes pendientes de seguimiento registrados.')
     ),
     h('section',{className:'rh-care-health-brief'},
       h('div',null,h(Ic,{n:'file',s:22,c:'var(--accent)'}),
@@ -2291,7 +2315,7 @@ function rhPendingList(store,patientId){
     include({id:'f'+f.id,kind:'followup',patientId:f.patientId,title:f.title,date:f.dueDate||f.date,detail:'Seguimiento · '+name(f.patientId),source:f});});
   (store.labs||[]).forEach(function(x){if(x.status==='done'||x.status==='reviewed')return;
     include({id:'l'+x.id,kind:'lab',patientId:x.patientId,title:x.title,date:x.date,detail:'Laboratorio pendiente · '+name(x.patientId),source:x});});
-  (store.vaccines||[]).forEach(function(x){if(!x.nextDate||x.nextDate<today)return;
+  (store.vaccines||[]).forEach(function(x){if(!x.nextDate)return;
     include({id:'v'+x.id,kind:'vaccine',patientId:x.patientId,title:x.title,date:x.nextDate,detail:'Próxima vacuna · '+name(x.patientId),source:x});});
   (store.appointments||[]).forEach(function(x){if(!rhAppointmentActive(x)||x.date<today)return;
     if(rhAppointmentStatus(x)==='confirmed')return;
@@ -3411,7 +3435,7 @@ function App(){
 
       // Page content
       h('div',{className:'page-content'},
-        view==='home'&&h(HomeView,{store:store,sv:sv,sm:sm,ssa:ssa,ssp:ssp,user:user}),
+        view==='home'&&h(HomeView,{store:store,sv:sv,sm:sm,ssa:ssa,ssp:ssp,user:user,onPending:function(){openTracking('all','pending');}}),
         view==='patients'&&h(PatientsView,{store:store,sm:sm,ssp:ssp,sv:sv,user:user}),
         view==='patient'&&h(PatientProfile,{store:store,patient:(store.patients.find(function(x){return selP&&x.id===selP.id;})||selP),onBack:function(){sv('patients');},onEdit:function(pt){ssp(pt);sm('edit-patient');},onAddApt:function(){setDraftDate('');sm('add-apt');},onRecord:function(){if(selP)lss(uk(user,'record_patient'),selP.id);sv('record');},onTracking:function(){openTracking(selP?.id||'all','vitals');},onEmergency:function(){if(selP)rhEmergencyCard(selP,rhReadRecord(user,selP.id,store.patients),store.medications);},onHealth:function(){setHealthPatient(selP?.id||'all');sv('health');},user:user,onAddMed:function(){sm('add-med');},onApt:function(apt){ssa(apt);sm('view-apt');}}),
         view==='appointments'&&h(ApptsView,{store:store,sm:sm,tab:tab,stab:stab,ssa:ssa,setDraftDate:setDraftDate}),
