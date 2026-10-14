@@ -194,7 +194,13 @@ function HomeView(p){
       )
     ),
     h('section',{className:'rh-board-summary','aria-label':'Resumen de salud familiar'},
-      services.map(function(item){return h('button',{key:item.id,className:'rh-board-summary-card tone-'+item.tone,onClick:item.go},
+      h('div',{className:'rh-board-summary-heading'},
+        h('div',null,h('span',{className:'rh-board-eyebrow'},'EN UN VISTAZO'),
+          h('h2',null,'Resumen familiar')),
+        h('p',null,'Accede a tus registros de forma rápida.')
+      ),
+      services.map(function(item){return h('button',{key:item.id,className:'rh-board-summary-card tone-'+item.tone,onClick:item.go,
+        'aria-label':item.label+': '+item.count+'. Abrir sección'},
         h('span',{className:'rh-board-stat-icon'},h(Ic,{n:item.icon,s:21,c:'currentColor'})),
         h('span',{className:'rh-board-stat-copy'},
           h('strong',null,item.label),
@@ -276,11 +282,6 @@ function HomeView(p){
       h('div',null,h('strong',null,'Revisa tu copia de seguridad'),
         h('p',null,'Este navegador no tiene un respaldo automático de los registros.')),
       h('button',{onClick:function(){sv('settings');}},'Crear copia →')
-    ),
-    h('div',{className:'rh-board-privacy'},
-      h(Ic,{n:'shield',s:17,c:'currentColor'}),
-      h('span',null,'Tus datos se guardan en este navegador y no están protegidos por una cuenta.'),
-      h('button',{onClick:function(){sv('settings');}},'Configuración')
     )
   );
 }
@@ -2324,7 +2325,7 @@ function RodmeLocalApp(){
                !navigator.onLine?'Sin conexión: no podrás guardar cambios hasta volver a conectarte.':
                window.RHCloud.getState().pending?'Sincronizando cambios con la familia…':
                cloudSession.role==='viewer'?'Espacio familiar · Solo lectura':'Espacio familiar · Datos en línea')
-            :'Datos guardados únicamente en este navegador. La sincronización familiar aún no está activada.'),
+            :'Modo local: los registros se guardan solo en este navegador, sin sincronización.'),
         view==='home'&&h(HomeView,{store:store,sv:sv,sm:sm,ssa:ssa,ssp:ssp,user:user,onPending:function(){openTracking('all','pending');}}),
         view==='patients'&&h(PatientsView,{store:store,sm:sm,ssp:ssp,sv:sv,user:user}),
         view==='patient'&&h(PatientProfile,{store:store,patient:(store.patients.find(function(x){return selP&&x.id===selP.id;})||selP),onBack:goBack,onEdit:function(pt){ssp(pt);sm('edit-patient');},onAddApt:function(){setDraftDate('');sm('add-apt');},onRecord:function(){if(selP)lss(uk(user,'record_patient'),selP.id);sv('record');},onTracking:function(){openTracking(selP?.id||'all','vitals');},onEmergency:function(){if(selP)rhEmergencyCard(selP,rhReadRecord(user,selP.id,store.patients),store.medications);},onHealth:function(){setHealthPatient(selP?.id||'all');sv('health');},user:user,onAddMed:function(){sm('add-med');},onApt:function(apt){ssa(apt);sm('view-apt');}}),
