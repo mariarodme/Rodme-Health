@@ -1694,3 +1694,12 @@ h1,h2,h3,.ph-title,.sheet-title{font-family:var(--serif);letter-spacing:-.04em}
  html{scroll-behavior:auto!important}
  *,*::before,*::after{scroll-behavior:auto!important;transition-duration:0.01ms!important;animation-duration:0.01ms!important}
 }
+
+/* Shorter mobile hero: care actions and today's information appear earlier. */
+@media(max-width:520px){
+ .med1820-hero-copy{min-height:235px}
+ .med1820-hero-visual{height:140px;min-height:140px}
+ .med1820-hero h1{line-height:1.08}
+ .med1820-hero-summary{margin:11px 0 14px}
+ .med1820-hero-date{margin-top:12px}
+}
