@@ -1319,6 +1319,13 @@ outline:3px solid #8AAB8C!important;outline-offset:3px
 .rh-appointment-status-actions{display:flex;gap:6px;flex-wrap:wrap;margin:13px 0}
 .rh-appointment-status-actions button{background:var(--surface2);border:1px solid var(--border);color:var(--text2);border-radius:99px;min-height:37px;padding:9px 12px;font-size:.72rem;font-weight:800;cursor:pointer}
 .rh-appointment-status-actions button.active{background:var(--accent);border-color:var(--accent);color:#fff}
+
+.rh-med-schedule,.rh-med-inventory{padding:12px 14px;background:var(--surface2);border-radius:10px;display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:.77rem}
+.rh-med-schedule strong{font-weight:800;color:var(--text)}.rh-med-schedule span{color:var(--accent);font-weight:800}.rh-med-schedule small{width:100%;font-size:.69rem;color:var(--text2)}
+.rh-med-inventory strong{font-size:1rem}.rh-med-low{font-size:.72rem;font-weight:800;color:var(--red)}
+.rh-med-missed{align-self:flex-start;border:1px solid var(--border);border-radius:99px;padding:8px 13px;background:var(--surface);color:var(--text2);font-size:.73rem;font-weight:800;cursor:pointer;min-height:39px}
+.rh-med-missed:disabled{opacity:.4}
+.rh-med-extra-settings{display:flex;flex-direction:column;gap:10px;padding:15px;background:var(--surface2);border-radius:12px}
 </style>
 </head>
 <body>
@@ -1925,13 +1932,23 @@ function MedCard(p){
   var med=p.med,store=p.store,onEdit=p.onEdit;
   var es=useState(false),exp=es[0],setExpanded=es[1];
   var logs=(store.doseLogs||[]).filter(function(x){return x.medicationId===med.id;}).sort(function(a,b){return b.at.localeCompare(a.at);});
-  var today=rhCalDay(new Date()),count=logs.filter(function(x){return rhCalDay(new Date(x.at))===today;}).length;
+  var today=rhCalDay(new Date()),count=logs.filter(function(x){return x.status!=='missed'&&rhCalDay(new Date(x.at))===today;}).length;
+  var missed=logs.filter(function(x){return x.status==='missed'&&rhCalDay(new Date(x.at))===today;}).length;
+  var times=String(med.doseTimes||'').split(',').map(function(v){return v.trim();}).filter(function(v){return /^([01]\d|2[0-3]):[0-5]\d$/.test(v);});
+  var stock=med.stockQty!==''&&med.stockQty!==undefined&&med.stockQty!==null?Number(med.stockQty):null;
+  var threshold=med.stockThreshold!==''&&med.stockThreshold!==undefined&&med.stockThreshold!==null?Number(med.stockThreshold):null;
   var pct=med.totalDays&&med.startDate?Math.max(0,Math.min(100,Math.round(Math.floor((new Date()-new Date(med.startDate))/86400000)/Number(med.totalDays)*100))):null;
   function recordDose(e){
     e.stopPropagation();
     if(med.status==='paused'||med.status==='completed')return;
     if(logs.length&&Date.now()-new Date(logs[0].at).getTime()<90000){window.alert('Ya registraste una dosis hace un momento.');return;}
-    store.setDoseLogs(function(arr){return arr.concat([{id:uid(),medicationId:med.id,patientId:med.patientId,at:new Date().toISOString()}]);});
+    store.setDoseLogs(function(arr){return arr.concat([{id:uid(),medicationId:med.id,patientId:med.patientId,at:new Date().toISOString(),status:'taken'}]);});
+  }
+  function recordMissed(e){
+    e.stopPropagation();
+    if(med.status==='paused'||med.status==='completed')return;
+    if(!confirm('¿Registrar una dosis omitida? Esto no significa que se haya administrado.'))return;
+    store.setDoseLogs(function(arr){return arr.concat([{id:uid(),medicationId:med.id,patientId:med.patientId,at:new Date().toISOString(),status:'missed'}]);});
   }
   function undo(e){e.stopPropagation();if(!logs.length||!confirm('¿Eliminar el último registro de dosis?'))return;
     store.setDoseLogs(function(arr){return arr.filter(function(x){return x.id!==logs[0].id;});});
@@ -1954,11 +1971,21 @@ function MedCard(p){
         h(Ic,{n:'check',s:14,c:'currentColor'}),' Registrar dosis')
     ),
     exp&&h('div',{className:'rh-med-expanded',onClick:function(e){e.stopPropagation();}},
+      times.length>0&&h('div',{className:'rh-med-schedule'},
+        h('strong',null,'Horarios registrados'),
+        h('span',null,times.join(' · ')),
+        h('small',null,'Horarios informativos; esta página no envía alertas cuando está cerrada.')
+      ),
+      stock!==null&&Number.isFinite(stock)&&h('div',{className:'rh-med-inventory'},
+        h('span',null,'Cantidad disponible: ',h('strong',null,stock)),
+        threshold!==null&&stock<=threshold&&h('span',{className:'rh-med-low'},' Revisar reposición')
+      ),
+      h('button',{className:'rh-med-missed',onClick:recordMissed,disabled:med.status==='paused'||med.status==='completed'},'Registrar dosis omitida'),
       med.notes&&h('p',{className:'rh-med-notes'},med.notes),
       med.prescriptionImg&&h('img',{src:med.prescriptionImg,style:{width:'100%',maxHeight:170,objectFit:'cover',borderRadius:9}}),
-      h('h4',null,'Dosis registradas ('+logs.length+')'),
+      h('h4',null,'Registro de dosis ('+logs.length+') · '+count+' administrada(s) y '+missed+' omitida(s) hoy'),
       logs.slice(0,6).map(function(x,i){return h('div',{className:'rh-dose-line',key:x.id},
-        h('span',null,new Date(x.at).toLocaleString('es-CR',{dateStyle:'medium',timeStyle:'short'})),
+        h('span',null,(x.status==='missed'?'Omitida · ':'Administrada · ')+new Date(x.at).toLocaleString('es-CR',{dateStyle:'medium',timeStyle:'short'})),
         i===0&&h('button',{onClick:undo},'Deshacer')
       );}),
       !logs.length&&h('p',{className:'rh-med-notes'},'Sin dosis registradas.'),
@@ -2636,11 +2663,16 @@ function AptDetail(p){
 function MedModal(p){
   var store=p.store,onClose=p.onClose,existing=p.med;
   var pid=p.initialPatientId||((store.patients[0]||{}).id||'');
-  var def={name:'',dosage:'',frequency:'',type:'ccss',notes:'',prescriptionImg:'',patientId:pid,startDate:'',totalDays:'',status:'active'};
+  var def={name:'',dosage:'',frequency:'',type:'ccss',notes:'',prescriptionImg:'',patientId:pid,startDate:'',totalDays:'',status:'active',doseTimes:'',stockQty:'',stockThreshold:''};
   var fs=useState(existing?xt(existing,{}):def);var form=fs[0],sf=fs[1];
   var ref=useRef(null);
   function setT(t){sf(function(f){return xt(f,{type:t});});}
-  function save(){if(!form.name.trim()||!form.patientId)return;existing?store.setMedications(function(arr){return arr.map(function(m){return m.id===existing.id?xt(m,form):m;});}):store.setMedications(function(arr){return arr.concat([xt(form,{id:uid()})]);});onClose();}
+  function save(){
+    if(!form.name.trim()||!form.patientId)return;
+    var t=String(form.doseTimes||'').trim();
+    if(t&&t.split(',').some(function(v){return !/^([01]\d|2[0-3]):[0-5]\d$/.test(v.trim());})){alert('Usa horarios de 24 horas separados por coma, por ejemplo 08:00, 20:00.');return;}
+    if(['stockQty','stockThreshold'].some(function(k){return form[k]!==''&&form[k]!==undefined&&(Number(form[k])<0||!Number.isInteger(Number(form[k])));})){alert('Las cantidades deben ser números enteros iguales o mayores que cero.');return;}
+    existing?store.setMedications(function(arr){return arr.map(function(m){return m.id===existing.id?xt(m,form):m;});}):store.setMedications(function(arr){return arr.concat([xt(form,{id:uid()})]);});onClose();}
   function loadImg(e){var f=e.target.files[0];if(!f)return;b64(f).then(function(bv){sf(function(x){return xt(x,{prescriptionImg:bv});});});}
   return h(Sheet,{title:existing?'Editar medicamento':'Nuevo medicamento',sub:'Medicamento',onClose:onClose},
     h(Fld,{label:'Paciente'},
@@ -2653,6 +2685,14 @@ function MedModal(p){
     h('div',{className:'fg'},h(Fld,{label:'Fecha de inicio'},h('input',{type:'date',value:form.startDate||'',onChange:upd(sf,'startDate')})),h(Fld,{label:'Duracion (dias)'},h('input',{type:'number',value:form.totalDays||'',onChange:upd(sf,'totalDays'),placeholder:'30'}))),
     h(Fld,{label:'Tipo'},h('div',{className:'tab-group',style:{marginTop:2}},h('button',{className:'tab-btn'+(form.type==='ccss'?' on':''),onClick:function(){setT('ccss');}},'CCSS'),h('button',{className:'tab-btn'+(form.type==='private'?' on':''),onClick:function(){setT('private');}},'Privado'))),
     h(Fld,{label:'Estado del tratamiento'},h('select',{value:form.status||'active',onChange:upd(sf,'status')},h('option',{value:'active'},'Activo'),h('option',{value:'paused'},'Pausado'),h('option',{value:'completed'},'Finalizado'))),
+    h('div',{className:'rh-med-extra-settings'},
+      h(Fld,{label:'Horarios establecidos (24 h)'},h('input',{value:form.doseTimes||'',placeholder:'08:00, 20:00',onChange:upd(sf,'doseTimes')})),
+      h('div',{className:'fg'},
+        h(Fld,{label:'Cantidad disponible'},h('input',{type:'number',min:'0',step:'1',value:form.stockQty??'',onChange:upd(sf,'stockQty'),placeholder:'Opcional'})),
+        h(Fld,{label:'Avisar reposición desde'},h('input',{type:'number',min:'0',step:'1',value:form.stockThreshold??'',onChange:upd(sf,'stockThreshold'),placeholder:'Opcional'}))
+      ),
+      h('p',{className:'rh-prep-caption'},'La cantidad es manual: se actualiza al editar el medicamento y no se descuenta automáticamente.')
+    ),
     h(Fld,{label:'Instrucciones / Notas'},h('textarea',{value:form.notes||'',onChange:upd(sf,'notes'),placeholder:'Tomar con alimentos...',rows:2})),
     h(Fld,{label:'Foto de receta'},
       h('button',{className:'btn',style:{width:'100%',padding:'10px',borderRadius:'var(--r-full)',background:form.prescriptionImg?'var(--accent-bg)':'var(--surface2)',border:'1.5px dashed '+(form.prescriptionImg?'var(--accent)':'var(--border)'),color:form.prescriptionImg?'var(--accent)':'var(--text2)',fontSize:'.8rem',fontWeight:700,gap:7},onClick:function(){ref.current.click();}},h(Ic,{n:'camera',s:14,c:form.prescriptionImg?'var(--accent)':'var(--text3)'}),form.prescriptionImg?'\u2713 Foto cargada':'Agregar foto de receta'),
