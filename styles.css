@@ -2861,3 +2861,49 @@ body{font-size:var(--rh-copy-size)}
     min-height:46px;font-size:16px!important;padding:9px 11px
   }
 }
+
+
+/* Navegación directa al inicio v14 — visible en toda sección y en formularios */
+#root .page-content .rh-route-home,
+#root .sheet .rh-sheet-home,
+#root .rh-import-panel .rh-import-home{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  flex-shrink:0;padding:11px 17px;min-height:49px;
+  border:1px solid var(--accent);border-radius:11px;
+  background:var(--accent);color:white;
+  font-family:inherit;font-size:16px!important;line-height:1.35;
+  font-weight:800;letter-spacing:0;cursor:pointer;
+  box-shadow:0 3px 10px rgba(0,115,145,.1);
+  text-decoration:none;white-space:normal;text-align:center;
+}
+#root .page-content .rh-route-home{margin-left:auto}
+#root .page-content .rh-route-home:hover,
+#root .sheet .rh-sheet-home:hover,
+#root .rh-import-panel .rh-import-home:hover{
+  color:white;background:var(--accent-dark,var(--accent));border-color:var(--accent);
+  filter:brightness(.92)
+}
+#root .page-content .rh-route-home:focus-visible,
+#root .sheet .rh-sheet-home:focus-visible,
+#root .rh-import-panel .rh-import-home:focus-visible{
+  outline:3px solid var(--accent2);outline-offset:3px
+}
+#root .sheet .rh-sheet-nav-actions,
+#root .rh-import-panel .rh-import-nav-actions{
+  display:flex;align-items:center;flex-wrap:wrap;gap:8px;
+  margin-bottom:13px
+}
+#root .sheet .rh-sheet-nav-actions .rh-sheet-back{margin-bottom:0}
+#root .sheet .rh-sheet-nav-actions .rh-sheet-home{min-height:44px;padding:9px 13px}
+#root .rh-import-panel .rh-import-home{min-height:46px;padding:9px 12px}
+@media(max-width:768px){
+  #root .page-content .rh-route-home{min-height:50px;padding:10px 14px}
+  #root .sheet .rh-sheet-nav-actions,
+  #root .rh-import-panel .rh-import-nav-actions{gap:8px}
+}
+@media(max-width:390px){
+  #root .page-content .rh-route-back{padding:9px 11px;font-size:15px!important}
+  #root .page-content .rh-route-home{padding:9px 11px;font-size:15px!important}
+  #root .sheet .rh-sheet-home,
+  #root .rh-import-panel .rh-import-home{font-size:15px!important}
+}
