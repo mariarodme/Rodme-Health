@@ -75,3 +75,16 @@ No incluir nunca expedientes ni datos reales de pacientes en el repositorio púb
 ### Límites y protección de datos
 
 Esta integración NO se ha probado todavía contra un proyecto Firebase real, por falta de conexión y credenciales del propietario. Debe verificarse antes de depender de ella. Dos ediciones simultáneas del mismo registro pueden entrar en conflicto (prevalece la última). Los datos almacenados en Firebase no llevan cifrado extremo a extremo; administradores con permisos sobre el proyecto podrían acceder a ellos. Mantener copias de seguridad verificadas, control de sesiones y accesos, auditoría, consentimiento familiar, política de privacidad y cumplimiento normativo aplicable en Costa Rica. No es un expediente clínico certificado.
+
+
+## Mejoras de uso v16 — octubre de 2026
+
+- **Mi día:** agenda integrada en el inicio con citas programadas para hoy, horas anotadas de tratamientos activos y registros pendientes con fecha hasta hoy. Las horas son orientativas y **no indican que una dosis haya sido administrada**; ese dato se registra manualmente en Medicamentos.
+- **Perfiles:** alergias realmente registradas (si no hay datos se indica «No registradas», no «Sin alergias»), próxima cita y tratamientos activos; las fichas médicas existentes permanecen intactas.
+- **Medicamentos:** etiquetas separadas para dosis administradas y omitidas en el día, así como horarios anotados; estos registros siguen siendo manuales.
+- **Buscar:** filtros por pacientes, citas, medicamentos y otros registros, búsqueda por médico y acceso al grupo correcto de resultados. Se resalta el tratamiento encontrado.
+- **Formularios:** secciones visuales para citas y medicamentos; se conservan campos, validaciones y opciones anteriores.
+- **Confirmaciones:** avisos discretos para cambios escritos en este dispositivo; cuando se use Firestore, avisan que el cambio está pendiente de sincronizar, sin prometer éxito remoto antes de tiempo.
+- **Pantallas pequeñas:** estilos específicos para la agenda, fichas, navegación y confirmaciones. Se mantienen letras grandes y accesos «Volver»/«Volver al inicio».
+
+Estas mejoras de interfaz no activan Firebase ni cambian el modo de almacenamiento. La sincronización entre familiares continúa pendiente de configurar el proyecto y verificar sus reglas y operaciones reales.
