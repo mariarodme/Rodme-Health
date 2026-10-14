@@ -2840,3 +2840,24 @@ body{font-size:var(--rh-copy-size)}
   #root .page-content .rh-route-back,
   #root .page-content .rh-route-home{padding:9px 12px;min-height:47px}
 }
+
+/* RH import back control v12 */
+#root .rh-import-panel .rh-import-back{
+  display:inline-flex;align-items:center;gap:8px;
+  min-height:46px;padding:10px 14px;border-radius:10px;
+  border:1px solid var(--border);background:var(--accent-bg);
+  color:var(--accent);font-family:var(--font);
+  font-size:17px!important;font-weight:800;cursor:pointer;
+  white-space:nowrap
+}
+#root .rh-import-panel .rh-import-back:hover{
+  border-color:var(--accent);background:var(--surface2)
+}
+#root .rh-import-panel .rh-import-back:focus-visible{
+  outline:3px solid var(--accent2);outline-offset:2px
+}
+@media(max-width:420px){
+  #root .rh-import-panel .rh-import-back{
+    min-height:46px;font-size:16px!important;padding:9px 11px
+  }
+}
