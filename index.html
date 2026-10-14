@@ -1366,6 +1366,40 @@ outline:3px solid #8AAB8C!important;outline-offset:3px
 .rh-care-health-brief p{font-size:.73rem;color:var(--text2);margin-top:6px;line-height:1.5}
 .rh-care-health-brief button{border-radius:99px;border:1px solid var(--accent);background:var(--accent-bg);color:var(--accent);font-size:.75rem;font-weight:800;min-height:42px;padding:10px 16px;cursor:pointer;flex-shrink:0}
 @media(max-width:650px){.rh-care-health-brief{align-items:flex-start;flex-direction:column;padding:17px}.rh-care-health-brief button{width:100%}}
+
+.rh-tracking{max-width:1170px;margin:0 auto}
+.rh-track-head{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:15px;margin-bottom:18px}
+.rh-track-head h1{font-family:var(--serif);font-size:clamp(1.9rem,3.8vw,2.7rem);font-weight:400;letter-spacing:-.045em}
+.rh-track-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.rh-track-tabs button{background:var(--surface);border:1px solid var(--border);border-radius:99px;padding:10px 14px;font-size:.77rem;font-weight:800;min-height:42px;cursor:pointer;color:var(--text2)}
+.rh-track-tabs button.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.rh-track-patient,.rh-track-trends>label{display:flex;flex-direction:column;gap:7px;font-size:.73rem;font-weight:800;color:var(--text2)}
+.rh-track-patient{max-width:370px;margin-bottom:15px}
+.rh-track-patient select,.rh-track-trends select,.rh-track-field input,.rh-track-field select,.rh-track-field textarea{border:1px solid var(--border);background:var(--surface2);border-radius:10px;padding:11px;font-size:.86rem;color:var(--text);min-height:44px;width:100%}
+.rh-track-trends{padding:20px;background:var(--surface);border:1px solid var(--border);border-radius:13px;margin-bottom:16px;max-width:650px}
+.rh-track-trends>label{max-width:350px;margin-bottom:10px}
+.rh-trend-svg{display:block;width:100%;height:130px;margin:5px 0}
+.rh-track-trends p{font-size:.72rem;color:var(--text2);line-height:1.6}
+.rh-track-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.rh-track-item{padding:19px;background:var(--surface);border:1px solid var(--border);border-radius:13px;min-width:0;display:flex;flex-direction:column;gap:12px}
+.rh-track-item-top>div{display:flex;flex-direction:column;gap:5px}
+.rh-track-item-top span{color:var(--accent);font-weight:800;font-size:.7rem}
+.rh-track-item-top strong{font-size:.97rem;overflow-wrap:anywhere}
+.rh-track-item-top small{color:var(--text2);font-size:.73rem;line-height:1.5}
+.rh-track-note{font-size:.78rem;line-height:1.6;color:var(--text2)}
+.rh-track-link{background:var(--accent-bg);padding:10px;border-radius:9px;color:var(--accent);font-size:.72rem}
+.rh-track-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:auto}
+.rh-track-actions button{border:1px solid var(--border);border-radius:99px;background:var(--surface2);min-height:39px;padding:8px 13px;color:var(--text);font-size:.74rem;font-weight:800;cursor:pointer}
+.rh-track-actions button.danger{color:var(--red)}
+.rh-track-form{display:flex;flex-direction:column;gap:14px}
+.rh-track-field{display:flex;flex-direction:column;gap:6px;color:var(--text2);font-weight:800;font-size:.76rem}
+.rh-track-field input[type=range]{padding:0;border:0;accent-color:var(--accent)}
+.rh-track-empty{grid-column:1/-1;min-height:150px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:15px;border:1px dashed var(--border);border-radius:14px;background:var(--surface)}
+.rh-track-empty strong{font-size:.84rem;color:var(--text2)}
+.rh-track-empty button{border:0;background:transparent;color:var(--accent);font-size:.75rem;font-weight:800;cursor:pointer}
+.rh-track-warning{font-size:.78rem;color:var(--red);font-weight:700}
+@media(max-width:740px){.rh-track-list{grid-template-columns:1fr}.rh-track-tabs{display:grid;grid-template-columns:repeat(2,1fr)}.rh-track-tabs button{padding:9px}.rh-track-item{padding:16px}}
+
 </style>
 </head>
 <body>
@@ -2198,6 +2232,193 @@ function BackupPanel(p){
 }
 
 // Centro de registros de salud: entradas locales por paciente, nunca se envían al servidor.
+// Seguimiento individual: valores capturados manualmente, sin diagnóstico automático.
+var RH_METRICS=[
+  {id:'pressure',label:'Presión arterial',unit:'mmHg',secondary:'Diastólica',min:1,max:400},
+  {id:'glucose',label:'Glucosa',unit:'mg/dL',min:1,max:1500},
+  {id:'weight',label:'Peso',unit:'kg',min:0.1,max:700},
+  {id:'temperature',label:'Temperatura',unit:'°C',min:20,max:50},
+  {id:'oxygen',label:'Oxígeno',unit:'%',min:0,max:100},
+  {id:'pulse',label:'Frecuencia cardíaca',unit:'lpm',min:1,max:300}
+];
+function rhPendingList(store,patientId){
+  var today=rhCalDay(new Date()),result=[],name=function(pid){var p=(store.patients||[]).find(function(x){return x.id===pid;});return p?p.name:'Paciente';};
+  function include(item){if(!patientId||patientId==='all'||item.patientId===patientId)result.push(item);}
+  (store.followups||[]).forEach(function(f){if(f.status==='done')return;
+    include({id:'f'+f.id,kind:'followup',patientId:f.patientId,title:f.title,date:f.dueDate||f.date,detail:'Seguimiento · '+name(f.patientId),source:f});});
+  (store.labs||[]).forEach(function(x){if(x.status==='done'||x.status==='reviewed')return;
+    include({id:'l'+x.id,kind:'lab',patientId:x.patientId,title:x.title,date:x.date,detail:'Laboratorio pendiente · '+name(x.patientId),source:x});});
+  (store.vaccines||[]).forEach(function(x){if(!x.nextDate||x.nextDate<today)return;
+    include({id:'v'+x.id,kind:'vaccine',patientId:x.patientId,title:x.title,date:x.nextDate,detail:'Próxima vacuna · '+name(x.patientId),source:x});});
+  (store.appointments||[]).forEach(function(x){if(!rhAppointmentActive(x)||x.date<today)return;
+    if(rhAppointmentStatus(x)==='confirmed')return;
+    include({id:'a'+x.id,kind:'appointment',patientId:x.patientId,title:x.reason||x.specialty||'Cita médica',date:x.date,detail:'Confirmar cita · '+name(x.patientId),source:x});});
+  return result.sort(function(a,b){return String(a.date||'9999').localeCompare(String(b.date||'9999'));});
+}
+function rhSparkline(points,second){
+  if(points.length<2)return null;
+  var values=points.map(function(x){return Number(second?x.value2:x.value);}).filter(Number.isFinite);
+  if(values.length<2)return null;
+  var lo=Math.min.apply(null,values),hi=Math.max.apply(null,values);
+  var span=hi-lo||1;
+  var coords=values.map(function(v,i){return (11+i*290/(values.length-1)).toFixed(1)+','+(64-(v-lo)/span*48).toFixed(1);}).join(' ');
+  return h('svg',{className:'rh-trend-svg',viewBox:'0 0 314 77',role:'img','aria-label':'Tendencia de valores registrados, sin interpretación clínica'},
+    h('line',{x1:9,y1:66,x2:305,y2:66,stroke:'var(--border)',strokeWidth:1}),
+    h('polyline',{points:coords,fill:'none',stroke:'var(--accent)',strokeWidth:3,strokeLinecap:'round',strokeLinejoin:'round'}));
+}
+function TrackingView(p){
+  var store=p.store,patients=store.patients||[];
+  var tabs=[['vitals','Signos vitales'],['symptoms','Síntomas'],['followups','Seguimiento'],['pending','Pendientes']];
+  var ts=useState(p.initialTab||'pending'),tab=ts[0],setTab=ts[1];
+  var ps=useState(p.initialPatientId||'all'),pid=ps[0],setPid=ps[1];
+  var ms=useState('pressure'),metric=ms[0],setMetric=ms[1];
+  var es=useState(null),editing=es[0],setEditing=es[1];
+  var fs=useState({}),form=fs[0],setForm=fs[1];
+  var ws=useState(''),warning=ws[0],setWarning=ws[1];
+  var lists={vitals:store.vitals||[],symptoms:store.symptoms||[],followups:store.followups||[]};
+  var setList=tab==='vitals'?store.setVitals:tab==='symptoms'?store.setSymptoms:store.setFollowups;
+  var list=tab==='pending'?rhPendingList(store,pid):
+    (lists[tab]||[]).filter(function(x){return pid==='all'||x.patientId===pid;})
+      .sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''));});
+  var selectedMetric=RH_METRICS.find(function(x){return x.id===metric;})||RH_METRICS[0];
+  var readings=(store.vitals||[]).filter(function(v){return v.metric===metric&&(pid==='all'||v.patientId===pid);})
+    .sort(function(a,b){return a.date.localeCompare(b.date);}).slice(-15);
+  function patientName(id){var pt=patients.find(function(x){return x.id===id;});return pt?pt.name:'Paciente no encontrado';}
+  function field(k,label,type,placeholder){
+    return h('label',{className:'rh-track-field'},h('span',null,label),
+      type==='textarea'?h('textarea',{rows:3,value:form[k]||'',maxLength:2000,placeholder:placeholder||'',onChange:function(e){var value=e.target.value;setForm(function(f){return xt(f,{[k]:value});});}}):
+      h('input',{type:type||'text',value:form[k]??'',maxLength:170,placeholder:placeholder||'',onChange:function(e){var value=e.target.value;setForm(function(f){return xt(f,{[k]:value});});}})
+    );
+  }
+  function start(item){
+    if(!patients.length){setWarning('Primero agrega un paciente.');return;}
+    setWarning('');setEditing(item?item.id:'new');
+    if(item)setForm(xt({},item));else setForm({patientId:pid==='all'?patients[0].id:pid,date:rhCalDay(new Date()),
+      metric:metric,status:'pending',severity:5});
+  }
+  function save(){
+    var item=xt({},form);
+    if(!item.patientId||!patients.some(function(x){return x.id===item.patientId;})||
+       !/^20\d\d-\d\d-\d\d$/.test(item.date||'')||
+       rhCalDay(rhCalDate(item.date))!==item.date){setWarning('Elige un paciente y una fecha válida.');return;}
+    if(tab==='vitals'){
+      var cfg=RH_METRICS.find(function(x){return x.id===item.metric;});
+      if(!cfg||item.value===''||item.value===undefined||!Number.isFinite(Number(item.value))||
+        Number(item.value)<cfg.min||Number(item.value)>cfg.max){setWarning('Revisa el valor de la medición.');return;}
+      if(cfg.secondary&&(item.value2===''||item.value2===undefined||!Number.isFinite(Number(item.value2))||
+        Number(item.value2)<1||Number(item.value2)>400)){setWarning('Agrega ambos valores de presión arterial.');return;}
+      item.value=String(item.value);item.value2=cfg.secondary?String(item.value2):'';
+      item.unit=cfg.unit;
+    }else if(tab==='symptoms'){
+      if(!String(item.title||'').trim()){setWarning('Escribe el síntoma.');return;}
+      if(!Number.isInteger(Number(item.severity))||Number(item.severity)<1||Number(item.severity)>10){setWarning('La intensidad debe ser de 1 a 10.');return;}
+      item.title=item.title.trim();item.severity=Number(item.severity);
+    }else if(tab==='followups'){
+      if(!String(item.title||'').trim()){setWarning('Describe el seguimiento pendiente.');return;}
+      if(item.appointmentId&&!(store.appointments||[]).some(function(x){return x.id===item.appointmentId&&x.patientId===item.patientId;})){setWarning('La cita seleccionada no corresponde a este paciente.');return;}
+      item.title=item.title.trim();item.status=item.status==='done'?'done':'pending';
+    }
+    item.id=editing==='new'?uid():editing;item.updatedAt=new Date().toISOString();
+    setList(function(all){return editing==='new'?all.concat([item]):all.map(function(x){return x.id===editing?item:x;});});
+    setEditing(null);setWarning('');
+  }
+  function remove(item){
+    if(!window.confirm('¿Eliminar este registro? No se puede deshacer.'))return;
+    setList(function(all){return all.filter(function(x){return x.id!==item.id;});});
+  }
+  function mark(item,done){
+    store.setFollowups(function(all){return all.map(function(x){return x.id===item.id?xt(x,{status:done?'done':'pending'}):x;});});
+  }
+  function linked(item){
+    if(!item.appointmentId)return null;
+    var appt=(store.appointments||[]).find(function(x){return x.id===item.appointmentId;});
+    return appt?'Cita: '+(appt.reason||appt.specialty||'Consulta')+' · '+fmtD(appt.date):null;
+  }
+  return h('div',{className:'rh-tracking'},
+    h('div',{className:'rh-track-head'},
+      h('div',null,h('span',{className:'rh-center-kicker'},'HISTORIAL PERSONAL'),h('h1',null,'Seguimiento de salud')),
+      tab!=='pending'&&h('button',{className:'rh-mini-btn rh-mini-primary',onClick:function(){start(null);}},'+ Agregar registro')
+    ),
+    h('div',{className:'rh-track-tabs',role:'group','aria-label':'Tipos de seguimiento'},
+      tabs.map(function(t){return h('button',{key:t[0],className:tab===t[0]?'active':'',onClick:function(){setTab(t[0]);setEditing(null);setWarning('');}},t[1]);})
+    ),
+    h('label',{className:'rh-track-patient'},'Paciente',h('select',{value:pid,onChange:function(e){setPid(e.target.value);}},
+      h('option',{value:'all'},'Todos los pacientes'),
+      patients.map(function(pt){return h('option',{key:pt.id,value:pt.id},pt.name);})
+    )),
+    tab==='vitals'&&h('div',{className:'rh-track-trends'},
+      h('label',null,'Gráfico de mediciones',h('select',{value:metric,onChange:function(e){setMetric(e.target.value);}},
+        RH_METRICS.map(function(m){return h('option',{value:m.id,key:m.id},m.label);})
+      )),
+      readings.length>=2?rhSparkline(readings):h('p',null,'Agrega dos o más mediciones para visualizar la tendencia.'),
+      readings.length>=2&&h('p',null,readings.length+' mediciones · Valores registrados, sin interpretación clínica.')
+    ),
+    warning&&!editing&&h('p',{className:'rh-track-warning',role:'status'},warning),
+    h('div',{className:'rh-track-list'},
+      list.length?list.map(function(item){
+        var source=tab==='pending'?item.source:item;
+        var title=tab==='vitals'?(RH_METRICS.find(function(x){return x.id===item.metric;})||RH_METRICS[0]).label:
+          tab==='pending'?item.title:item.title;
+        var info=tab==='vitals'?item.value+(item.metric==='pressure'?'/'+item.value2:'')+' '+(item.unit||''):
+          tab==='symptoms'?'Intensidad '+item.severity+'/10':tab==='pending'?item.detail:
+          item.status==='done'?'Completado':'Pendiente';
+        var date=tab==='pending'?item.date:item.date;
+        return h('article',{className:'rh-track-item',key:(tab==='pending'?item.id:item.id)},
+          h('div',{className:'rh-track-item-top'},h('div',null,
+            h('span',null,tab==='pending'?item.detail:patientName(item.patientId)),
+            h('strong',null,title),
+            h('small',null,(date?fmtD(date):'Sin fecha')+' · '+info)
+          )),
+          (item.notes||item.description)&&h('p',{className:'rh-track-note'},item.notes||item.description),
+          tab==='followups'&&linked(item)&&h('p',{className:'rh-track-link'},linked(item)),
+          h('div',{className:'rh-track-actions'},
+            tab==='followups'&&h('button',{onClick:function(){mark(item,item.status!=='done');}},item.status==='done'?'Reabrir':'Marcar completado'),
+            tab==='pending'&&item.kind==='followup'&&h('button',{onClick:function(){mark(source,true);}},'Completar'),
+            tab==='pending'&&item.kind!=='followup'&&h('button',{onClick:function(){if(p.onOpenPending)p.onOpenPending(item);}},'Abrir registro'),
+            tab!=='pending'&&h('button',{onClick:function(){start(item);}},'Editar'),
+            tab!=='pending'&&h('button',{className:'danger',onClick:function(){remove(item);}},'Eliminar')
+          )
+        );
+      }):h('div',{className:'rh-track-empty'},
+        h('strong',null,tab==='pending'?'No hay pendientes en esta selección.':'Sin registros todavía.'),
+        tab!=='pending'&&h('button',{onClick:function(){start(null);}},'Agregar registro ↗')
+      )
+    ),
+    h('p',{className:'rh-center-footnote'},'Información anotada por el usuario; no reemplaza la evaluación profesional. Los valores se muestran sin clasificar resultados como normales o anormales.'),
+    editing&&h(Sheet,{title:editing==='new'?'Nuevo registro':'Editar registro',sub:tabs.find(function(t){return t[0]===tab;})[1],onClose:function(){setEditing(null);setWarning('');}},
+      h('div',{className:'rh-track-form'},
+        h('label',{className:'rh-track-field'},'Paciente',h('select',{value:form.patientId||'',onChange:function(e){var id=e.target.value;setForm(function(v){return xt(v,{patientId:id,appointmentId:''});});}},
+          patients.map(function(x){return h('option',{key:x.id,value:x.id},x.name);})
+        )),
+        field('date','Fecha','date'),
+        tab==='vitals'&&h('label',{className:'rh-track-field'},'Medición',h('select',{value:form.metric||'pressure',onChange:function(e){var value=e.target.value;setForm(function(f){return xt(f,{metric:value,value:'',value2:''});});}},
+          RH_METRICS.map(function(x){return h('option',{key:x.id,value:x.id},x.label+' ('+x.unit+')');})
+        )),
+        tab==='vitals'&&field('value',form.metric==='pressure'?'Sistólica':'Valor','number'),
+        tab==='vitals'&&form.metric==='pressure'&&field('value2','Diastólica','number'),
+        tab==='symptoms'&&field('title','Síntoma','text','Por ejemplo: dolor de cabeza'),
+        tab==='symptoms'&&h('label',{className:'rh-track-field'},'Intensidad percibida (1–10)',h('input',{type:'range',min:1,max:10,value:form.severity||5,onChange:function(e){var x=Number(e.target.value);setForm(function(f){return xt(f,{severity:x});});}}),
+          h('strong',null,String(form.severity||5))
+        ),
+        tab==='symptoms'&&field('duration','Duración (opcional)','text','Ej. 2 horas'),
+        tab==='followups'&&field('title','Tarea o indicación posterior','text','Ej. Llevar resultados a consulta'),
+        tab==='followups'&&field('dueDate','Fecha límite (opcional)','date'),
+        tab==='followups'&&h('label',{className:'rh-track-field'},'Cita relacionada',h('select',{value:form.appointmentId||'',onChange:function(e){var id=e.target.value;setForm(function(v){return xt(v,{appointmentId:id});});}},
+          h('option',{value:''},'Sin cita relacionada'),
+          (store.appointments||[]).filter(function(a){return a.patientId===form.patientId;})
+            .map(function(a){return h('option',{key:a.id,value:a.id},fmtD(a.date)+' · '+(a.reason||a.specialty||'Cita'));})
+        )),
+        tab==='followups'&&h('label',{className:'rh-track-field'},'Estado',h('select',{value:form.status||'pending',onChange:function(e){var x=e.target.value;setForm(function(v){return xt(v,{status:x});});}},
+          h('option',{value:'pending'},'Pendiente'),h('option',{value:'done'},'Completado')
+        )),
+        field('notes','Observaciones (opcional)','textarea'),
+        warning&&h('p',{className:'rh-track-warning',role:'status'},warning),
+        h('button',{className:'rh-center-save',onClick:save},'Guardar registro')
+      )
+    )
+  );
+}
+
 function HealthCenterView(p){
   var store=p.store,patients=store.patients||[];
   var tabs=[{id:'labs',title:'Laboratorios',icon:'activity'},{id:'vaccines',title:'Vacunas',icon:'shield'},{id:'documents',title:'Documentos',icon:'file'}];
