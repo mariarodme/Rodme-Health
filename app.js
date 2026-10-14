@@ -931,7 +931,7 @@ function BackupPanel(p){
           :'Todavía no hay una exportación registrada en este navegador.'))),
     h('div',{className:'rh-backup-tabs',role:'group','aria-label':'Copia o restauración'},
       h('button',{className:mode==='export'?'active':'',onClick:function(){switchMode('export');}},'Guardar copia'),
-      h('button',{className:mode==='import'?'active':'',onClick:function(){switchMode('import');}},'Restaurar copia')
+      !window.RH_ACTIVE_CLOUD&&h('button',{className:mode==='import'?'active':'',onClick:function(){switchMode('import');}},'Restaurar copia')
     ),
     mode==='export'?h('p',{className:'rh-backup-description'},'Descarga un archivo cifrado con pacientes, expedientes, citas, tratamientos, signos vitales, síntomas, seguimientos, laboratorios, vacunas, documentos y preferencias. La copia se comprueba mediante descifrado antes de descargarla. No se envía a ningún servidor.')
       :h('p',{className:'rh-backup-description'},'Selecciona un archivo .rhbackup generado en Rodme Health. Antes de reemplazar información se solicitará confirmación.'),
@@ -2328,6 +2328,9 @@ function CloudGate(){
         h('button',{className:'btn btn-primary rh-cloud-submit',disabled:busy||!f.email||f.password.length<6,onClick:function(){
           doAction(function(){return mode==='signup'?cloud.signUp(f.email,f.password):cloud.signIn(f.email,f.password);});
         }},busy?'Conectando…':mode==='signup'?'Crear cuenta y verificar correo':'Ingresar'),
+        mode==='signin'&&h('button',{type:'button',className:'btn btn-ghost',disabled:busy,onClick:function(){
+          doAction(function(){return cloud.resetPassword(f.email);},'Si el correo tiene una cuenta, recibirás instrucciones para cambiar tu contraseña.');
+        }},'Olvidé mi contraseña'),
         h('p',{className:'rh-cloud-security'},'Cada familiar necesita su propia cuenta y correo verificado.'),
         h('p',{className:'rh-cloud-security'},'Si olvidaste tu contraseña, solicita un restablecimiento desde Firebase Authentication.')
       ),
