@@ -1254,6 +1254,19 @@ body{background:var(--bg);color:var(--text)}
 }
 @media(prefers-reduced-motion:reduce){.rh-care-stat:hover{transform:none}}
 
+
+.rh-health-key-info{margin:16px 0}
+.rh-health-key-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.rh-health-key-cell{display:flex;flex-direction:column;gap:8px;border:1px solid var(--border);border-radius:12px;background:var(--surface2);padding:17px;min-width:0}
+.rh-health-key-cell span{font-size:.69rem;color:var(--text2);font-weight:800}
+.rh-health-key-cell strong{font-size:.87rem;line-height:1.6;font-weight:700;overflow-wrap:anywhere}
+.rh-health-key-cell strong.rh-health-empty{color:var(--text3);font-weight:500}
+.rh-health-record-note{font-size:.7rem;color:var(--text2);margin-top:12px;line-height:1.6}
+.rh-profile-mobile-btn{display:grid!important;place-items:center}
+.rh-care-home button:focus-visible,.rh-profile button:focus-visible,.rh-calendar-area button:focus-visible{
+outline:3px solid #8AAB8C!important;outline-offset:3px
+}
+@media(max-width:650px){.rh-health-key-grid{grid-template-columns:1fr}.rh-health-key-cell{padding:13px 15px}}
 </style>
 </head>
 <body>
@@ -1338,11 +1351,11 @@ function upd(sf,k){return function(e){var v=e.target.value;sf(function(f){var n=
 // ── SHEET ──────────────────────────────────────────────────────────────────
 function Sheet(p){
   return h('div',{className:'overlay fi',onClick:function(e){if(e.target===e.currentTarget&&p.onClose)p.onClose();}},
-    h('div',{className:'sheet'},
+    h('div',{className:'sheet',role:'dialog','aria-modal':true,'aria-label':p.title},
       h('div',{className:'sheet-grip'}),
       h('div',{className:'sheet-hd'},
         h('div',null,p.sub&&h('div',{className:'sheet-sub'},p.sub),h('div',{className:'sheet-title'},p.title)),
-        h('button',{className:'btn-icon',onClick:p.onClose},h(Ic,{n:'close',s:17,c:'var(--text2)'}))
+        h('button',{className:'btn-icon',onClick:p.onClose,'aria-label':'Cerrar ventana'},h(Ic,{n:'close',s:17,c:'var(--text2)'}))
       ),
       h('div',{className:'sheet-bd'},p.children)
     )
@@ -1502,6 +1515,8 @@ function HomeView(p){
 // ── PATIENTS ───────────────────────────────────────────────────────────────
 function PatientProfile(p){
   var store=p.store,pt=p.patient;
+  var user=p.user;
+  var medical=pt?rhReadRecord(user,pt.id,store.patients):{};
   var countState=useState(15),limit=countState[0],setLimit=countState[1];
   if(!pt)return h('div',{className:'rh-profile-empty'},'Selecciona un paciente.');
   var apts=store.appointments.filter(function(a){return a.patientId===pt.id;});
@@ -1531,6 +1546,26 @@ function PatientProfile(p){
       [[apts.length,'Citas'],[meds.length,'Medicamentos'],[doses.length,'Dosis registradas']].map(function(x,i){
         return h('div',{key:i},h('strong',null,x[0]),h('span',null,x[1]));
       })
+    ),
+    h('section',{className:'rh-profile-panel rh-health-key-info','aria-label':'Información del paciente'},
+      h('div',{className:'rh-profile-panel-head'},
+        h('h2',null,'Información importante'),
+        h('button',{onClick:p.onRecord},'Editar expediente ↗')
+      ),
+      h('div',{className:'rh-health-key-grid'},
+        [
+          {label:'Grupo sanguíneo',value:medical.bloodType||''},
+          {label:'Alergias conocidas',value:medical.allergies||''},
+          {label:'Condiciones registradas',value:medical.chronicConditions||''},
+          {label:'Contacto de emergencia',value:[medical.emergencyContact,medical.emergencyPhone].filter(Boolean).join(' · ')}
+        ].map(function(item){
+          return h('div',{key:item.label,className:'rh-health-key-cell'},
+            h('span',null,item.label),
+            h('strong',{className:!item.value?'rh-health-empty':''},item.value||'Sin registrar')
+          );
+        })
+      ),
+      h('p',{className:'rh-health-record-note'},'Estos datos son los que has anotado. No se verifican con ningún centro médico.')
     ),
     h('div',{className:'rh-profile-columns'},
       h('section',{className:'rh-profile-panel'},
@@ -1604,8 +1639,8 @@ function PatientsView(p){
             ),
             h('div',{style:{display:'flex',flexDirection:'column',gap:5}},
               h('button',{className:'rh-patient-history',onClick:function(e){e.stopPropagation();ssp(pt);sv('patient');}},'Historial'),
-              h('button',{className:'btn-icon',title:'PDF',style:{background:'var(--red-bg)'},onClick:function(e){e.stopPropagation();generatePDF({},store,pt);}},h(Ic,{n:'file',s:14,c:'var(--red)'})),
-              h('button',{className:'btn-icon',onClick:function(e){e.stopPropagation();ssp(pt);sm('edit-patient');}},h(Ic,{n:'edit',s:14,c:'var(--text3)'}))
+              h('button',{className:'btn-icon',title:'Exportar PDF de '+pt.name,'aria-label':'Exportar PDF de '+pt.name,style:{background:'var(--red-bg)'},onClick:function(e){e.stopPropagation();generatePDF(rhReadRecord(p.user||'',pt.id,store.patients),store,pt);}},h(Ic,{n:'file',s:14,c:'var(--red)'})),
+              h('button',{className:'btn-icon',title:'Editar '+pt.name,'aria-label':'Editar '+pt.name,onClick:function(e){e.stopPropagation();ssp(pt);sm('edit-patient');}},h(Ic,{n:'edit',s:14,c:'var(--text3)'}))
             )
           );
         })
@@ -2431,7 +2466,7 @@ function App(){
 
   function NavBtn(q){
     var it=q.item,active=view===it.id||(view==='patient'&&it.id==='patients'),dot=it.id==='appointments'&&notifs.length>0;
-    return h('button',{className:'nav-item'+(active?' active':''),onClick:function(){sv(it.id);setSideOpen(false);}},
+    return h('button',{className:'nav-item'+(active?' active':''),onClick:function(){sv(it.id);setSideOpen(false);},'aria-current':active?'page':undefined,},
       h('div',{className:'nav-ico'},h(Ic,{n:it.n,s:17,c:active?'white':'var(--text2)'})),
       h('span',null,it.l),
       dot&&h('span',{className:'nav-badge'},notifs.length)
@@ -2459,7 +2494,7 @@ function App(){
 
   return h('div',{className:'app-layout'+(view==='home'?' rh-wix-home-layout':'')},
     h('aside',{className:'sidebar'},h(Sidebar)),
-    sideOpen&&h('div',{className:'sidebar-overlay show',onClick:function(){setSideOpen(false);}}),
+    sideOpen&&h('div',{className:'sidebar-overlay show',onClick:function(){setSideOpen(false);},'aria-hidden':true}),
     sideOpen&&h('aside',{className:'sidebar open'},h(Sidebar)),
 
     h('div',{className:'main-content'},
@@ -2471,7 +2506,7 @@ function App(){
           h('span',null,h('strong',null,'rodme',h('em',null,'health')),h('small',null,'SALUD FAMILIAR'))
         ),
         h('nav',{className:'rh-nav-links','aria-label':'Secciones'},
-          navItems.map(function(it){return h('button',{key:it.id,className:'rh-nav-link'+((view===it.id||view==='patient'&&it.id==='patients')?' active':''),onClick:function(){sv(it.id);}},
+          navItems.map(function(it){return h('button',{key:it.id,className:'rh-nav-link'+((view===it.id||view==='patient'&&it.id==='patients')?' active':''),onClick:function(){sv(it.id);},'aria-current':(view===it.id||view==='patient'&&it.id==='patients')?'page':undefined,},
             h(Ic,{n:it.n,s:17,c:'currentColor'}),it.l,
             it.id==='appointments'&&notifs.length>0&&h('span',{className:'rh-nav-count'},notifs.length)
           );})
@@ -2485,22 +2520,22 @@ function App(){
 
       // Mobile header
       h('div',{className:'mobile-header'},
-        h('button',{className:'btn-icon',onClick:function(){setSideOpen(true);}},h(Ic,{n:'menu',s:20,c:'var(--text)'})),
+        h('button',{className:'btn-icon',onClick:function(){setSideOpen(true);},'aria-label':'Abrir menú'},h(Ic,{n:'menu',s:20,c:'var(--text)'})),
         h('div',{style:{display:'flex',alignItems:'center',gap:8}},
           h('div',{className:'logo-mark',style:{width:26,height:26,borderRadius:8}},h('svg',{width:13,height:13,viewBox:'0 0 26 26',fill:'none'},h('circle',{cx:'13',cy:'13',r:'10',stroke:'white',strokeWidth:'1.5',fill:'none'}),h('path',{d:'M9 13l3 3 5-6',stroke:'white',strokeWidth:'2',strokeLinecap:'round',strokeLinejoin:'round'}))),
           h('span',{style:{fontWeight:800,fontSize:'.88rem',letterSpacing:'-.02em'}},'Rodme Health')
         ),
         h('div',{style:{display:'flex',gap:5}},
           h('button',{className:'btn-icon',onClick:function(){setTheme(theme==='dark'?'light':'dark');}},h(Ic,{n:theme==='dark'?'sun':'moon',s:17,c:'var(--text2)'})),
-          h('div',{className:'av',style:{width:28,height:28,fontSize:'.62rem',cursor:'pointer'},onClick:function(){sv('settings');}},ini(displayName||uEmail))
+          h('button',{className:'av rh-profile-mobile-btn',type:'button','aria-label':'Abrir configuración',style:{width:32,height:32,fontSize:'.62rem',cursor:'pointer',border:0},onClick:function(){sv('settings');}},ini(displayName||uEmail))
         )
       ),
 
       // Page content
       h('div',{className:'page-content'},
         view==='home'&&h(HomeView,{store:store,sv:sv,sm:sm,ssa:ssa,ssp:ssp,user:user}),
-        view==='patients'&&h(PatientsView,{store:store,sm:sm,ssp:ssp,sv:sv}),
-        view==='patient'&&h(PatientProfile,{store:store,patient:(store.patients.find(function(x){return selP&&x.id===selP.id;})||selP),onBack:function(){sv('patients');},onEdit:function(pt){ssp(pt);sm('edit-patient');},onAddApt:function(){setDraftDate('');sm('add-apt');},onAddMed:function(){sm('add-med');},onApt:function(apt){ssa(apt);sm('view-apt');}}),
+        view==='patients'&&h(PatientsView,{store:store,sm:sm,ssp:ssp,sv:sv,user:user}),
+        view==='patient'&&h(PatientProfile,{store:store,patient:(store.patients.find(function(x){return selP&&x.id===selP.id;})||selP),onBack:function(){sv('patients');},onEdit:function(pt){ssp(pt);sm('edit-patient');},onAddApt:function(){setDraftDate('');sm('add-apt');},onRecord:function(){if(selP)lss(uk(user,'record_patient'),selP.id);sv('record');},user:user,onAddMed:function(){sm('add-med');},onApt:function(apt){ssa(apt);sm('view-apt');}}),
         view==='appointments'&&h(ApptsView,{store:store,sm:sm,tab:tab,stab:stab,ssa:ssa,setDraftDate:setDraftDate}),
         view==='medications'&&h(MedsView,{store:store,sm:sm,ssm:ssm}),
         view==='settings'&&h(SettingsView,{store:store,sv:sv,user:user,theme:theme,setTheme:setTheme}),
@@ -2508,10 +2543,10 @@ function App(){
       ),
 
       // Mobile bottom nav
-      h('nav',{className:'bottom-nav'},
+      h('nav',{className:'bottom-nav','aria-label':'Navegación móvil'},
         h('div',{className:'bn-items'},navItems.map(function(it){
           var active=view===it.id||(view==='patient'&&it.id==='patients'),dot=it.id==='appointments'&&notifs.length>0;
-          return h('button',{key:it.id,className:'bn-btn'+(active?' active':''),onClick:function(){sv(it.id);}},
+          return h('button',{key:it.id,className:'bn-btn'+(active?' active':''),onClick:function(){sv(it.id);},'aria-current':active?'page':undefined,},
             h('span',{style:{position:'relative'}},h(Ic,{n:it.n,s:21,c:active?'var(--accent)':'var(--text3)'}),dot&&h('span',{className:'bn-dot'})),
             h('span',{className:'bn-lbl'},it.l)
           );
