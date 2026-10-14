@@ -108,7 +108,7 @@ function Sheet(p){
     var previous=document.activeElement;
     var oldOverflow=document.body.style.overflow;
     document.body.style.overflow='hidden';
-    var close=panel.current&&panel.current.querySelector('.sheet-hd .btn-icon');
+    var close=panel.current&&panel.current.querySelector('.sheet-hd .rh-sheet-back');
     if(close)close.focus();
     function keydown(e){
       if(e.key==='Escape'&&closeRef.current){e.preventDefault();closeRef.current();return;}
@@ -126,7 +126,13 @@ function Sheet(p){
     h('div',{className:'sheet med1820-sheet',ref:panel,role:'dialog','aria-modal':true,'aria-label':p.title},
       h('div',{className:'sheet-grip'}),
       h('div',{className:'sheet-hd'},
-        h('div',null,p.sub&&h('div',{className:'sheet-sub'},p.sub),h('div',{className:'sheet-title'},p.title)),
+        h('div',{className:'rh-sheet-heading'},
+          h('button',{type:'button',className:'rh-sheet-back',onClick:requestClose,
+            'aria-label':'Volver y cerrar esta ventana'},
+            h(Ic,{n:'back',s:19,c:'currentColor'}),'Volver'),
+          p.sub&&h('div',{className:'sheet-sub'},p.sub),
+          h('div',{className:'sheet-title'},p.title)
+        ),
         h('button',{className:'btn-icon',onClick:requestClose,'aria-label':'Cerrar ventana'},h(Ic,{n:'close',s:17,c:'var(--text2)'}))
       ),
       h('div',{className:'sheet-bd'},p.children)
@@ -381,7 +387,7 @@ function PatientProfile(p){
   events.sort(function(a,b){return b.at.localeCompare(a.at);});
   var next=apts.filter(function(a){return rhAppointmentActive(a)&&a.date>=rhCalDay(new Date());}).sort(function(a,b){return a.date.localeCompare(b.date);});
   return h('div',{className:'rh-profile rh-board-profile med1820-section'},
-    h('div',{className:'rh-profile-back'},h('button',{onClick:p.onBack},'← Volver a pacientes')),
+    h('div',{className:'rh-profile-back'},h('button',{onClick:p.onBack},'← Volver')),
     h('div',{className:'rh-profile-hero'},
       h('div',{className:'rh-profile-photo'},pt.avatar?h('img',{src:pt.avatar,alt:''}):ini(pt.name)),
       h('div',{className:'rh-profile-info'},h('span',null,'EXPEDIENTE FAMILIAR'),
@@ -1542,7 +1548,7 @@ function RecordView(p){
   function Blk(icon,col,title,kids){return h('div',{className:'card-flat',style:{marginBottom:11,overflow:'hidden'}},h('div',{style:{display:'flex',alignItems:'center',gap:8,padding:'10px 14px',borderBottom:'1px solid var(--border)',background:'var(--surface2)'}},h('div',{style:{width:22,height:22,borderRadius:6,background:col+'20',display:'flex',alignItems:'center',justifyContent:'center'}},h(Ic,{n:icon,s:12,c:col})),h('p',{style:{fontSize:'.7rem',fontWeight:800,textTransform:'uppercase',letterSpacing:'.06em',color:'var(--text2)'}},title)),h('div',{style:{padding:'12px 14px',display:'flex',flexDirection:'column',gap:10}},kids));}
   return h('div',null,
     h('div',{style:{display:'flex',alignItems:'center',gap:11,marginBottom:16}},
-      h('button',{className:'btn-icon',style:{background:'var(--surface)',border:'1px solid var(--border)'},onClick:function(){sv('settings');}},h(Ic,{n:'back',s:17,c:'var(--text)'})),
+      h('button',{className:'btn-icon',style:{background:'var(--surface)',border:'1px solid var(--border)'},onClick:p.onBack||function(){sv('settings');},'aria-label':'Volver'},h(Ic,{n:'back',s:17,c:'var(--text)'})),
       h('div',null,h('p',{className:'ph-sub'},'Historial'),h('h1',{className:'ph-title',style:{fontSize:'1.3rem'}},'Expediente médico'))
     ),
     store.patients.length>0?h('div',{className:'rh-record-context'},
@@ -2242,6 +2248,23 @@ function RodmeLocalApp(){
 
       // Page content
       h('div',{className:'page-content'+(view==='home'?' med1820-landing':' med1820-interior')},
+        view!=='home'&&h('nav',{className:'rh-route-bar','aria-label':'Navegación de regreso'},
+          h('button',{type:'button',className:'rh-route-back',onClick:goBack,
+            'aria-label':'Volver a la pantalla anterior'},
+            h(Ic,{n:'back',s:20,c:'currentColor'}),'Volver'),
+          h('div',{className:'rh-route-location'},
+            h('span',null,'Rodme Health'),
+            h(Ic,{n:'chevron',s:15,c:'var(--text3)'}),
+            h('strong',null,({
+              patients:'Pacientes',patient:'Perfil del paciente',
+              appointments:'Citas',medications:'Medicamentos',
+              health:'Centro de salud',tracking:'Seguimiento',
+              settings:'Configuración',record:'Expediente médico'
+            })[view]||'Inicio')
+          ),
+          h('button',{type:'button',className:'rh-route-home',onClick:function(){sv('home');},
+            'aria-label':'Ir al inicio'},h(Ic,{n:'home',s:18,c:'currentColor'}),'Inicio')
+        ),
         h('div',{className:'rh-cloud-banner'+(cloudSession?' active':'')},
           h(Ic,{n:cloudSession?'shield':'alert',s:18,c:'currentColor'}),
           cloudSession
@@ -2252,7 +2275,7 @@ function RodmeLocalApp(){
             :'Datos guardados únicamente en este navegador. La sincronización familiar aún no está activada.'),
         view==='home'&&h(HomeView,{store:store,sv:sv,sm:sm,ssa:ssa,ssp:ssp,user:user,onPending:function(){openTracking('all','pending');}}),
         view==='patients'&&h(PatientsView,{store:store,sm:sm,ssp:ssp,sv:sv,user:user}),
-        view==='patient'&&h(PatientProfile,{store:store,patient:(store.patients.find(function(x){return selP&&x.id===selP.id;})||selP),onBack:function(){sv('patients');},onEdit:function(pt){ssp(pt);sm('edit-patient');},onAddApt:function(){setDraftDate('');sm('add-apt');},onRecord:function(){if(selP)lss(uk(user,'record_patient'),selP.id);sv('record');},onTracking:function(){openTracking(selP?.id||'all','vitals');},onEmergency:function(){if(selP)rhEmergencyCard(selP,rhReadRecord(user,selP.id,store.patients),store.medications);},onHealth:function(){setHealthPatient(selP?.id||'all');sv('health');},user:user,onAddMed:function(){sm('add-med');},onApt:function(apt){ssa(apt);sm('view-apt');}}),
+        view==='patient'&&h(PatientProfile,{store:store,patient:(store.patients.find(function(x){return selP&&x.id===selP.id;})||selP),onBack:goBack,onEdit:function(pt){ssp(pt);sm('edit-patient');},onAddApt:function(){setDraftDate('');sm('add-apt');},onRecord:function(){if(selP)lss(uk(user,'record_patient'),selP.id);sv('record');},onTracking:function(){openTracking(selP?.id||'all','vitals');},onEmergency:function(){if(selP)rhEmergencyCard(selP,rhReadRecord(user,selP.id,store.patients),store.medications);},onHealth:function(){setHealthPatient(selP?.id||'all');sv('health');},user:user,onAddMed:function(){sm('add-med');},onApt:function(apt){ssa(apt);sm('view-apt');}}),
         view==='appointments'&&h(ApptsView,{store:store,sm:sm,tab:tab,stab:stab,ssa:ssa,setDraftDate:setDraftDate}),
         view==='medications'&&h(MedsView,{store:store,sm:sm,ssm:ssm}),
         view==='health'&&h(HealthCenterView,{store:store,user:user,initialPatientId:healthPatient,initialTab:healthTab,onAppointment:function(a){ssa(a);sm('view-apt');},
@@ -2265,7 +2288,7 @@ function RodmeLocalApp(){
             else{setHealthTab(item.kind==='vaccine'?'vaccines':'labs');sv('health');}
           }}),
         view==='settings'&&h(SettingsView,{store:store,sv:sv,user:user,theme:theme,setTheme:setTheme,fontSize:fontSize,setFontSize:setFontSize}),
-        view==='record'&&h(RecordView,{store:store,sv:sv,user:user})
+        view==='record'&&h(RecordView,{store:store,sv:sv,onBack:goBack,user:user})
       ),
 
       // Mobile bottom nav
