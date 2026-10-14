@@ -1,6 +1,6 @@
 /* Static-only caching. No patient data, files, API responses or localStorage. */
-const VERSION='rh-static-20261014-v13-back-navigation-final';
-const APP=['./','./index.html','./styles.css?v=navigation-v13','./app.js?v=navigation-v13','./firebase-config.js?v=navigation-v13','./cloud.js?v=navigation-v13','./manifest.webmanifest','./app-icon.svg'];
+const VERSION='rh-static-20261014-v14-home-shortcut';
+const APP=['./','./index.html','./styles.css?v=navigation-v14-home','./app.js?v=navigation-v14-home','./firebase-config.js?v=navigation-v14-home','./cloud.js?v=navigation-v14-home','./manifest.webmanifest','./app-icon.svg'];
 const REACT=['https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js','https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js'];
 self.addEventListener('install',event=>{
   event.waitUntil((async()=>{
