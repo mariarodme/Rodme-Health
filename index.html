@@ -1338,6 +1338,19 @@ outline:3px solid #8AAB8C!important;outline-offset:3px
 .rh-install-panel .rh-mini-btn{align-self:flex-start}
 .rh-install-help{font-size:.72rem!important;color:var(--text2)}
 @media(max-width:650px){.rh-install-panel{padding:18px}}
+
+.rh-search-panel{display:flex;flex-direction:column;gap:8px}
+.rh-search-field{display:flex;align-items:center;gap:9px;background:var(--surface2);border:1px solid var(--border);border-radius:13px;padding:8px 12px}
+.rh-search-field input{flex:1;min-width:0;background:transparent;border:0;outline:0;min-height:38px;font-size:.9rem;color:var(--text)}
+.rh-search-field button{border:0;background:transparent;color:var(--text2);font-size:1.25rem;cursor:pointer}
+.rh-search-hint{font-size:.74rem;color:var(--text2);padding:10px 2px}
+.rh-search-result{position:relative;display:flex;flex-direction:column;gap:5px;text-align:left;border:1px solid var(--border);background:var(--surface);color:var(--text);border-radius:11px;padding:14px 35px 14px 15px;cursor:pointer}
+.rh-search-result:hover,.rh-search-result:focus-visible{background:var(--accent-bg)}
+.rh-search-kind{font-size:.66rem;text-transform:uppercase;letter-spacing:.07em;color:var(--accent);font-weight:800}
+.rh-search-result strong{font-size:.86rem;font-weight:800}
+.rh-search-result small{font-size:.74rem;color:var(--text2);line-height:1.5}
+.rh-search-arrow{position:absolute;right:15px;top:50%;transform:translateY(-50%);font-size:1.2rem;color:var(--accent)}
+.rh-search-empty{font-size:.8rem;color:var(--text2);padding:18px 0;text-align:center}
 </style>
 </head>
 <body>
@@ -2783,6 +2796,43 @@ function generatePDF(record,store,directPt){
 }
 
 // ── MAIN APP ───────────────────────────────────────────────────────────────
+// Búsqueda privada dentro de este dispositivo: nunca modifica la URL ni envía consultas.
+function GlobalHealthSearch(p){
+  var qs=useState(''),query=qs[0],setQuery=qs[1];
+  var store=p.store;
+  var q=query.trim().toLocaleLowerCase('es');
+  var records=[];
+  function push(kind,title,subtitle,route,item){records.push({kind:kind,title:title,subtitle:subtitle,route:route,item:item});}
+  (store.patients||[]).forEach(function(v){push('Paciente',v.name,'Ficha familiar','patient',v);});
+  (store.appointments||[]).forEach(function(v){var person=store.patients.find(function(x){return x.id===v.patientId;});
+    push('Cita',v.reason||v.specialty||v.doctor||'Cita médica',[person&&person.name,v.clinic,fmtD(v.date)].filter(Boolean).join(' · '),'appointment',v);});
+  (store.medications||[]).forEach(function(v){var person=store.patients.find(function(x){return x.id===v.patientId;});
+    push('Medicamento',v.name,[person&&person.name,v.dosage].filter(Boolean).join(' · '),'medications',v);});
+  [['labs','Laboratorio'],['vaccines','Vacuna'],['documents','Documento']].forEach(function(pair){
+    (store[pair[0]]||[]).forEach(function(v){var person=store.patients.find(function(x){return x.id===v.patientId;});
+      push(pair[1],v.title,[person&&person.name,fmtD(v.date)].filter(Boolean).join(' · '),'health',v);});
+  });
+  var matches=q?records.filter(function(x){return (x.title+' '+x.subtitle+' '+x.kind).toLocaleLowerCase('es').includes(q);}).slice(0,25):[];
+  function open(item){p.onSelect(item);p.onClose();}
+  return h(Sheet,{title:'Buscar en Rodme Health',sub:'Búsqueda local',onClose:p.onClose},
+    h('div',{className:'rh-search-panel'},
+      h('label',{className:'rh-search-field'},h(Ic,{n:'search',s:19,c:'var(--text2)'}),
+        h('input',{value:query,autoFocus:true,onChange:function(e){setQuery(e.target.value);},
+          placeholder:'Paciente, cita, medicamento, laboratorio…','aria-label':'Buscar registros'}),
+        query&&h('button',{onClick:function(){setQuery('');},'aria-label':'Borrar búsqueda'},'×')
+      ),
+      !q&&h('p',{className:'rh-search-hint'},'Busca entre los registros guardados en este navegador.'),
+      q&&h('p',{className:'rh-search-hint'},matches.length+' resultado'+(matches.length===1?'':'s')+
+        (matches.length===25?' (mostrando los primeros 25)':'')),
+      matches.map(function(item,i){return h('button',{className:'rh-search-result',key:i,onClick:function(){open(item);}},
+        h('span',{className:'rh-search-kind'},item.kind),h('strong',null,item.title),h('small',null,item.subtitle),
+        h('span',{className:'rh-search-arrow','aria-hidden':'true'},'→')
+      );}),
+      q&&!matches.length&&h('div',{className:'rh-search-empty'},'Sin resultados para esa búsqueda.')
+    )
+  );
+}
+
 function App(){
   var th=useState(function(){return localStorage.getItem('rh_theme')||'light';});
   var theme=th[0],setThState=th[1];
@@ -2815,6 +2865,13 @@ function App(){
   var sbo=useState(false);var sideOpen=sbo[0],setSideOpen=sbo[1];
   var nbs=useState(true);var showNb=nbs[0],sNb=nbs[1];
   var quickState=useState(false),quickOpen=quickState[0],setQuickOpen=quickState[1];
+  var searchState=useState(false),searchOpen=searchState[0],setSearchOpen=searchState[1];
+  function selectSearchResult(entry){
+    if(entry.route==='patient'){ssp(entry.item);sv('patient');}
+    else if(entry.route==='appointment'){ssa(entry.item);sm('view-apt');}
+    else if(entry.route==='health'){sv('health');}
+    else{sv(entry.route);}
+  }
   var notifs=store.appointments.filter(function(a){var d=du(a.date);return d!==null&&d>=0&&d<=7&&rhAppointmentActive(a);});
 
 
@@ -2923,6 +2980,7 @@ function App(){
           );})
         ),
         h('div',{className:'rh-nav-end'},
+          h('button',{className:'rh-nav-theme rh-search-trigger',title:'Buscar registros','aria-label':'Buscar registros',onClick:function(){setSearchOpen(true);}},h(Ic,{n:'search',s:18,c:'currentColor'})),
           h('button',{className:'rh-nav-theme',title:'Cambiar tema',onClick:function(){setTheme(theme==='dark'?'light':'dark');}},h(Ic,{n:theme==='dark'?'sun':'moon',s:18,c:'currentColor'})),
           h('button',{className:'rh-nav-cta',onClick:function(){sm('add-apt');}},h(Ic,{n:'plus',s:15,c:'currentColor'}),' Nueva cita'),
           h('button',{className:'rh-nav-avatar',title:'Mi cuenta',onClick:function(){sv('settings');}},ini(displayName||uEmail||'U'))
@@ -2937,6 +2995,7 @@ function App(){
           h('span',{style:{fontWeight:800,fontSize:'.88rem',letterSpacing:'-.02em'}},'Rodme Health')
         ),
         h('div',{style:{display:'flex',gap:5}},
+          h('button',{className:'btn-icon','aria-label':'Buscar registros',onClick:function(){setSearchOpen(true);}},h(Ic,{n:'search',s:18,c:'var(--text2)'})),
           h('button',{className:'btn-icon',onClick:function(){setTheme(theme==='dark'?'light':'dark');}},h(Ic,{n:theme==='dark'?'sun':'moon',s:17,c:'var(--text2)'})),
           h('button',{className:'av rh-profile-mobile-btn',type:'button','aria-label':'Abrir configuración',style:{width:32,height:32,fontSize:'.62rem',cursor:'pointer',border:0},onClick:function(){sv('settings');}},ini(displayName||uEmail))
         )
@@ -3005,6 +3064,7 @@ function App(){
         )
       ),
 
+    searchOpen&&h(GlobalHealthSearch,{store:store,onSelect:selectSearchResult,onClose:function(){setSearchOpen(false);}}),
     // Modals
     modal==='add-patient'&&h(PatientModal,{store:store,user:user,onClose:function(){sm(null);}}),
     modal==='edit-patient'&&h(PatientModal,{store:store,user:user,patient:selP,onDelete:function(){sv('patients');ssp(null);},onClose:function(){sm(null);}}),
