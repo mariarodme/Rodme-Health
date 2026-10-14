@@ -357,7 +357,7 @@ function PatientProfile(p){
   followups.forEach(function(x){events.push({id:'followup'+x.id,at:x.date+'T12:00',title:'Seguimiento: '+x.title,meta:x.status==='done'?'Completado':'Pendiente',kind:'med'});});
   events.sort(function(a,b){return b.at.localeCompare(a.at);});
   var next=apts.filter(function(a){return rhAppointmentActive(a)&&a.date>=rhCalDay(new Date());}).sort(function(a,b){return a.date.localeCompare(b.date);});
-  return h('div',{className:'rh-profile med1820-section'},
+  return h('div',{className:'rh-profile rh-board-profile med1820-section'},
     h('div',{className:'rh-profile-back'},h('button',{onClick:p.onBack},'← Volver a pacientes')),
     h('div',{className:'rh-profile-hero'},
       h('div',{className:'rh-profile-photo'},pt.avatar?h('img',{src:pt.avatar,alt:''}):ini(pt.name)),
@@ -446,7 +446,7 @@ function PatientsView(p){
   var store=p.store,sm=p.sm,ssp=p.ssp,sv=p.sv;
   var qs=useState('');var q=qs[0],sq=qs[1];
   var filtered=store.patients.filter(function(pt){return !q||pt.name.toLowerCase().includes(q.toLowerCase());});
-  return h('div',null,
+  return h('div',{className:'rh-patient-directory'},
     h('div',{className:'ph',style:{display:'flex',justifyContent:'space-between',alignItems:'flex-end'}},
       h('div',null,h('p',{className:'ph-sub'},'Familia'),h('h1',{className:'ph-title'},'Pacientes')),
       h('button',{className:'btn btn-primary',style:{borderRadius:'var(--r-full)',padding:'9px 16px',fontSize:'.8rem'},onClick:function(){sm('add-patient');}},h(Ic,{n:'plus',s:14,c:'white'}),'Nuevo')
@@ -459,11 +459,11 @@ function PatientsView(p){
           var meds=store.medications.filter(function(m){return m.patientId===pt.id;}).length;
           var age=pt.birthdate?Math.floor((new Date()-new Date(pt.birthdate))/(365.25*24*3600*1000)):null;
           return h('div',{key:pt.id,className:'pt-card su d'+Math.min(i+1,5)},
-            h('div',{className:'av',style:{width:46,height:46,fontSize:'.85rem'}},pt.avatar?h('img',{src:pt.avatar,style:{width:'100%',height:'100%',objectFit:'cover'}}):ini(pt.name)),
+            h('div',{className:'av',style:{width:58,height:58,fontSize:'1rem'}},pt.avatar?h('img',{src:pt.avatar,style:{width:'100%',height:'100%',objectFit:'cover'}}):ini(pt.name)),
             h('div',{style:{flex:1,minWidth:0}},
-              h('p',{style:{fontWeight:700,fontSize:'.9rem',marginBottom:3}},pt.name),
+              h('p',{style:{fontWeight:800,fontSize:'1rem',marginBottom:5}},pt.name),
               h('div',{style:{display:'flex',gap:5,flexWrap:'wrap',marginBottom:4}},
-                age&&h('span',{className:'chip chip-gray'},age+' a\u00f1os'),
+                age!==null&&age>=0&&h('span',{className:'chip chip-gray'},age===0?'Menor de 1 año':age+' a\u00f1os'),
                 pt.gender&&h('span',{className:'chip chip-gray'},pt.gender==='F'?'Femenino':pt.gender==='M'?'Masculino':'Otro')
               ),
               pt.whatsapp&&h('p',{style:{fontSize:'.72rem',color:'#22C55E',display:'flex',alignItems:'center',gap:4,marginBottom:4}},h(Ic,{n:'whatsapp',s:11,c:'#22C55E'}),pt.whatsapp),
@@ -575,7 +575,8 @@ function ApptsView(p){
           var day=rhCalDay(d),events=all.filter(function(a){return a.date===day;});
           return h('div',{key:day,className:'rh-calendar-cell'+(day===today?' is-today':'')+(d.getMonth()!==current.getMonth()&&mode==='month'?' is-outside':'')},
             h('button',{className:'rh-calendar-day',onClick:function(){setFocus(day);},'aria-pressed':day===focus,
-              title:'Ver citas del '+day},d.getDate()),
+              title:'Ver citas del '+day,'aria-label':'Ver '+events.length+' cita'+(events.length===1?'':'s')+' del '+day},d.getDate()),
+            events.length>0&&h('span',{className:'rh-calendar-day-count','aria-hidden':true},events.length),
             events.slice(0,mode==='week'?8:3).map(function(a){
               return h('button',{key:a.id,className:'rh-calendar-event'+(!rhAppointmentActive(a)?' is-done':''),
                 title:(a.reason||a.doctor||'Cita')+' · '+(patient(a)?.name||''),
@@ -657,6 +658,8 @@ function MedsView(p){
   var displayed=store.medications.filter(function(m){return filter==='all'||(m.status||'active')===(filter==='active'?'active':filter==='paused'?'paused':'completed');});
   var grouped={};
   displayed.forEach(function(m){if(!grouped[m.patientId])grouped[m.patientId]=[];grouped[m.patientId].push(m);});
+  var medCounts={all:store.medications.length,active:0,paused:0,completed:0};
+  store.medications.forEach(function(m){var status=m.status||'active';if(medCounts[status]!==undefined&&status!=='all')medCounts[status]++;});
   return h('div',null,
     h('div',{className:'ph',style:{display:'flex',justifyContent:'space-between',alignItems:'flex-end'}},
       h('div',null,h('p',{className:'ph-sub'},'Tratamientos'),h('h1',{className:'ph-title'},'Medicamentos')),
@@ -665,7 +668,7 @@ function MedsView(p){
     h('div',{className:'rh-board-med-filters',role:'group','aria-label':'Filtrar tratamientos'},
       [['all','Todos'],['active','Activos'],['paused','Pausados'],['completed','Finalizados']].map(function(v){
         return h('button',{key:v[0],className:filter===v[0]?'active':'',
-          onClick:function(){setFilter(v[0]);},'aria-pressed':filter===v[0]},v[1]);
+          onClick:function(){setFilter(v[0]);},'aria-pressed':filter===v[0]},v[1]+' ('+medCounts[v[0]]+')');
       })
     ),
     displayed.length===0
@@ -727,6 +730,8 @@ function MedCard(p){
       h('button',{className:'rh-dose-btn',onClick:recordDose,disabled:med.status==='completed'||med.status==='paused'},
         h(Ic,{n:'check',s:14,c:'currentColor'}),' Registrar dosis')
     ),
+    h('button',{type:'button',className:'rh-med-details-btn',onClick:function(e){e.stopPropagation();setExpanded(!exp);},'aria-expanded':exp},
+      exp?'Ocultar detalles':'Ver detalles',h(Ic,{n:'chevron',s:15,c:'currentColor'})),
     exp&&h('div',{className:'rh-med-expanded',onClick:function(e){e.stopPropagation();}},
       times.length>0&&h('div',{className:'rh-med-schedule'},
         h('strong',null,'Horarios registrados'),
