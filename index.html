@@ -1359,6 +1359,13 @@ outline:3px solid #8AAB8C!important;outline-offset:3px
 .rh-local-reminders small{font-size:.72rem;color:var(--text2);line-height:1.65}
 .rh-local-reminder-msg{color:var(--accent)!important;font-weight:800}
 @media(max-width:650px){.rh-local-reminders{padding:18px}}
+
+.rh-care-health-brief{display:flex;align-items:center;justify-content:space-between;gap:15px;border:1px solid var(--border);border-radius:13px;padding:18px 22px;background:var(--surface);margin-top:17px}
+.rh-care-health-brief>div{display:flex;align-items:center;gap:12px;min-width:0}
+.rh-care-health-brief h2{font-family:var(--serif);font-size:1.35rem;letter-spacing:-.04em;font-weight:400}
+.rh-care-health-brief p{font-size:.73rem;color:var(--text2);margin-top:6px;line-height:1.5}
+.rh-care-health-brief button{border-radius:99px;border:1px solid var(--accent);background:var(--accent-bg);color:var(--accent);font-size:.75rem;font-weight:800;min-height:42px;padding:10px 16px;cursor:pointer;flex-shrink:0}
+@media(max-width:650px){.rh-care-health-brief{align-items:flex-start;flex-direction:column;padding:17px}.rh-care-health-brief button{width:100%}}
 </style>
 </head>
 <body>
@@ -1495,6 +1502,9 @@ function HomeView(p){
   var shortDate=new Date().toLocaleDateString('es-CR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
   var checkpoints=next&&(next.prepItems||[]);
   var completed=checkpoints?checkpoints.filter(function(v){return v.done;}).length:0;
+  var labPending=(store.labs||[]).filter(function(x){return x.status==='pending'||!x.status;}).length;
+  var vaccinesUpcoming=(store.vaccines||[]).filter(function(x){return x.nextDate&&x.nextDate>=today;}).length;
+  var docsCount=(store.documents||[]).length;
   var totals=[
     {label:'Citas pendientes',value:all.filter(rhAppointmentActive).length,icon:'calendar',to:'appointments'},
     {label:'Pacientes',value:store.patients.length,icon:'user',to:'patients'},
@@ -1624,6 +1634,15 @@ function HomeView(p){
           h('button',{onClick:function(){sm('add-patient');}},'Agregar paciente ↗')
         )
       )
+    ),
+    h('section',{className:'rh-care-health-brief'},
+      h('div',null,h(Ic,{n:'file',s:22,c:'var(--accent)'}),
+        h('div',null,h('h2',null,'Laboratorios, vacunas y documentos'),
+          h('p',null,labPending+' laboratorio'+(labPending===1?'':'s')+' pendiente'+(labPending===1?'':'s')+
+            ' · '+vaccinesUpcoming+' vacuna'+(vaccinesUpcoming===1?'':'s')+' con próxima fecha · '+docsCount+' documento'+(docsCount===1?'':'s'))
+        )
+      ),
+      h('button',{onClick:function(){sv('health');}},'Abrir centro de salud →')
     ),
     h('section',{className:'rh-care-bottom-bar','aria-label':'Accesos y almacenamiento'},
       h('div',null,
@@ -2180,7 +2199,7 @@ function HealthCenterView(p){
   var store=p.store,patients=store.patients||[];
   var tabs=[{id:'labs',title:'Laboratorios',icon:'activity'},{id:'vaccines',title:'Vacunas',icon:'shield'},{id:'documents',title:'Documentos',icon:'file'}];
   var ts=useState('labs'),tab=ts[0],setTab=ts[1];
-  var ps=useState('all'),pid=ps[0],setPid=ps[1];
+  var ps=useState(p.initialPatientId||'all'),pid=ps[0],setPid=ps[1];
   var qs=useState(''),query=qs[0],setQuery=qs[1];
   var os=useState(false),open=os[0],setOpen=os[1];
   var fs=useState({}),form=fs[0],setForm=fs[1];
@@ -2932,6 +2951,7 @@ function App(){
   var sbo=useState(false);var sideOpen=sbo[0],setSideOpen=sbo[1];
   var nbs=useState(true);var showNb=nbs[0],sNb=nbs[1];
   var quickState=useState(false),quickOpen=quickState[0],setQuickOpen=quickState[1];
+  var healthState=useState('all'),healthPatient=healthState[0],setHealthPatient=healthState[1];
   var searchState=useState(false),searchOpen=searchState[0],setSearchOpen=searchState[1];
   function selectSearchResult(entry){
     if(entry.route==='patient'){ssp(entry.item);sv('patient');}
@@ -2941,7 +2961,6 @@ function App(){
   }
   var notifs=store.appointments.filter(function(a){var d=du(a.date);return d!==null&&d>=0&&d<=7&&rhAppointmentActive(a);});
   useEffect(function(){
-    if(!lsg(uk(user,'notifications')))return;
     rhReminderScan(user,store);
     var timer=window.setInterval(function(){rhReminderScan(user,store);},5*60*1000);
     return function(){window.clearInterval(timer);};
@@ -3007,7 +3026,7 @@ function App(){
 
   function NavBtn(q){
     var it=q.item,active=view===it.id||(view==='patient'&&it.id==='patients'),dot=it.id==='appointments'&&notifs.length>0;
-    return h('button',{className:'nav-item'+(active?' active':''),onClick:function(){sv(it.id);setSideOpen(false);},'aria-current':active?'page':undefined,},
+    return h('button',{className:'nav-item'+(active?' active':''),onClick:function(){if(it.id==='health')setHealthPatient('all');sv(it.id);setSideOpen(false);},'aria-current':active?'page':undefined,},
       h('div',{className:'nav-ico'},h(Ic,{n:it.n,s:17,c:active?'white':'var(--text2)'})),
       h('span',null,it.l),
       dot&&h('span',{className:'nav-badge'},notifs.length)
@@ -3078,10 +3097,10 @@ function App(){
       h('div',{className:'page-content'},
         view==='home'&&h(HomeView,{store:store,sv:sv,sm:sm,ssa:ssa,ssp:ssp,user:user}),
         view==='patients'&&h(PatientsView,{store:store,sm:sm,ssp:ssp,sv:sv,user:user}),
-        view==='patient'&&h(PatientProfile,{store:store,patient:(store.patients.find(function(x){return selP&&x.id===selP.id;})||selP),onBack:function(){sv('patients');},onEdit:function(pt){ssp(pt);sm('edit-patient');},onAddApt:function(){setDraftDate('');sm('add-apt');},onRecord:function(){if(selP)lss(uk(user,'record_patient'),selP.id);sv('record');},onHealth:function(){sv('health');},user:user,onAddMed:function(){sm('add-med');},onApt:function(apt){ssa(apt);sm('view-apt');}}),
+        view==='patient'&&h(PatientProfile,{store:store,patient:(store.patients.find(function(x){return selP&&x.id===selP.id;})||selP),onBack:function(){sv('patients');},onEdit:function(pt){ssp(pt);sm('edit-patient');},onAddApt:function(){setDraftDate('');sm('add-apt');},onRecord:function(){if(selP)lss(uk(user,'record_patient'),selP.id);sv('record');},onHealth:function(){setHealthPatient(selP?.id||'all');sv('health');},user:user,onAddMed:function(){sm('add-med');},onApt:function(apt){ssa(apt);sm('view-apt');}}),
         view==='appointments'&&h(ApptsView,{store:store,sm:sm,tab:tab,stab:stab,ssa:ssa,setDraftDate:setDraftDate}),
         view==='medications'&&h(MedsView,{store:store,sm:sm,ssm:ssm}),
-        view==='health'&&h(HealthCenterView,{store:store,user:user}),
+        view==='health'&&h(HealthCenterView,{store:store,user:user,initialPatientId:healthPatient}),
         view==='settings'&&h(SettingsView,{store:store,sv:sv,user:user,theme:theme,setTheme:setTheme}),
         view==='record'&&h(RecordView,{store:store,sv:sv,user:user})
       ),
