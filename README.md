@@ -10,11 +10,17 @@ Aplicación web para organizar información personal de salud familiar. Interfaz
 - Laboratorios con resultados fechados y comparaciones descriptivas (sin interpretación clínica).
 - Vacunas con fechas de aplicación y próxima dosis.
 - Documentos: metadatos y adjuntos pequeños guardados localmente.
-- Historial cronológico por paciente, resumen imprimible y copias de seguridad cifradas.
+- Seguimiento por paciente de seis signos vitales, gráficos descriptivos sin interpretación diagnóstica y diario de síntomas.
+- Pendientes consolidados de laboratorios, resultados aún sin revisar, vacunación, citas sin confirmar y tareas de seguimiento.
+- Indicaciones posteriores a consultas, vinculadas opcionalmente con su cita y con los resultados de laboratorio.
+- Ficha de emergencia imprimible con autorización del usuario antes de abrirla.
+- Historial cronológico por paciente, resumen imprimible, buscador y copias de seguridad cifradas.
 - PWA instalable con caché de archivos estáticos; avisos locales opcionales únicamente mientras se utiliza la aplicación.
 
 ## Almacenamiento y privacidad
 Los datos de pacientes se guardan mediante `localStorage` **sin cifrar en reposo**. No hay servidor, inicio de sesión, sincronización entre dispositivos, autenticación familiar, permisos de acceso verificables, auditoría segura, respaldo automático remoto ni notificaciones push persistentes. Un tercero con acceso al dispositivo/perfil del navegador podría leer los datos. **No utilizar para datos médicos sensibles en un entorno no confiable ni como expediente clínico oficial.**
+
+Las nuevas mediciones, síntomas y tareas de seguimiento se guardan y se eliminan junto con el paciente correspondiente, y se incluyen en los respaldos. Los archivos antiguos de respaldo siguen siendo compatibles.
 
 Las copias exportadas en formato `.rhbackup` se cifran con una contraseña mediante AES-GCM y PBKDF2 antes de descargarse. La contraseña no se almacena ni se puede recuperar. Hay que exportar y conservar las copias manualmente. La restauración reemplaza los registros locales después de confirmar.
 
