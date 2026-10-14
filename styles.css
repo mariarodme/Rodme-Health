@@ -2907,3 +2907,371 @@ body{font-size:var(--rh-copy-size)}
   #root .sheet .rh-sheet-home,
   #root .rh-import-panel .rh-import-home{font-size:15px!important}
 }
+
+
+/* RODME DESIGN REFINEMENT v15 · Jerarquía clínica, tarjetas y navegación */
+:root{
+  --rh-ui-radius:18px;
+  --rh-ui-border:color-mix(in srgb,var(--border) 84%,var(--accent) 16%);
+  --rh-ui-elevation:0 2px 5px rgba(17,68,89,.02),0 14px 42px rgba(17,68,89,.055);
+  --rh-ui-elevation-hover:0 8px 30px rgba(17,68,89,.105);
+}
+#root .page-content{
+  background:transparent;
+}
+#root .page-content .rh-cloud-banner{
+  width:100%;max-width:1440px;margin:0 auto 18px;
+  border:1px solid var(--border);border-left:4px solid var(--accent2);
+  background:var(--surface);color:var(--text2);
+  box-shadow:0 2px 11px rgba(17,68,89,.025);
+  border-radius:11px;padding:11px 16px;
+  font-size:15px;line-height:1.55;font-weight:650;
+}
+#root .page-content .rh-cloud-banner.active{
+  border-left-color:var(--green);background:var(--surface);
+  color:var(--text2);
+}
+#root .page-content .rh-cloud-banner svg{
+  flex:0 0 auto;color:var(--accent)
+}
+/* El resumen tiene un encabezado propio, en vez de comenzar abruptamente con números. */
+#root .page-content .rh-board-summary{
+  gap:15px;margin-top:25px;
+  align-items:stretch;
+}
+#root .page-content .rh-board-summary-heading{
+  grid-column:1/-1;
+  display:flex;justify-content:space-between;align-items:end;flex-wrap:wrap;
+  gap:8px 20px;padding:0 3px 1px;
+}
+#root .page-content .rh-board-summary-heading>div{min-width:0}
+#root .page-content .rh-board-eyebrow{
+  display:block;color:var(--accent);
+  font-size:13px!important;font-weight:800;letter-spacing:.11em;
+  line-height:1.4;
+}
+#root .page-content .rh-board-summary-heading h2{
+  margin-top:3px;font-family:var(--serif);
+  font-size:var(--rh-section-title)!important;
+  line-height:1.25;letter-spacing:-.035em;color:var(--text);
+}
+#root .page-content .rh-board-summary-heading>p{
+  color:var(--text2);font-size:var(--rh-caption-size)!important;
+  line-height:1.4;margin:0;
+}
+#root .page-content .rh-board-hero{
+  grid-template-columns:57% 43%;
+  min-height:320px;
+  border-radius:23px;
+  border:1px solid var(--rh-ui-border);
+  box-shadow:var(--rh-ui-elevation);
+  background:linear-gradient(117deg,#fafdff 0%,#f2f9fc 56%,#e6f4f9 100%);
+}
+#root .page-content .rh-board-hero-copy{
+  padding:clamp(25px,3.4vw,47px);
+}
+#root .page-content .rh-board-hero-copy>p{
+  max-width:540px;color:#4e6e7f;line-height:1.62;
+}
+#root .page-content .rh-board-hero-image{
+  min-height:320px;
+}
+#root .page-content .rh-board-hero-image img{
+  object-position:center 48%;
+}
+#root .page-content .rh-board-hero-buttons{gap:11px;margin-top:23px}
+#root .page-content .rh-board-primary,
+#root .page-content .rh-board-secondary{
+  min-height:51px;border-radius:12px;
+  padding:12px 19px;
+  box-shadow:none;
+  transition:background .18s,box-shadow .18s,transform .18s;
+}
+#root .page-content .rh-board-primary:hover,
+#root .page-content .rh-board-secondary:hover{
+  transform:translateY(-1px);box-shadow:0 7px 18px rgba(16,85,111,.1)
+}
+#root .page-content .rh-board-summary-card{
+  display:flex;align-items:center;gap:15px;
+  min-height:135px;padding:19px 20px;
+  border-radius:17px;
+  border:1px solid var(--rh-ui-border);
+  box-shadow:var(--rh-ui-elevation);
+  background:var(--surface);
+  transition:transform .18s,box-shadow .18s,border-color .18s;
+}
+#root .page-content .rh-board-summary-card:hover{
+  transform:translateY(-2px);
+  box-shadow:var(--rh-ui-elevation-hover);
+  border-color:var(--accent2);
+}
+#root .page-content .rh-board-summary-card:active{transform:translateY(0)}
+#root .page-content .rh-board-stat-icon{
+  width:51px;height:51px;border-radius:14px;
+}
+#root .page-content .rh-board-stat-copy{min-width:0;gap:5px}
+#root .page-content .rh-board-stat-copy strong{
+  line-height:1.3;overflow-wrap:anywhere;
+}
+#root .page-content .rh-board-stat-copy b{
+  font-size:34px!important;letter-spacing:-.04em;
+}
+#root .page-content .rh-board-stat-copy small{
+  color:var(--text2);line-height:1.38;
+}
+#root .page-content .rh-board-stat-chevron{display:none}
+#root .page-content .rh-board-cards{
+  gap:17px;margin-top:19px;
+}
+#root .page-content .rh-board-panel,
+#root .page-content .rh-board-family,
+#root .page-content .rh-board-patient-panel{
+  border-radius:var(--rh-ui-radius);
+  border:1px solid var(--rh-ui-border);
+  background:var(--surface);
+  box-shadow:var(--rh-ui-elevation);
+}
+#root .page-content .rh-board-panel{
+  padding:25px 24px;
+}
+#root .page-content .rh-board-panel-head,
+#root .page-content .rh-board-section-head{
+  gap:12px 18px;align-items:center;
+  padding-bottom:16px;
+  border-bottom:1px solid var(--border);
+  margin-bottom:16px;
+}
+#root .page-content .rh-board-panel-head h2,
+#root .page-content .rh-board-section-head h2{
+  margin:0;color:var(--text);letter-spacing:-.035em;
+}
+#root .page-content .rh-board-panel-head button,
+#root .page-content .rh-board-section-head button{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:9px 12px;min-height:42px;margin-left:auto;
+  border:1px solid var(--border);border-radius:10px;
+  background:var(--surface2);color:var(--accent);
+  font-size:var(--rh-caption-size)!important;
+  font-weight:800;text-decoration:none;
+  white-space:normal;text-align:center;
+}
+#root .page-content .rh-board-panel-head button:hover,
+#root .page-content .rh-board-section-head button:hover{
+  border-color:var(--accent2);background:var(--accent-bg);
+  text-decoration:none;
+}
+#root .page-content .rh-board-next-body{gap:18px}
+#root .page-content .rh-board-date{
+  border:1px solid var(--border);border-radius:13px;
+}
+#root .page-content .rh-board-round-arrow{
+  width:45px;height:45px;border-radius:13px;
+  font-size:23px;flex:0 0 45px;
+}
+#root .page-content .rh-board-treat-row,
+#root .page-content .rh-board-pending-row{
+  gap:13px;padding:15px 5px;
+  border-radius:8px;transition:background .16s;
+}
+#root .page-content .rh-board-treat-row:hover,
+#root .page-content .rh-board-pending-row:hover{
+  background:var(--surface2);
+}
+#root .page-content .rh-board-treat-icon{
+  width:43px;height:43px;border-radius:12px;
+}
+#root .page-content .rh-board-pending-circle{
+  width:31px;height:31px;
+}
+#root .page-content .rh-board-empty{
+  padding:18px 0;min-height:155px;gap:13px;
+}
+#root .page-content .rh-board-empty button,
+#root .page-content .rh-board-family-empty button{
+  min-height:46px;padding:11px 16px;
+  border-radius:11px;font-weight:800;
+}
+#root .page-content .rh-board-family{
+  padding:25px 24px;margin-top:19px;
+}
+#root .page-content .rh-board-family-grid{
+  gap:14px;
+}
+#root .page-content .rh-board-family-person{
+  border-radius:14px;padding:16px;
+  background:var(--surface2);
+  transition:transform .16s,border-color .16s,box-shadow .16s;
+}
+#root .page-content .rh-board-family-person:hover{
+  transform:translateY(-1px);border-color:var(--accent2);
+  box-shadow:0 6px 20px rgba(17,68,89,.045);
+}
+#root .page-content .rh-board-avatar{
+  width:57px;height:57px;
+  background:var(--accent-bg);
+  border:2px solid var(--surface);
+}
+#root .page-content .rh-board-avatar img,
+#root .page-content .rh-profile-photo img,
+#root .page-content .pt-card .av img{
+  width:100%;height:100%;object-fit:cover;object-position:center;
+}
+#root .page-content .rh-backup-reminder{
+  border-radius:15px;margin-top:18px;
+}
+/* El bloque Volver e Inicio debe verse integrado a las otras secciones. */
+#root .page-content .rh-route-bar{
+  max-width:1440px;
+  background:var(--surface);
+  border:1px solid var(--rh-ui-border);
+  border-radius:15px;
+  padding:13px 16px;
+  box-shadow:0 2px 14px rgba(17,68,89,.035);
+}
+#root .page-content .rh-route-location strong{
+  font-size:var(--rh-caption-size)!important;
+}
+#root .page-content .rh-route-back,
+#root .page-content .rh-route-home{
+  border-radius:11px;
+}
+/* Los campos y fichas siguen el mismo lenguaje de tarjetas. */
+#root .page-content.med1820-interior .card-flat,
+#root .page-content.med1820-interior .med-card,
+#root .page-content.med1820-interior .rh-calendar-shell,
+#root .page-content.med1820-interior .rh-settings-section{
+  border-radius:16px;
+  border-color:var(--rh-ui-border);
+  box-shadow:0 3px 17px rgba(17,68,89,.035);
+}
+#root .page-content.med1820-interior .rh-board-profile .rh-profile-hero{
+  border-radius:18px;box-shadow:var(--rh-ui-elevation);
+}
+#root .sheet.med1820-sheet{
+  border-radius:19px 19px 0 0;
+}
+#root .sheet .rh-sheet-nav-actions{padding-bottom:11px}
+#root .sheet .rh-sheet-home,
+#root .sheet .rh-sheet-back{border-radius:11px}
+/* Barra móvil: estado activo identificable sin depender solo del color del icono. */
+@media(max-width:768px){
+  #root .page-content .rh-cloud-banner{
+    font-size:14px;padding:10px 12px;
+    margin-bottom:14px;
+  }
+  #root .page-content .rh-board-hero{
+    grid-template-columns:minmax(0,1fr);
+    border-radius:18px;min-height:0;
+  }
+  #root .page-content .rh-board-hero-copy{
+    padding:25px 20px 24px;
+  }
+  #root .page-content .rh-board-hero-image{
+    min-height:120px;height:120px;
+  }
+  #root .page-content .rh-board-hero-buttons{gap:10px}
+  #root .page-content .rh-board-summary{gap:11px;margin-top:19px}
+  #root .page-content .rh-board-summary-heading{
+    display:block;padding:0 2px 2px;
+  }
+  #root .page-content .rh-board-summary-heading>p{
+    margin-top:5px;line-height:1.45;
+  }
+  #root .page-content .rh-board-summary-card{
+    display:grid;grid-template-columns:43px minmax(0,1fr);
+    align-items:center;gap:11px;min-height:133px;
+    padding:13px!important;
+    border-radius:15px;
+  }
+  #root .page-content .rh-board-stat-icon{
+    width:43px;height:43px;border-radius:12px;
+  }
+  #root .page-content .rh-board-stat-copy{gap:4px;min-width:0}
+  #root .page-content .rh-board-stat-copy strong{
+    font-size:var(--rh-caption-size)!important;
+    white-space:normal;overflow:visible;
+  }
+  #root .page-content .rh-board-stat-copy b{font-size:31px!important}
+  #root .page-content .rh-board-stat-copy small{display:none}
+  #root .page-content .rh-board-cards{gap:13px;margin-top:17px}
+  #root .page-content .rh-board-panel,
+  #root .page-content .rh-board-family{
+    padding:20px 17px;border-radius:16px;
+  }
+  #root .page-content .rh-board-panel-head,
+  #root .page-content .rh-board-section-head{
+    padding-bottom:13px;margin-bottom:15px;
+  }
+  #root .page-content .rh-board-panel-head button,
+  #root .page-content .rh-board-section-head button{
+    min-height:41px;
+    font-size:var(--rh-caption-size)!important;
+    padding:8px 11px;
+  }
+  #root .page-content .rh-board-family-grid{gap:11px}
+  #root .page-content .rh-board-family-person{
+    min-height:94px;padding:14px;gap:12px;
+  }
+  #root .page-content .rh-board-avatar{width:55px;height:55px}
+  #root .page-content .rh-route-bar{
+    padding:11px 12px;
+    margin-bottom:14px;gap:9px;
+  }
+  .bottom-nav{
+    background:color-mix(in srgb,var(--surface) 94%,transparent);
+    border-top:1px solid var(--border);
+    box-shadow:0 -6px 24px rgba(12,55,77,.07);
+  }
+  .bottom-nav .bn-items{gap:3px;padding:0 5px}
+  .bottom-nav .bn-btn{
+    min-width:0;min-height:73px;
+    border-radius:13px 13px 8px 8px;
+    padding:9px 3px 7px;gap:4px;
+  }
+  .bottom-nav .bn-btn.active{background:var(--accent-bg)}
+  .bottom-nav .bn-lbl{color:var(--text2)}
+  .bottom-nav .bn-btn.active .bn-lbl{color:var(--accent)}
+}
+@media(max-width:440px){
+  #root .page-content .rh-board-summary-card{
+    grid-template-columns:minmax(0,1fr);
+    align-content:space-between;justify-items:start;
+    gap:8px;min-height:139px;padding:13px!important;
+  }
+  #root .page-content .rh-board-stat-copy{
+    display:flex;flex-direction:column-reverse;align-items:start;
+  }
+  #root .page-content .rh-board-stat-copy strong{
+    font-size:var(--rh-caption-size)!important;line-height:1.3;
+  }
+  #root .page-content .rh-board-stat-copy b{font-size:30px!important}
+  #root .page-content .rh-board-summary-heading>p{
+    font-size:var(--rh-caption-size)!important;
+  }
+  #root .page-content .rh-board-hero-buttons>*{
+    flex:1 1 auto;min-width:0;
+  }
+  #root .page-content .rh-board-next-body{gap:11px}
+  #root .page-content .rh-board-round-arrow{width:43px;height:43px;flex-basis:43px}
+}
+[data-theme=dark] #root .page-content .rh-board-hero{
+  background:linear-gradient(118deg,#1d3948 0%,#1b3845 100%);
+  border-color:var(--border)
+}
+[data-theme=dark] #root .page-content .rh-board-hero-copy>p{
+  color:var(--text2)
+}
+[data-theme=dark] #root .page-content .rh-board-hero-image:before{
+  background:linear-gradient(90deg,#1d3948,rgba(29,57,72,.35) 38%,transparent 68%)
+}
+[data-theme=dark] #root .page-content .rh-cloud-banner{
+  color:var(--text2);background:var(--surface);border-color:var(--border)
+}
+@media(prefers-reduced-motion:reduce){
+  #root .page-content .rh-board-summary-card,
+  #root .page-content .rh-board-family-person,
+  #root .page-content .rh-board-primary,
+  #root .page-content .rh-board-secondary{
+    transition:none;transform:none;
+  }
+}
