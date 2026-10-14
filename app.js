@@ -535,6 +535,7 @@ function ApptsView(p){
   var dState=useState(function(){return rhCalDay(new Date());}),focus=dState[0],setFocus=dState[1];
   var current=rhCalDate(focus),today=rhCalDay(new Date());
   var all=p.store.appointments||[];
+  var selectedEvents=all.filter(function(a){return a.date===focus;}).sort(function(a,b){return (a.time||'23:59').localeCompare(b.time||'23:59');});
   var weekdays=['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'];
   var first=new Date(current.getFullYear(),current.getMonth(),1,12);
   var offset=(first.getDay()+6)%7;
@@ -573,10 +574,10 @@ function ApptsView(p){
           var d=new Date(mode==='week'?weekBegin:beginning);d.setDate(d.getDate()+i);
           var day=rhCalDay(d),events=all.filter(function(a){return a.date===day;});
           return h('div',{key:day,className:'rh-calendar-cell'+(day===today?' is-today':'')+(d.getMonth()!==current.getMonth()&&mode==='month'?' is-outside':'')},
-            h('button',{className:'rh-calendar-day',onClick:function(){setFocus(day);if(p.setDraftDate)p.setDraftDate(day);p.sm('add-apt');},
-              title:'Agregar cita el '+day},d.getDate()),
+            h('button',{className:'rh-calendar-day',onClick:function(){setFocus(day);},'aria-pressed':day===focus,
+              title:'Ver citas del '+day},d.getDate()),
             events.slice(0,mode==='week'?8:3).map(function(a){
-              return h('button',{key:a.id,className:'rh-calendar-event'+(a.attended?' is-done':''),
+              return h('button',{key:a.id,className:'rh-calendar-event'+(!rhAppointmentActive(a)?' is-done':''),
                 title:(a.reason||a.doctor||'Cita')+' · '+(patient(a)?.name||''),
                 onClick:function(){openA(a);}},
                 h('span',null,a.time?a.time+' · ':'',a.reason||a.specialty||a.doctor||'Cita'),
@@ -587,7 +588,23 @@ function ApptsView(p){
           );
         })
       ),
-      h('p',{className:'rh-cal-hint'},'Selecciona una cita para ver sus detalles. Los días sin citas permiten agregar una nueva.')
+      h('section',{className:'rh-board-calendar-day-panel','aria-label':'Citas del día seleccionado'},
+        h('div',{className:'rh-board-panel-head'},
+          h('h2',null,rhCalDate(focus).toLocaleDateString('es-CR',{weekday:'long',day:'numeric',month:'long'})),
+          h('button',{onClick:function(){if(p.setDraftDate)p.setDraftDate(focus);p.sm('add-apt');}},'+ Agregar cita')
+        ),
+        selectedEvents.length?selectedEvents.map(function(a){
+          return h('button',{className:'rh-board-cal-item',key:a.id,onClick:function(){openA(a);}},
+            h('span',{className:'rh-board-cal-time'},a.time?fmtT(a.time):'Sin hora'),
+            h('span',{className:'rh-board-cal-color','aria-hidden':true}),
+            h('span',{className:'rh-board-cal-text'},h('strong',null,a.reason||a.specialty||a.doctor||'Cita médica'),
+              h('small',null,[patient(a)?.name,a.clinic].filter(Boolean).join(' · '))),
+            h('span',{className:'rh-board-cal-state'},rhAppointmentLabel(a)),
+            h('span',{'aria-hidden':true},'›')
+          );
+        }):h('p',{className:'rh-board-cal-empty'},'No hay citas registradas en esta fecha.')
+      ),
+      h('p',{className:'rh-cal-hint'},'Selecciona un día para consultar sus citas; usa «Agregar cita» para programar una nueva.')
     )
   );
 }
@@ -636,15 +653,23 @@ function LegacyApptsList(p){
 // ── MEDICATIONS ────────────────────────────────────────────────────────────
 function MedsView(p){
   var store=p.store,sm=p.sm,ssm=p.ssm;
+  var fstate=useState('all'),filter=fstate[0],setFilter=fstate[1];
+  var displayed=store.medications.filter(function(m){return filter==='all'||m.status===(filter==='active'?'active':filter==='paused'?'paused':'completed');});
   var grouped={};
-  store.medications.forEach(function(m){if(!grouped[m.patientId])grouped[m.patientId]=[];grouped[m.patientId].push(m);});
+  displayed.forEach(function(m){if(!grouped[m.patientId])grouped[m.patientId]=[];grouped[m.patientId].push(m);});
   return h('div',null,
     h('div',{className:'ph',style:{display:'flex',justifyContent:'space-between',alignItems:'flex-end'}},
       h('div',null,h('p',{className:'ph-sub'},'Tratamientos'),h('h1',{className:'ph-title'},'Medicamentos')),
       h('button',{className:'btn btn-primary',style:{borderRadius:'var(--r-full)',padding:'9px 16px',fontSize:'.8rem'},onClick:function(){sm('add-med');}},h(Ic,{n:'plus',s:14,c:'white'}),'Agregar')
     ),
-    store.medications.length===0
-      ?h('div',{className:'empty su'},h('div',{className:'empty-ico'},h(Ic,{n:'pill',s:20,c:'var(--text3)'})),h('p',{style:{fontWeight:700,color:'var(--text2)',marginBottom:3}},'Sin medicamentos'),h('p',{style:{fontSize:'.8rem'}},'Agrega recetas y tratamientos'))
+    h('div',{className:'rh-board-med-filters',role:'group','aria-label':'Filtrar tratamientos'},
+      [['all','Todos'],['active','Activos'],['paused','Pausados'],['completed','Finalizados']].map(function(v){
+        return h('button',{key:v[0],className:filter===v[0]?'active':'',
+          onClick:function(){setFilter(v[0]);},'aria-pressed':filter===v[0]},v[1]);
+      })
+    ),
+    displayed.length===0
+      ?h('div',{className:'empty su'},h('div',{className:'empty-ico'},h(Ic,{n:'pill',s:20,c:'var(--text3)'})),h('p',{style:{fontWeight:700,color:'var(--text2)',marginBottom:3}},filter==='all'?'Sin medicamentos':'Sin tratamientos en esta categoría'),h('p',{style:{fontSize:'.8rem'}},'Puedes cambiar el filtro o agregar un medicamento.'))
       :h('div',null,Object.keys(grouped).map(function(pid,gi){
           var pt=store.patients.find(function(x){return x.id===pid;});if(!pt)return null;
           return h('div',{key:pid,className:'su d'+Math.min(gi+1,5),style:{marginBottom:20}},
@@ -691,8 +716,8 @@ function MedCard(p){
     h('div',{className:'rh-med-top'},
       h('div',null,h('strong',null,med.name),
         h('p',null,(med.dosage||'')+(med.frequency?' · '+med.frequency:''))),
-      h('span',{className:'chip '+(med.status==='completed'?'chip-gray':med.status==='paused'?'chip-amber':med.type==='ccss'?'chip-green':'chip-amber')},
-        med.status==='completed'?'Finalizado':med.status==='paused'?'Pausado':med.type==='ccss'?'CCSS':'Privado')
+      h('span',{className:'chip '+(med.status==='completed'?'chip-gray':med.status==='paused'?'chip-amber':'chip-green')},
+        med.status==='completed'?'Finalizado':med.status==='paused'?'Pausado':'Activo')
     ),
     pct!==null&&h('div',{className:'prog-bar',style:{marginTop:10}},h('div',{className:'prog-fill',style:{width:pct+'%'}})),
     h('div',{className:'rh-dose-actions'},
