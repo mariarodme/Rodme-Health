@@ -1314,6 +1314,7 @@ outline:3px solid #8AAB8C!important;outline-offset:3px
 .rh-center-msg{font-size:.76rem;color:var(--red);line-height:1.5}
 @media(max-width:740px){.rh-center-toolbar,.rh-center-records{grid-template-columns:1fr}.rh-center-tabs button{flex:1;justify-content:center;padding:9px 7px;font-size:.69rem}.rh-center-tabs{gap:5px}.rh-center-item{padding:18px}}
 
+.rh-center-profile-summary{margin-bottom:15px}.rh-center-profile-summary .rh-profile-counts{margin-bottom:0}
 </style>
 </head>
 <body>
@@ -1601,11 +1602,17 @@ function PatientProfile(p){
   var meds=store.medications.filter(function(m){return m.patientId===pt.id;});
   var medName=function(id){var m=meds.find(function(x){return x.id===id;});return m?m.name:'Medicamento';};
   var doses=(store.doseLogs||[]).filter(function(d){return d.patientId===pt.id;});
+  var labs=(store.labs||[]).filter(function(v){return v.patientId===pt.id;});
+  var vaccines=(store.vaccines||[]).filter(function(v){return v.patientId===pt.id;});
+  var documents=(store.documents||[]).filter(function(v){return v.patientId===pt.id;});
   var events=[];
   apts.forEach(function(a){events.push({id:'a'+a.id,at:a.date+(a.time?'T'+a.time:'T12:00'),title:a.reason||a.specialty||(a.doctor?'Consulta con Dr. '+a.doctor:'Cita médica'),
     meta:(a.clinic||'')+(a.time?' · '+fmtT(a.time):''),status:a.attended?'Asistida':'Pendiente',kind:'apt',apt:a});});
   doses.forEach(function(d){events.push({id:'d'+d.id,at:d.at,title:'Dosis administrada',meta:medName(d.medicationId),kind:'dose'});});
   meds.forEach(function(m){if(m.startDate)events.push({id:'m'+m.id,at:m.startDate+'T08:00',title:'Inicio de tratamiento',meta:m.name,kind:'med'});});
+  labs.forEach(function(x){events.push({id:'l'+x.id,at:x.date+'T12:00',title:'Laboratorio: '+x.title,meta:x.provider||'',kind:'med'});});
+  vaccines.forEach(function(x){events.push({id:'v'+x.id,at:x.date+'T12:00',title:'Vacuna: '+x.title,meta:x.dose||'',kind:'med'});});
+  documents.forEach(function(x){events.push({id:'doc'+x.id,at:x.date+'T12:00',title:'Documento: '+x.title,meta:x.fileName||'',kind:'med'});});
   events.sort(function(a,b){return b.at.localeCompare(a.at);});
   var next=apts.filter(function(a){return !a.attended&&a.date>=rhCalDay(new Date());}).sort(function(a,b){return a.date.localeCompare(b.date);});
   return h('div',{className:'rh-profile'},
@@ -1621,7 +1628,7 @@ function PatientProfile(p){
       )
     ),
     h('div',{className:'rh-profile-counts'},
-      [[apts.length,'Citas'],[meds.length,'Medicamentos'],[doses.length,'Dosis registradas']].map(function(x,i){
+      [[apts.length,'Citas'],[meds.length,'Medicamentos'],[labs.length+vaccines.length+documents.length,'Otros registros']].map(function(x,i){
         return h('div',{key:i},h('strong',null,x[0]),h('span',null,x[1]));
       })
     ),
@@ -1664,6 +1671,15 @@ function PatientProfile(p){
             h('span',null,m.status==='completed'?'Finalizado':m.status==='paused'?'Pausado':'Activo')
           );
         }):h('p',{className:'rh-profile-muted'},'Sin medicamentos.')
+      )
+    ),
+    h('section',{className:'rh-profile-panel rh-center-profile-summary'},
+      h('div',{className:'rh-profile-panel-head'},h('h2',null,'Otros registros'),
+        h('button',{onClick:p.onHealth},'Ver centro de salud ↗')),
+      h('div',{className:'rh-profile-counts'},
+        [[labs.length,'Laboratorios'],[vaccines.length,'Vacunas'],[documents.length,'Documentos']].map(function(x){
+          return h('div',{key:x[1]},h('strong',null,x[0]),h('span',null,x[1]));
+        })
       )
     ),
     h('section',{className:'rh-profile-panel rh-profile-timeline'},
@@ -1969,6 +1985,9 @@ function rhBackupPayload(user){
       a:lsg(uk(user,'a'))||[],
       m:lsg(uk(user,'m'))||[],
       d:lsg(uk(user,'d'))||[],
+      labs:lsg(uk(user,'labs'))||[],
+      vaccines:lsg(uk(user,'vaccines'))||[],
+      docs:lsg(uk(user,'docs'))||[],
       prefs:lsg(uk(user,'prefs'))||{},
       rec:lsg(uk(user,'rec'))||{},
       records:records
@@ -1978,6 +1997,10 @@ function rhBackupPayload(user){
 function rhValidateBackup(data){
   if(!data||data.app!=='rodme-health'||data.version!==1||!data.data||typeof data.data!=='object')throw Error('El archivo no es una copia compatible');
   ['p','a','m','d'].forEach(function(k){if(!Array.isArray(data.data[k])||data.data[k].length>20000)throw Error('Datos inválidos: '+k);});
+  ['labs','vaccines','docs'].forEach(function(k){
+    if(data.data[k]===undefined)data.data[k]=[];
+    if(!Array.isArray(data.data[k])||data.data[k].length>5000)throw Error('Registros inválidos: '+k);
+  });
   ['prefs','rec'].forEach(function(k){var v=data.data[k];if(!v||typeof v!=='object'||Array.isArray(v))throw Error('Datos inválidos: '+k);});
   if(data.data.records!==undefined&&(!data.data.records||typeof data.data.records!=='object'||Array.isArray(data.data.records)))throw Error('Expedientes incompatibles');
   if(data.data.records){Object.keys(data.data.records).forEach(function(pid){
@@ -1991,6 +2014,12 @@ function rhValidateBackup(data){
   var medIds=new Set();
   data.data.m.forEach(function(v){if(!v||typeof v.id!=='string'||!v.id||typeof v.name!=='string'||!patientIds.has(v.patientId))throw Error('Medicamento inválido');medIds.add(v.id);});
   data.data.d.forEach(function(v){if(!v||typeof v.id!=='string'||typeof v.at!=='string'||!medIds.has(v.medicationId))throw Error('Registro de dosis inválido');});
+  ['labs','vaccines','docs'].forEach(function(k){data.data[k].forEach(function(v){
+    if(!v||typeof v.id!=='string'||!v.id||typeof v.title!=='string'||!v.title||
+      !patientIds.has(v.patientId)||typeof v.date!=='string')throw Error('Registro inválido: '+k);
+    if(k==='docs'&&v.fileData&&(!/^data:(image\/jpeg|image\/png|image\/webp|application\/pdf);base64,/.test(v.fileData)||
+      v.fileData.length>900000))throw Error('Adjunto incompatible');
+  });});
   return data.data;
 }
 function BackupPanel(p){
@@ -2036,7 +2065,7 @@ function BackupPanel(p){
       var plaintext=await crypto.subtle.decrypt({name:'AES-GCM',iv:iv},key,rhFromB64(envelope.payload));
       var payload=JSON.parse(new TextDecoder().decode(plaintext)),data=rhValidateBackup(payload);data.records=data.records||{};
       if(!window.confirm('La restauración reemplazará los registros de este espacio en este navegador. ¿Ya guardaste una copia de los datos actuales y deseas continuar?')){setStatus('Restauración cancelada; no se cambió ningún dato.');return;}
-      var keys=['p','a','m','d','prefs','rec','records'],old={};
+      var keys=['p','a','m','d','labs','vaccines','docs','prefs','rec','records'],old={};
       keys.forEach(function(k){old[k]=localStorage.getItem(uk(p.user,k));});
       try{keys.forEach(function(k){localStorage.setItem(uk(p.user,k),JSON.stringify(data[k]));});}
       catch(e){
@@ -2056,7 +2085,7 @@ function BackupPanel(p){
       h('button',{className:mode==='export'?'active':'',onClick:function(){switchMode('export');}},'Guardar copia'),
       h('button',{className:mode==='import'?'active':'',onClick:function(){switchMode('import');}},'Restaurar copia')
     ),
-    mode==='export'?h('p',{className:'rh-backup-description'},'Descarga un archivo cifrado con tus pacientes, citas, tratamientos, dosis y preferencias. La copia no se envía a ningún servidor.')
+    mode==='export'?h('p',{className:'rh-backup-description'},'Descarga un archivo cifrado con pacientes, expedientes, citas, tratamientos, laboratorios, vacunas, documentos y preferencias. La copia no se envía a ningún servidor.')
       :h('p',{className:'rh-backup-description'},'Selecciona un archivo .rhbackup generado en Rodme Health. Antes de reemplazar información se solicitará confirmación.'),
     mode==='import'&&h('label',{className:'rh-backup-field'},h('span',null,'Archivo de copia'),
       h('input',{type:'file',accept:'.rhbackup,application/json',onChange:function(e){setFile(e.target.files&&e.target.files[0]||null);setStatus('');}})),
@@ -2413,6 +2442,9 @@ function PatientModal(p){
     store.setAppointments(function(arr){return arr.filter(function(x){return x.patientId!==patient.id;});});
     store.setMedications(function(arr){return arr.filter(function(x){return x.patientId!==patient.id;});});
     store.setDoseLogs(function(arr){return arr.filter(function(x){return x.patientId!==patient.id;});});
+    store.setLabs(function(arr){return arr.filter(function(x){return x.patientId!==patient.id;});});
+    store.setVaccines(function(arr){return arr.filter(function(x){return x.patientId!==patient.id;});});
+    store.setDocuments(function(arr){return arr.filter(function(x){return x.patientId!==patient.id;});});
     if(p.user){
       var key=uk(p.user,'records'),all=lsg(key)||{};
       if(Object.prototype.hasOwnProperty.call(all,patient.id)){delete all[patient.id];lss(key,all);}
@@ -2813,7 +2845,7 @@ function App(){
       h('div',{className:'page-content'},
         view==='home'&&h(HomeView,{store:store,sv:sv,sm:sm,ssa:ssa,ssp:ssp,user:user}),
         view==='patients'&&h(PatientsView,{store:store,sm:sm,ssp:ssp,sv:sv,user:user}),
-        view==='patient'&&h(PatientProfile,{store:store,patient:(store.patients.find(function(x){return selP&&x.id===selP.id;})||selP),onBack:function(){sv('patients');},onEdit:function(pt){ssp(pt);sm('edit-patient');},onAddApt:function(){setDraftDate('');sm('add-apt');},onRecord:function(){if(selP)lss(uk(user,'record_patient'),selP.id);sv('record');},user:user,onAddMed:function(){sm('add-med');},onApt:function(apt){ssa(apt);sm('view-apt');}}),
+        view==='patient'&&h(PatientProfile,{store:store,patient:(store.patients.find(function(x){return selP&&x.id===selP.id;})||selP),onBack:function(){sv('patients');},onEdit:function(pt){ssp(pt);sm('edit-patient');},onAddApt:function(){setDraftDate('');sm('add-apt');},onRecord:function(){if(selP)lss(uk(user,'record_patient'),selP.id);sv('record');},onHealth:function(){sv('health');},user:user,onAddMed:function(){sm('add-med');},onApt:function(apt){ssa(apt);sm('view-apt');}}),
         view==='appointments'&&h(ApptsView,{store:store,sm:sm,tab:tab,stab:stab,ssa:ssa,setDraftDate:setDraftDate}),
         view==='medications'&&h(MedsView,{store:store,sm:sm,ssm:ssm}),
         view==='health'&&h(HealthCenterView,{store:store,user:user}),
