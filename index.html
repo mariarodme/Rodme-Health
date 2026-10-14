@@ -1881,16 +1881,19 @@ async function rhDeriveBackupKey(password,salt){
     base,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);
 }
 function rhBackupPayload(user){
+  var patients=lsg(uk(user,'p'))||[];
+  var raw=lsg(uk(user,'records'))||{},records={};
+  patients.forEach(function(p){if(p&&typeof p.id==='string'&&Object.prototype.hasOwnProperty.call(raw,p.id)){records[p.id]=raw[p.id];}});
   return {
     app:'rodme-health',version:1,createdAt:new Date().toISOString(),
     data:{
-      p:lsg(uk(user,'p'))||[],
+      p:patients,
       a:lsg(uk(user,'a'))||[],
       m:lsg(uk(user,'m'))||[],
       d:lsg(uk(user,'d'))||[],
       prefs:lsg(uk(user,'prefs'))||{},
       rec:lsg(uk(user,'rec'))||{},
-      records:lsg(uk(user,'records'))||{}
+      records:records
     }
   };
 }
@@ -2152,7 +2155,22 @@ function PatientModal(p){
   var form=fs[0],sf=fs[1];
   var ref=useRef(null);
   function save(){if(!form.name.trim())return;patient?store.setPatients(function(arr){return arr.map(function(x){return x.id===patient.id?xt(x,form):x;});}):store.setPatients(function(arr){return arr.concat([xt(form,{id:uid()})]);});onClose();}
-  function del(){if(confirm('¿Eliminar este paciente y sus citas, medicamentos y registros de dosis?')){store.setPatients(function(arr){return arr.filter(function(x){return x.id!==patient.id;});});store.setAppointments(function(arr){return arr.filter(function(x){return x.patientId!==patient.id;});});store.setMedications(function(arr){return arr.filter(function(x){return x.patientId!==patient.id;});});store.setDoseLogs(function(arr){return arr.filter(function(x){return x.patientId!==patient.id;});});onClose();}}
+  function del(){
+    if(!patient||!confirm('¿Eliminar este paciente, su expediente, citas, tratamientos y dosis registradas? Esta acción no se puede deshacer.'))return;
+    store.setPatients(function(arr){return arr.filter(function(x){return x.id!==patient.id;});});
+    store.setAppointments(function(arr){return arr.filter(function(x){return x.patientId!==patient.id;});});
+    store.setMedications(function(arr){return arr.filter(function(x){return x.patientId!==patient.id;});});
+    store.setDoseLogs(function(arr){return arr.filter(function(x){return x.patientId!==patient.id;});});
+    if(p.user){
+      var key=uk(p.user,'records'),all=lsg(key)||{};
+      if(Object.prototype.hasOwnProperty.call(all,patient.id)){delete all[patient.id];lss(key,all);}
+      var old=lsg(uk(p.user,'rec'));
+      if(old&&old.patientId===patient.id)localStorage.removeItem(uk(p.user,'rec'));
+      if(lsg(uk(p.user,'record_patient'))===patient.id)localStorage.removeItem(uk(p.user,'record_patient'));
+    }
+    if(p.onDelete)p.onDelete(patient);
+    onClose();
+  }
   function loadAv(e){var f=e.target.files[0];if(!f)return;b64(f).then(function(bv){sf(function(x){return xt(x,{avatar:bv});});});}
   return h(Sheet,{title:patient?'Editar paciente':'Nuevo paciente',sub:'Paciente',onClose:onClose},
     h('div',{style:{display:'flex',justifyContent:'center',marginBottom:14}},
@@ -2602,8 +2620,8 @@ function App(){
       ),
 
     // Modals
-    modal==='add-patient'&&h(PatientModal,{store:store,onClose:function(){sm(null);}}),
-    modal==='edit-patient'&&h(PatientModal,{store:store,patient:selP,onClose:function(){sm(null);}}),
+    modal==='add-patient'&&h(PatientModal,{store:store,user:user,onClose:function(){sm(null);}}),
+    modal==='edit-patient'&&h(PatientModal,{store:store,user:user,patient:selP,onDelete:function(){sv('patients');ssp(null);},onClose:function(){sm(null);}}),
     modal==='add-apt'&&h(AptModal,{store:store,initialDate:draftDate,initialPatientId:view==='patient'&&selP?selP.id:null,onClose:function(){sm(null);setDraftDate('');}}),
     modal==='edit-apt'&&h(AptModal,{store:store,appt:selA,onClose:function(){sm(null);}}),
     modal==='view-apt'&&h(AptDetail,{store:store,appt:(store.appointments.find(function(a){return selA&&a.id===selA.id;})||selA),onClose:function(){sm(null);},onEdit:function(){ssa(store.appointments.find(function(a){return selA&&a.id===selA.id;})||selA);sm('edit-apt');}}),
