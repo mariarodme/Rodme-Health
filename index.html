@@ -1351,6 +1351,14 @@ outline:3px solid #8AAB8C!important;outline-offset:3px
 .rh-search-result small{font-size:.74rem;color:var(--text2);line-height:1.5}
 .rh-search-arrow{position:absolute;right:15px;top:50%;transform:translateY(-50%);font-size:1.2rem;color:var(--accent)}
 .rh-search-empty{font-size:.8rem;color:var(--text2);padding:18px 0;text-align:center}
+
+.rh-local-reminders{border:1px solid var(--border);border-radius:13px;padding:23px;background:var(--surface);display:flex;flex-direction:column;gap:11px;margin-bottom:15px}
+.rh-local-reminders h2{font-family:var(--serif);font-size:1.55rem;font-weight:400}
+.rh-local-reminders p{font-size:.78rem;color:var(--text2);line-height:1.7;margin-top:5px}
+.rh-local-reminders .rh-mini-btn{align-self:flex-start}
+.rh-local-reminders small{font-size:.72rem;color:var(--text2);line-height:1.65}
+.rh-local-reminder-msg{color:var(--accent)!important;font-weight:800}
+@media(max-width:650px){.rh-local-reminders{padding:18px}}
 </style>
 </head>
 <body>
@@ -2341,6 +2349,64 @@ function HealthCenterView(p){
   );
 }
 
+// Avisos opcionales SOLO con la aplicación abierta. Sin mensajes médicos en pantalla de bloqueo.
+function rhReminderScan(user,store){
+  if(!lsg(uk(user,'notifications')))return;
+  if(!('Notification' in window)||Notification.permission!=='granted'||document.visibilityState!=='visible')return;
+  var today=rhCalDay(new Date()),tomorrow=rhCalDate(today);tomorrow.setDate(tomorrow.getDate()+1);
+  var tomorrowKey=rhCalDay(tomorrow),notes=lsg(uk(user,'notices_sent'))||{};
+  var now=new Date(),clock=now.getHours()*60+now.getMinutes();
+  var appointments=(store.appointments||[]).filter(function(a){return rhAppointmentActive(a)&&[today,tomorrowKey].includes(a.date);});
+  var medications=(store.medications||[]).filter(function(m){
+    if(m.status==='paused'||m.status==='completed'||!m.doseTimes)return false;
+    var scheduled=String(m.doseTimes).split(',').map(function(v){return v.trim();}).filter(function(v){return /^([01]\d|2[0-3]):[0-5]\d$/.test(v);});
+    var taken=(store.doseLogs||[]).filter(function(d){return d.medicationId===m.id&&d.status!=='missed'&&rhCalDay(new Date(d.at))===today;}).length;
+    return scheduled.some(function(time,index){var due=Number(time.slice(0,2))*60+Number(time.slice(3,5));return index>=taken&&clock>=due&&clock<due+15;});
+  });
+  var types=[];
+  if(appointments.length&&!notes['appointments-'+today])types.push('appointments');
+  if(medications.length){
+    var rounded=Math.floor(clock/15),id='medications-'+today+'-'+rounded;
+    if(!notes[id])types.push('medications');
+  }
+  if(!types.length)return;
+  var message=types.length>1?'Hay citas y tratamientos que revisar.':types[0]==='appointments'?'Revisa las citas de hoy y mañana.':'Revisa tus horarios de medicamentos.';
+  function deliver(){
+    if(navigator.serviceWorker&&navigator.serviceWorker.ready){
+      navigator.serviceWorker.ready.then(function(reg){
+        if(reg.showNotification)return reg.showNotification('Rodme Health',{body:message,tag:'rh-local-check-'+today,icon:'./app-icon.svg'});
+        new Notification('Rodme Health',{body:message});
+      }).catch(function(){try{new Notification('Rodme Health',{body:message});}catch(e){}});
+    }else{try{new Notification('Rodme Health',{body:message});}catch(e){}}
+  }
+  deliver();
+  if(types.includes('appointments'))notes['appointments-'+today]=true;
+  if(types.includes('medications'))notes['medications-'+today+'-'+Math.floor(clock/15)]=true;
+  Object.keys(notes).forEach(function(k){if(k.indexOf(today)===-1)delete notes[k];});
+  lss(uk(user,'notices_sent'),notes);
+}
+function LocalRemindersPanel(p){
+  var enabledState=useState(!!lsg(uk(p.user,'notifications'))),enabled=enabledState[0],setEnabled=enabledState[1];
+  var msgState=useState(''),msg=msgState[0],setMsg=msgState[1];
+  async function enable(){
+    if(!('Notification' in window)){setMsg('Este navegador no admite avisos de este tipo.');return;}
+    try{
+      var permission=Notification.permission==='granted'?'granted':await Notification.requestPermission();
+      if(permission==='granted'){lss(uk(p.user,'notifications'),true);setEnabled(true);setMsg('Avisos activados mientras la página esté abierta.');}
+      else setMsg('El navegador no concedió el permiso de notificaciones.');
+    }catch(e){setMsg('No se pudieron activar los avisos. Puedes usar los archivos de calendario (.ics).');}
+  }
+  function disable(){lss(uk(p.user,'notifications'),false);setEnabled(false);setMsg('Avisos desactivados.');}
+  return h('section',{className:'rh-local-reminders'},
+    h('div',null,h('h2',null,'Avisos de salud'),
+      h('p',null,'Alertas opcionales para citas de hoy o mañana y horarios de medicamentos registrados.')),
+    h('button',{className:'rh-mini-btn'+(enabled?'':' rh-mini-primary'),onClick:enabled?disable:enable},
+      enabled?'Desactivar avisos':'Activar avisos'),
+    h('small',null,'Solo funcionan cuando la página está abierta y el navegador permite notificaciones. No enviamos recordatorios con la aplicación cerrada.'),
+    msg&&h('p',{className:'rh-local-reminder-msg',role:'status'},msg)
+  );
+}
+
 function InstallAppPanel(){
   var ps=useState(!!window._rhInstallPrompt),installable=ps[0],setInstallable=ps[1];
   var ss=useState(''),state=ss[0],setState=ss[1];
@@ -2379,7 +2445,7 @@ function SettingsView(p){
   function save(){lss(pk,form);setSavedOk(true);}
   function clearSpace(){
     if(confirm('¿Borrar todos los registros de este espacio en este navegador? Esta acción no se puede deshacer.')){
-      ['p','a','m','d','labs','vaccines','docs','rec','records','prefs','record_patient'].forEach(function(k){localStorage.removeItem(uk(user,k));});
+      ['p','a','m','d','labs','vaccines','docs','rec','records','prefs','record_patient','notifications','notices_sent'].forEach(function(k){localStorage.removeItem(uk(user,k));});
       location.reload();
     }
   }
@@ -2420,6 +2486,7 @@ function SettingsView(p){
     ),
     h('button',{className:'btn btn-primary btn-full',style:{marginTop:17,marginBottom:15,padding:'13px'},onClick:save},
       h(Ic,{n:savedOk?'check':'settings',s:15,c:'white'}),savedOk?'Preferencias guardadas':'Guardar cambios'),
+    h(LocalRemindersPanel,{user:user}),
     h(InstallAppPanel),
     h(BackupPanel,{user:user}),
     h('div',{className:'rh-local-warning'},
@@ -2873,6 +2940,12 @@ function App(){
     else{sv(entry.route);}
   }
   var notifs=store.appointments.filter(function(a){var d=du(a.date);return d!==null&&d>=0&&d<=7&&rhAppointmentActive(a);});
+  useEffect(function(){
+    if(!lsg(uk(user,'notifications')))return;
+    rhReminderScan(user,store);
+    var timer=window.setInterval(function(){rhReminderScan(user,store);},5*60*1000);
+    return function(){window.clearInterval(timer);};
+  },[user,store.appointments,store.medications,store.doseLogs]);
 
 
   // Generic private-link import: fragment data are never written into the public source.
