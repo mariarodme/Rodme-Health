@@ -468,7 +468,8 @@ function PatientProfile(p){
   symptoms.forEach(function(x){events.push({id:'symptom'+x.id,at:x.date+'T12:00',title:'Síntoma: '+x.title,meta:'Intensidad '+x.severity+'/10',kind:'med'});});
   followups.forEach(function(x){events.push({id:'followup'+x.id,at:x.date+'T12:00',title:'Seguimiento: '+x.title,meta:x.status==='done'?'Completado':'Pendiente',kind:'med'});});
   events.sort(function(a,b){return b.at.localeCompare(a.at);});
-  var next=apts.filter(function(a){return rhAppointmentActive(a)&&a.date>=rhCalDay(new Date());}).sort(function(a,b){return a.date.localeCompare(b.date);});
+  var next=apts.filter(function(a){return rhAppointmentActive(a)&&a.date>=rhCalDay(new Date());}).sort(function(a,b){return (a.date+'T'+(a.time||'23:59')).localeCompare(b.date+'T'+(b.time||'23:59'));});
+  var activeTreatmentCount=meds.filter(function(x){return x.status!=='completed'&&x.status!=='paused';}).length;
   return h('div',{className:'rh-profile rh-board-profile med1820-section'},
     h('div',{className:'rh-profile-back'},h('button',{onClick:p.onBack},'← Volver')),
     h('div',{className:'rh-profile-hero'},
@@ -479,6 +480,29 @@ function PatientProfile(p){
       h('div',{className:'rh-profile-tools'},
         h('button',{className:'rh-mini-btn',onClick:function(){p.onEdit(pt);}},h(Ic,{n:'edit',s:14,c:'currentColor'}),' Editar'),
         h('button',{className:'rh-mini-btn rh-mini-primary',onClick:p.onAddApt},h(Ic,{n:'plus',s:14,c:'currentColor'}),' Nueva cita')
+      )
+    ),
+    h('section',{className:'rh-profile-essentials','aria-label':'Información esencial del paciente'},
+      h('div',{className:'rh-profile-essential rh-profile-allergies'},
+        h('span',{className:'rh-profile-essential-icon'},h(Ic,{n:'alert',s:19,c:'currentColor'})),
+        h('div',null,h('small',null,'Alergias registradas'),
+          h('strong',null,medical.allergies||'No registradas'),
+          !medical.allergies&&h('span',null,'No significa que no tenga alergias')),
+        h('button',{type:'button',onClick:p.onRecord,'aria-label':'Editar alergias'},'Editar')
+      ),
+      h('div',{className:'rh-profile-essential'},
+        h('span',{className:'rh-profile-essential-icon'},h(Ic,{n:'calendar',s:19,c:'currentColor'})),
+        h('div',null,h('small',null,'Próxima cita'),
+          h('strong',null,next.length?fmtD(next[0].date):'Sin cita programada'),
+          next.length&&h('span',null,(next[0].time?fmtT(next[0].time)+' · ':'')+(next[0].reason||next[0].specialty||'Cita médica'))),
+        next.length&&h('button',{type:'button',onClick:function(){p.onApt(next[0]);}},'Ver')
+      ),
+      h('div',{className:'rh-profile-essential'},
+        h('span',{className:'rh-profile-essential-icon'},h(Ic,{n:'pill',s:19,c:'currentColor'})),
+        h('div',null,h('small',null,'Tratamientos actuales'),
+          h('strong',null,activeTreatmentCount+' activo'+(activeTreatmentCount===1?'':'s')),
+          h('span',null,'Revisar horarios y registros de dosis')),
+        h('button',{type:'button',onClick:function(){setProfileTab('medications');}},'Ver')
       )
     ),
     h('div',{className:'rh-profile-counts'},
