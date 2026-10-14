@@ -1,6 +1,6 @@
 /* Static-only caching. No patient data, files, API responses or localStorage. */
-const VERSION='rh-static-20261014-v5-unified-wix1820';
-const APP=['./','./index.html','./manifest.webmanifest','./app-icon.svg'];
+const VERSION='rh-static-20261014-v6-modular';
+const APP=['./','./index.html','./styles.css','./app.js','./manifest.webmanifest','./app-icon.svg'];
 const REACT=['https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js','https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js'];
 self.addEventListener('install',event=>{
   event.waitUntil((async()=>{
