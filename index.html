@@ -3183,6 +3183,9 @@ function generatePDF(record,store,directPt){
   var labs=(store.labs||[]).filter(function(v){return v.patientId===patient.id;}).map(safeObject);
   var vaccines=(store.vaccines||[]).filter(function(v){return v.patientId===patient.id;}).map(safeObject);
   var docs=(store.documents||[]).filter(function(v){return v.patientId===patient.id;}).map(safeObject);
+  var vitals=(store.vitals||[]).filter(function(v){return v.patientId===patient.id;}).map(safeObject);
+  var symptoms=(store.symptoms||[]).filter(function(v){return v.patientId===patient.id;}).map(safeObject);
+  var followups=(store.followups||[]).filter(function(v){return v.patientId===patient.id;}).map(safeObject);
   patient=safeObject(patient);
   record=safeObject(record);
   var pen=apts.filter(function(a){return !a.attended;}).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
@@ -3208,6 +3211,15 @@ function generatePDF(record,store,directPt){
     +(record.notes?sec('Notas','#6B7280',row('Notas',record.notes)):'')
     +(pen.length>0?'<div style="margin-bottom:16px"><div style="background:#EF4444;border-radius:8px 8px 0 0;padding:8px 14px"><h3 style="color:white;font-size:11px;font-weight:800;margin:0;text-transform:uppercase;letter-spacing:.06em">Citas Pendientes ('+pen.length+')</h3></div><div style="border:1px solid #E5E7EB;border-top:none;border-radius:0 0 8px 8px;padding:8px">'+pen.map(aptC).join('')+'</div></div>':'')
     +(att.length>0?'<div style="margin-bottom:16px"><div style="background:#22C55E;border-radius:8px 8px 0 0;padding:8px 14px"><h3 style="color:white;font-size:11px;font-weight:800;margin:0;text-transform:uppercase;letter-spacing:.06em">Citas Asistidas ('+att.length+')</h3></div><div style="border:1px solid #E5E7EB;border-top:none;border-radius:0 0 8px 8px;padding:8px">'+att.map(aptC).join('')+'</div></div>':'')
+    +(vitals.length>0?'<div style="margin-bottom:16px"><h3 style="margin-bottom:8px;color:#4C6151">Signos vitales ('+vitals.length+')</h3>'+
+      vitals.slice().sort(function(a,b){return b.date.localeCompare(a.date);}).slice(0,30).map(function(x){var cfg=RH_METRICS.find(function(m){return m.id===x.metric;});
+        return healthEntry(cfg?cfg.label:'Medición',x.value+(x.metric==='pressure'?'/'+x.value2:'')+' '+(x.unit||''),x.date);}).join('')+'</div>':'')
+    +(symptoms.length>0?'<div style="margin-bottom:16px"><h3 style="margin-bottom:8px;color:#4C6151">Síntomas registrados ('+symptoms.length+')</h3>'+
+      symptoms.slice().sort(function(a,b){return b.date.localeCompare(a.date);}).slice(0,30).map(function(x){return healthEntry(x.title,
+        'Intensidad '+x.severity+'/10'+(x.notes?' · '+x.notes:''),x.date);}).join('')+'</div>':'')
+    +(followups.length>0?'<div style="margin-bottom:16px"><h3 style="margin-bottom:8px;color:#4C6151">Seguimiento posterior ('+followups.length+')</h3>'+
+      followups.map(function(x){return healthEntry(x.title,(x.status==='done'?'Completado':'Pendiente')+
+        (x.dueDate?' · Vence: '+x.dueDate:''),x.date);}).join('')+'</div>':'')
     +(labs.length>0?'<div style="margin-bottom:16px"><h3 style="margin-bottom:8px;color:#4C6151">Laboratorios ('+labs.length+')</h3>'+
       labs.map(function(x){return healthEntry(x.title,[x.value!==undefined&&x.value!==''?x.value+' '+(x.unit||''):'',x.provider||''].filter(Boolean).join(' · '),x.date);}).join('')+'</div>':'')
     +(vaccines.length>0?'<div style="margin-bottom:16px"><h3 style="margin-bottom:8px;color:#4C6151">Vacunas ('+vaccines.length+')</h3>'+
