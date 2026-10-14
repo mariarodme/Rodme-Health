@@ -268,6 +268,64 @@ function rhEmergencyCard(patient,medical,medications){
   win.opener=null;win.document.write(html);win.document.close();
 }
 
+
+function RhPatientSummaryBoard(p){
+  var pt=p.patient,med=p.medical||{},events=p.events||[],apts=p.appointments||[],meds=p.medications||[];
+  var active=meds.filter(function(m){return m.status!=='completed'&&m.status!=='paused';});
+  function detail(label,value){return h('div',{className:'rh-board-patient-field',key:label},
+    h('span',null,label),h('strong',null,value||'Sin registrar')); }
+  return h('div',{className:'rh-board-patient-columns'},
+    h('section',{className:'rh-board-patient-panel rh-board-patient-general'},
+      h('div',{className:'rh-board-panel-head'},h('h2',null,'Información importante'),
+        h('button',{onClick:p.onRecord},'Editar ›')),
+      detail('Fecha de nacimiento',pt.birthdate?fmtD(pt.birthdate):''),
+      detail('Grupo sanguíneo',med.bloodType),
+      detail('Alergias registradas',med.allergies),
+      detail('Condiciones conocidas',med.chronicConditions),
+      detail('Contacto de emergencia',[med.emergencyContact,med.emergencyPhone].filter(Boolean).join(' · ')),
+      h('button',{className:'rh-board-ghost-action',onClick:p.onEmergency},'Ficha de emergencia ↗')
+    ),
+    h('div',{className:'rh-board-patient-center'},
+      h('section',{className:'rh-board-patient-panel'},
+        h('div',{className:'rh-board-panel-head'},h('h2',null,'Resumen de salud'),
+          h('button',{onClick:p.onHistory},'Ver historial ›')),
+        h('div',{className:'rh-board-patient-mini-stats'},
+          [['Citas',apts.length],['Tratamientos activos',active.length],['Registros médicos',p.recordCount]].map(function(v){
+            return h('div',{key:v[0]},h('span',null,v[0]),h('strong',null,v[1]));
+          })
+        )
+      ),
+      h('section',{className:'rh-board-patient-panel'},
+        h('div',{className:'rh-board-panel-head'},h('h2',null,'Tratamientos activos'),
+          h('button',{onClick:p.onMedications},'Ver todos ›')),
+        active.length?active.slice(0,4).map(function(m){
+          return h('div',{className:'rh-board-patient-med',key:m.id},
+            h('span',{className:'rh-board-med-icon'},h(Ic,{n:'pill',s:16,c:'currentColor'})),
+            h('span',null,h('strong',null,m.name),h('small',null,[m.dosage,m.frequency].filter(Boolean).join(' · '))),
+            h('span',{className:'rh-board-tag'},'Activo')
+          );
+        }):h('p',{className:'rh-board-patient-empty'},'Sin tratamientos activos registrados.')
+      ),
+      pt.notes&&h('section',{className:'rh-board-patient-panel'},
+        h('div',{className:'rh-board-panel-head'},h('h2',null,'Notas personales')),
+        h('p',{className:'rh-board-patient-note'},pt.notes))
+    ),
+    h('section',{className:'rh-board-patient-panel rh-board-patient-timeline'},
+      h('div',{className:'rh-board-panel-head'},h('h2',null,'Línea de tiempo'),
+        h('button',{onClick:p.onHistory},'Ver todo ›')),
+      events.length?events.slice(0,6).map(function(ev){
+        return h('div',{className:'rh-board-timeline-row',key:ev.id},
+          h('span',{className:'rh-board-timeline-pin'},h(Ic,{n:ev.kind==='apt'?'calendar':ev.kind==='dose'?'check':'file',s:13,c:'currentColor'})),
+          h('div',null,h('small',null,fmtD(ev.at.slice(0,10))),
+            h('strong',null,ev.title),
+            ev.meta&&h('span',null,ev.meta)),
+          ev.apt&&h('button',{onClick:function(){p.onApt(ev.apt);},'aria-label':'Abrir cita'},'›')
+        );
+      }):h('p',{className:'rh-board-patient-empty'},'Sin actividad registrada.')
+    )
+  );
+}
+
 function PatientProfile(p){
   var store=p.store,pt=p.patient;
   var user=p.user;
@@ -323,32 +381,16 @@ function PatientProfile(p){
           onClick:function(){setProfileTab(item[0]);}},item[1]);
       })
     ),
-    profileTab==='summary'&&h('section',{className:'rh-profile-panel rh-health-key-info','aria-label':'Información del paciente'},
-      h('div',{className:'rh-profile-panel-head'},
-        h('h2',null,'Información importante'),
-        h('button',{onClick:p.onRecord},'Editar expediente ↗')
-      ),
-      h('div',{className:'rh-health-key-grid'},
-        [
-          {label:'Grupo sanguíneo',value:medical.bloodType||''},
-          {label:'Alergias conocidas',value:medical.allergies||''},
-          {label:'Condiciones registradas',value:medical.chronicConditions||''},
-          {label:'Contacto de emergencia',value:[medical.emergencyContact,medical.emergencyPhone].filter(Boolean).join(' · ')}
-        ].map(function(item){
-          return h('div',{key:item.label,className:'rh-health-key-cell'},
-            h('span',null,item.label),
-            h('strong',{className:!item.value?'rh-health-empty':''},item.value||'Sin registrar')
-          );
-        })
-      ),
-      h('p',{className:'rh-health-record-note'},'Estos datos son los que has anotado. No se verifican con ningún centro médico.')
-    ),
-    (profileTab==='summary'||profileTab==='history')&&h('div',{className:'rh-patient-track-actions'},
+    profileTab==='summary'&&h(RhPatientSummaryBoard,{patient:pt,medical:medical,events:events,
+      appointments:apts,medications:meds,recordCount:labs.length+vaccines.length+documents.length,
+      onRecord:p.onRecord,onEmergency:p.onEmergency,onHistory:function(){setProfileTab('history');},
+      onMedications:function(){setProfileTab('medications');},onApt:p.onApt}),
+    profileTab==='history'&&h('div',{className:'rh-patient-track-actions'},
       h('button',{className:'rh-mini-btn rh-mini-primary',onClick:p.onTracking},'Ver signos vitales y síntomas →'),
       h('button',{className:'rh-mini-btn',onClick:p.onEmergency},'Imprimir ficha de emergencia')
     ),
-    (profileTab==='summary'||profileTab==='appointments'||profileTab==='medications')&&h('div',{className:'rh-profile-columns'},
-      (profileTab==='summary'||profileTab==='appointments')&&h('section',{className:'rh-profile-panel'},
+    (profileTab==='appointments'||profileTab==='medications')&&h('div',{className:'rh-profile-columns'},
+      profileTab==='appointments'&&h('section',{className:'rh-profile-panel'},
         h('div',{className:'rh-profile-panel-head'},h('h2',null,'Próximas citas')),
         next.length?next.slice(0,6).map(function(a){return h('button',{className:'rh-profile-next',key:a.id,onClick:function(){p.onApt(a);}},
           h('span',null,fmtD(a.date)+(a.time?' · '+fmtT(a.time):'')),
@@ -356,7 +398,7 @@ function PatientProfile(p){
           h('small',null,a.clinic||'Sin ubicación')
         );}):h('p',{className:'rh-profile-muted'},'Sin citas próximas.')
       ),
-      (profileTab==='summary'||profileTab==='medications')&&h('section',{className:'rh-profile-panel'},
+      profileTab==='medications'&&h('section',{className:'rh-profile-panel'},
         h('div',{className:'rh-profile-panel-head'},h('h2',null,'Tratamientos'),
           h('button',{onClick:p.onAddMed},'+ Agregar')),
         meds.length?meds.map(function(m){
@@ -368,7 +410,7 @@ function PatientProfile(p){
         }):h('p',{className:'rh-profile-muted'},'Sin medicamentos.')
       )
     ),
-    (profileTab==='summary'||profileTab==='documents')&&h('section',{className:'rh-profile-panel rh-center-profile-summary'},
+    profileTab==='documents'&&h('section',{className:'rh-profile-panel rh-center-profile-summary'},
       h('div',{className:'rh-profile-panel-head'},h('h2',null,'Otros registros'),
         h('button',{onClick:p.onHealth},'Ver centro de salud ↗')),
       h('div',{className:'rh-profile-counts'},
