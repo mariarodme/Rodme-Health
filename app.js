@@ -75,10 +75,12 @@ function upd(sf,k){return function(e){var v=e.target.value;sf(function(f){var n=
 // ── SHEET ──────────────────────────────────────────────────────────────────
 function Sheet(p){
   var panel=useRef(null);
+  var closeRef=useRef(null);
   function requestClose(){
     if(p.dirty&&!window.confirm('Hay cambios sin guardar. ¿Cerrar y descartar esos cambios?'))return;
     if(p.onClose)p.onClose();
   }
+  closeRef.current=requestClose;
   useEffect(function(){
     var previous=document.activeElement;
     var oldOverflow=document.body.style.overflow;
@@ -86,7 +88,7 @@ function Sheet(p){
     var close=panel.current&&panel.current.querySelector('.sheet-hd .btn-icon');
     if(close)close.focus();
     function keydown(e){
-      if(e.key==='Escape'&&p.onClose){e.preventDefault();requestClose();return;}
+      if(e.key==='Escape'&&closeRef.current){e.preventDefault();closeRef.current();return;}
       if(e.key!=='Tab'||!panel.current)return;
       var els=Array.from(panel.current.querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),a[href]')).filter(function(el){return el.getClientRects().length>0;});
       if(!els.length)return;
