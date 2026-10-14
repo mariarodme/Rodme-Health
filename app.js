@@ -2145,7 +2145,7 @@ function App(){
           var active=view===it.id||(view==='patient'&&it.id==='patients')||(view==='tracking'&&it.id==='health'),dot=it.id==='appointments'&&notifs.length>0;
           return h('button',{key:it.id,className:'bn-btn'+(active?' active':''),onClick:function(){sv(it.id);},'aria-current':active?'page':undefined,},
             h('span',{style:{position:'relative'}},h(Ic,{n:it.n,s:21,c:active?'var(--accent)':'var(--text3)'}),dot&&h('span',{className:'bn-dot'})),
-            h('span',{className:'bn-lbl'},it.l)
+            h('span',{className:'bn-lbl'},it.id==='medications'?'Medicinas':it.l)
           );
         }))
       )
