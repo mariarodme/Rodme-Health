@@ -2764,3 +2764,79 @@ body{font-size:var(--rh-copy-size)}
 .rh-cloud-buttons button{width:100%}
 .rh-cloud-choice{padding:16px}
 }
+
+
+/* RH navigation: consistent back controls v12 */
+#root .page-content .rh-route-bar{
+  width:100%;max-width:1210px;
+  display:flex;align-items:center;flex-wrap:wrap;gap:13px;
+  margin:0 auto 20px;padding:10px 0 16px;
+  border-bottom:1px solid var(--border);
+}
+#root .page-content .rh-route-back,
+#root .page-content .rh-route-home{
+  display:inline-flex;align-items:center;justify-content:center;gap:9px;
+  flex-shrink:0;min-height:48px;padding:10px 17px;
+  border:1.5px solid var(--border);border-radius:10px;
+  background:var(--surface);color:var(--text);
+  font-size:17px!important;line-height:1.35;
+  font-weight:800;cursor:pointer;
+  transition:background .16s,border-color .16s,color .16s;
+}
+#root .page-content .rh-route-back{
+  border-color:var(--accent);color:var(--accent);
+  background:var(--accent-bg);
+}
+#root .page-content .rh-route-home{margin-left:auto}
+#root .page-content .rh-route-back:hover,
+#root .page-content .rh-route-home:hover{
+  border-color:var(--accent);color:var(--accent);background:var(--accent-bg)
+}
+#root .page-content .rh-route-back:focus-visible,
+#root .page-content .rh-route-home:focus-visible,
+#root .sheet .rh-sheet-back:focus-visible{
+  outline:3px solid var(--accent2);outline-offset:3px
+}
+#root .page-content .rh-route-location{
+  display:flex;align-items:center;gap:9px;min-width:0;
+  color:var(--text2);line-height:1.4;
+}
+#root .page-content .rh-route-location span{
+  font-size:15px!important;color:var(--text2);
+}
+#root .page-content .rh-route-location strong{
+  font-size:16px!important;line-height:1.35;color:var(--text);
+  overflow-wrap:anywhere;
+}
+#root .page-content .rh-profile-back{display:none}
+#root .sheet .rh-sheet-heading{flex:1;min-width:0}
+#root .sheet .rh-sheet-back{
+  display:inline-flex;align-items:center;gap:8px;
+  border:1px solid var(--border);background:var(--accent-bg);
+  color:var(--accent);padding:9px 14px;min-height:42px;
+  border-radius:9px;cursor:pointer;font-size:16px!important;
+  font-weight:800;line-height:1.4;margin-bottom:13px;
+}
+#root .sheet .rh-sheet-back:hover{
+  background:var(--surface2);border-color:var(--accent)
+}
+#root .sheet .sheet-title{line-height:1.35}
+@media(max-width:768px){
+  #root .page-content .rh-route-bar{
+    gap:10px;margin-bottom:16px;padding:2px 0 13px;
+    justify-content:space-between;
+  }
+  #root .page-content .rh-route-back,
+  #root .page-content .rh-route-home{
+    font-size:16px!important;min-height:48px;padding:9px 13px;
+  }
+  #root .page-content .rh-route-location{order:3;flex:1 0 100%;gap:7px}
+  #root .page-content .rh-route-location span{font-size:14px!important}
+  #root .page-content .rh-route-location strong{font-size:16px!important}
+  #root .page-content .rh-route-home{margin-left:auto}
+  #root .sheet .rh-sheet-back{font-size:16px!important;min-height:46px}
+}
+@media(max-width:400px){
+  #root .page-content .rh-route-back,
+  #root .page-content .rh-route-home{padding:9px 12px;min-height:47px}
+}
