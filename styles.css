@@ -2186,3 +2186,262 @@ body{letter-spacing:-.012em}
 }
 [data-theme=dark] .rh-board-hero-image::before{background:linear-gradient(180deg,rgba(16,33,44,0),rgba(16,33,44,.23))}
 [data-theme=dark] .rh-board-cal-state{color:var(--accent)}
+
+
+/* ===============================================================
+   TIPOGRAFIA LEGIBLE · RODME v9
+   Escala accesible para escritorio y móvil. Sin cambiar registros.
+   =============================================================== */
+:root{
+  --serif:'Manrope','Plus Jakarta Sans',system-ui,sans-serif;
+}
+html{font-size:16px}
+body{font-size:16px;line-height:1.5;letter-spacing:-.006em}
+input,textarea,select{font-size:16px;line-height:1.45}
+button{line-height:1.35}
+label{font-size:14px;letter-spacing:.015em;line-height:1.4}
+small{line-height:1.48}
+
+/* Navegación, herramientas y jerarquía */
+.sidebar{width:220px}
+.main-content{margin-left:220px}
+.nav-item{font-size:15px;min-height:47px;line-height:1.35}
+.rh-board-sidebar-name{font-size:18px;letter-spacing:-.035em}
+.sidebar .user-row p:first-child{font-size:15px!important}
+.sidebar .user-row p:last-child{font-size:13px!important}
+.rh-board-header-search{font-size:14px}
+.top-bar.rh-desktop-header .rh-nav-cta{font-size:14px;min-height:44px}
+.rh-quick-menu button{font-size:15px;line-height:1.4}
+.rh-quick-toggle{font-size:14px}
+.ph-sub,.med1820-interior .ph-sub,
+.med1820-interior .rh-center-kicker,
+.rh-center-kicker{font-size:13px;letter-spacing:.08em}
+.med1820-interior .ph-title,
+.med1820-interior .rh-calendar-toolbar h1,
+.med1820-interior .rh-center-header h1,
+.med1820-interior .rh-track-head h1{line-height:1.18}
+.sec-title{font-size:18px}
+.med1820-interior .btn,
+.med1820-interior .btn-primary,
+.med1820-interior .btn-outline,
+.med1820-interior .rh-mini-btn,
+.med1820-interior .rh-mini-primary,
+.med1820-interior .rh-backup-main,
+.med1820-interior .rh-center-save,
+.med1820-interior .rh-track-actions button,
+.med1820-interior .rh-center-item-actions button{
+  font-size:14px;min-height:45px
+}
+.btn-primary,.btn-outline,.btn-danger,.btn-ghost,
+.tab-btn,.rh-patient-history{font-size:14px}
+.med1820-interior .chip,.med1820-sheet .chip,.chip{
+  font-size:12.5px;letter-spacing:0;line-height:1.3
+}
+
+/* Portada: información que debe poder leerse sin ampliar pantalla */
+.rh-board-greeting{font-size:15px}
+.rh-board-hero h1{letter-spacing:-.045em}
+.rh-board-hero h2{font-size:clamp(18px,1.65vw,23px);line-height:1.35}
+.rh-board-hero-copy>p{font-size:15px;line-height:1.6;max-width:540px}
+.rh-board-primary,.rh-board-secondary{font-size:14px;min-height:47px;padding:12px 18px}
+.rh-board-summary-card{min-height:112px}
+.rh-board-stat-copy strong{font-size:15px;line-height:1.34}
+.rh-board-stat-copy b{font-size:29px;letter-spacing:-.045em}
+.rh-board-stat-copy small{font-size:13px;line-height:1.4}
+.rh-board-panel-head h2,.rh-board-section-head h2{font-size:19px;letter-spacing:-.025em}
+.rh-board-panel-head button,.rh-board-section-head button{font-size:13px;line-height:1.4}
+.rh-board-date span{font-size:13px}
+.rh-board-next-info strong{font-size:16px;line-height:1.4}
+.rh-board-next-info span,.rh-board-next-info small{font-size:14px;line-height:1.5}
+.rh-board-overdue{font-size:13px;min-height:39px}
+.rh-board-treat-row,.rh-board-pending-row{padding:12px 2px;gap:11px}
+.rh-board-treat-name strong,.rh-board-pending-main strong{
+  font-size:15px;line-height:1.45;white-space:normal;overflow-wrap:anywhere
+}
+.rh-board-treat-name small,.rh-board-pending-main small{
+  font-size:13.5px;line-height:1.5;overflow-wrap:anywhere
+}
+.rh-board-pending-date{font-size:12.5px}
+.rh-board-pending-count{font-size:13px}
+.rh-board-empty,.rh-board-family-empty{font-size:14px;line-height:1.55}
+.rh-board-empty button{font-size:14px;min-height:42px}
+.rh-board-family-person{padding:15px;gap:12px;min-height:75px}
+.rh-board-family-person strong{font-size:15px;line-height:1.4}
+.rh-board-family-person small{font-size:13px;line-height:1.4}
+.rh-board-privacy span,.rh-board-privacy button{font-size:13px;line-height:1.5}
+.rh-backup-reminder strong{font-size:15px}
+.rh-backup-reminder p,.rh-backup-last{font-size:13.5px;line-height:1.5}
+.rh-backup-reminder button{font-size:14px}
+
+/* Pacientes y expediente familiar */
+.rh-patient-directory .pt-card{min-height:110px;gap:15px}
+.rh-patient-directory .pt-card>div:nth-child(2)>p:first-child{
+  font-size:17px!important;line-height:1.35
+}
+.rh-patient-directory .pt-card>div:nth-child(2)>p:not(:first-child){
+  font-size:14px!important;line-height:1.45
+}
+.rh-patient-directory .pt-card .chip{font-size:13px!important}
+.rh-patient-directory .pt-card .rh-patient-history{
+  font-size:14px;min-height:42px
+}
+.rh-profile-back button{font-size:14px}
+.rh-profile-info>span{font-size:13px}
+.rh-profile-info p{font-size:15px;line-height:1.5}
+.med1820-interior .rh-board-profile .rh-profile-info h1{
+  font-size:clamp(26px,2.7vw,37px)
+}
+.med1820-interior .rh-board-profile .rh-profile-counts span{
+  font-size:13.5px;line-height:1.4
+}
+.med1820-interior .rh-board-profile .rh-profile-tab{
+  font-size:14px;min-height:51px;padding:13px 17px
+}
+.rh-profile-panel-head h2{font-size:21px}
+.rh-profile-panel-head button{font-size:14px}
+.rh-profile-next span,.rh-profile-next small,.rh-profile-med p,
+.rh-profile-med span{font-size:14px;line-height:1.5}
+.rh-profile-next strong,.rh-profile-med strong{font-size:16px;line-height:1.45}
+.rh-profile-muted,.rh-profile-doc-actions p{font-size:14px;line-height:1.6}
+.rh-board-patient-field{gap:9px;padding:13px 0}
+.rh-board-patient-field span{font-size:13px;line-height:1.4}
+.rh-board-patient-field strong{font-size:14px;line-height:1.5}
+.rh-board-ghost-action{font-size:14px;min-height:44px}
+.rh-board-patient-mini-stats span{font-size:13px;line-height:1.4}
+.rh-board-patient-mini-stats strong{font-size:28px}
+.rh-board-patient-med strong{font-size:15px}
+.rh-board-patient-med small{font-size:13px;line-height:1.45}
+.rh-board-tag,.rh-board-status{font-size:12.5px}
+.rh-board-patient-note,.rh-board-patient-empty{font-size:14px;line-height:1.65}
+.rh-board-timeline-row strong{font-size:14px}
+.rh-board-timeline-row small,.rh-board-timeline-row div>span{font-size:13px;line-height:1.48}
+
+/* Calendario */
+.rh-calendar-toolbar>div:first-child>span{font-size:14px}
+.rh-calendar-mode button,.rh-calendar-switcher .rh-calendar-today{font-size:14px;min-height:43px}
+.rh-calendar-switcher strong{font-size:16px}
+.rh-calendar-weekday{font-size:13px}
+.rh-calendar-day{font-size:15px;min-width:33px;min-height:33px}
+.rh-calendar-event{font-size:12px;line-height:1.3;padding:8px 6px}
+.rh-calendar-event small{font-size:11.5px}
+.rh-board-calendar-day-panel .rh-board-panel-head h2{font-size:18px}
+.rh-board-cal-time{font-size:14px}
+.rh-board-cal-text strong{font-size:15px}
+.rh-board-cal-text small{font-size:13px;line-height:1.5}
+.rh-board-cal-state{font-size:12.5px}
+.rh-board-cal-empty,.rh-cal-hint{font-size:13.5px;line-height:1.5}
+
+/* Medicamentos */
+.rh-board-med-filters button{font-size:14px;min-height:45px}
+.med1820-interior .med-card .rh-med-top strong{font-size:17px}
+.med1820-interior .med-card .rh-med-top p{font-size:14px;line-height:1.5}
+.rh-dose-actions>span,.rh-med-notes,.rh-dose-line span{font-size:14px;line-height:1.5}
+.rh-dose-btn,.rh-med-missed,.rh-med-details-btn,.rh-dose-line button{
+  font-size:14px;min-height:42px
+}
+.rh-med-expanded h4{font-size:15px}
+.rh-med-schedule,.rh-med-inventory{font-size:14px;line-height:1.5}
+.rh-med-schedule small,.rh-med-low{font-size:13px}
+
+/* Centro de salud y seguimiento */
+.rh-center-tabs button,.rh-track-tabs button{font-size:14px;min-height:45px}
+.rh-center-tabs button span{font-size:12px}
+.rh-center-toolbar label,.rh-center-field,.rh-track-patient,
+.rh-track-trends>label,.rh-track-field{font-size:14px;line-height:1.5}
+.med1820-interior .rh-center-item-head h2{font-size:18px;line-height:1.35}
+.rh-center-patient,.rh-center-pill,.rh-center-meta,
+.rh-center-note,.rh-center-result small,.rh-center-footnote,
+.rh-center-upload,.rh-center-upload small,.rh-center-msg{
+  font-size:13.5px;line-height:1.55
+}
+.rh-center-item-actions button,.rh-center-empty button,.rh-center-related-link,
+.rh-track-related,.rh-track-actions button,.rh-track-empty button,
+.rh-track-switch,.rh-track-link{font-size:14px;line-height:1.5}
+.rh-care-pending-item strong{font-size:15px}
+.rh-care-pending-item small,.rh-care-pending-item span{font-size:13px}
+.rh-track-item-top strong{font-size:17px}
+.rh-track-item-top span,.rh-track-item-top small,
+.rh-track-note,.rh-track-trends p,.rh-track-warning{font-size:14px;line-height:1.55}
+
+/* Configuración, respaldos, ventanas y formularios */
+.med1820-interior .rh-settings-section h2,
+.med1820-interior .rh-backup-title h2,
+.med1820-interior .rh-install-panel h2,
+.med1820-interior .rh-local-reminders h2{font-size:21px}
+.rh-setting-field>span,.rh-backup-field span{font-size:14px;line-height:1.4}
+.rh-settings-link,.rh-backup-main,.rh-backup-tabs button{font-size:14px}
+.rh-sett-notes,.rh-settings-danger p,
+.rh-backup-description,.rh-backup-title p,.rh-backup-foot,
+.rh-backup-message,.rh-local-reminders p,.rh-local-reminders small{
+  font-size:14px;line-height:1.6
+}
+.med1820-interior input:not([type=checkbox]):not([type=radio]):not([type=range]),
+.med1820-interior select,.med1820-interior textarea,
+.med1820-sheet input:not([type=checkbox]):not([type=radio]):not([type=range]),
+.med1820-sheet select,.med1820-sheet textarea{
+  font-size:16px;line-height:1.5;min-height:47px
+}
+.med1820-interior label,.med1820-sheet label{font-size:14px;line-height:1.45}
+.med1820-sheet .sheet-title,.rh-import-top h2{font-size:22px;line-height:1.3}
+.med1820-sheet .sheet-sub{font-size:13px;letter-spacing:.06em}
+.med1820-sheet .tab-btn,.med1820-sheet .btn,.med1820-sheet .btn-primary,
+.med1820-sheet .rh-appointment-status-actions button,
+.med1820-sheet .rh-prep-add button,.med1820-sheet .rh-center-save,
+.rh-import-confirm,.rh-import-cancel{font-size:14px;line-height:1.4}
+.rh-prep-caption,.rh-prep-line,.rh-detail-followups>p,
+.rh-detail-followup-row span,.rh-detail-followup-row small{font-size:14px;line-height:1.55}
+.rh-prep-edit h4,.rh-med-expanded h4{font-size:15px}
+.sheet-bd,.rh-import-panel{font-size:15px;line-height:1.55}
+
+/* Tablets y celulares: priorizar claridad sobre miniatura */
+@media(max-width:768px){
+  .sidebar{width:min(300px,83vw)}
+  .main-content{margin-left:0}
+  .mobile-header{min-height:65px}
+  .rh-board-hero h2{font-size:18px;line-height:1.38}
+  .rh-board-hero-copy>p{font-size:14px}
+  .rh-board-greeting{font-size:14px}
+  .rh-board-primary,.rh-board-secondary{font-size:14px;min-height:47px}
+  .rh-board-summary-card{
+    flex-direction:column;align-items:flex-start;
+    justify-content:space-between;gap:8px;
+    min-height:133px;padding:14px;border-radius:13px
+  }
+  .rh-board-stat-icon{width:36px;height:36px}
+  .rh-board-stat-copy{width:100%;gap:3px}
+  .rh-board-stat-copy strong{font-size:14px;white-space:normal;overflow:visible;overflow-wrap:anywhere}
+  .rh-board-stat-copy b{font-size:25px}
+  .rh-board-stat-copy small{display:none}
+  .rh-board-panel-head h2,.rh-board-section-head h2{font-size:18px}
+  .rh-board-panel-head button,.rh-board-section-head button{font-size:13px}
+  .rh-board-patient-field strong{max-width:65%}
+  .rh-board-patient-mini-stats span{font-size:12.5px}
+  .med1820-interior .rh-board-profile .rh-profile-tab{font-size:14px;padding:12px 17px}
+  .rh-calendar-grid .rh-calendar-day{font-size:15px;min-width:36px;min-height:36px}
+  .rh-calendar-day-count{font-size:12px;min-height:20px;min-width:20px}
+  .rh-board-cal-state{font-size:12.5px}
+  .rh-calendar-weekday{font-size:12.5px}
+  .rh-board-med-filters button{font-size:14px}
+  .bottom-nav .bn-btn{min-height:67px;padding:7px 3px;gap:4px}
+  .bottom-nav .bn-lbl{
+    font-size:12px;line-height:1.22;
+    white-space:normal;overflow-wrap:break-word;
+    text-align:center;letter-spacing:0
+  }
+  .bottom-nav .bn-items{gap:1px;padding:0 3px}
+  .rh-quick-add{bottom:calc(94px + env(safe-area-inset-bottom,0px))}
+}
+@media(max-width:420px){
+  .rh-board-hero-copy{padding:22px 18px}
+  .rh-board-hero-buttons{gap:9px}
+  .rh-board-primary,.rh-board-secondary{flex:1 1 100%;font-size:14px}
+  .rh-board-summary-card{min-height:128px;padding:12px}
+  .rh-board-stat-copy strong{font-size:14px}
+  .rh-board-stat-copy b{font-size:24px}
+  .rh-board-patient-mini-stats span{font-size:12.5px}
+  .med1820-interior .rh-calendar-day{font-size:15px}
+  .bottom-nav .bn-lbl{font-size:11.8px}
+  .rh-board-cal-time{width:65px;font-size:13px}
+  .rh-board-cal-state{margin-left:0}
+  .med1820-interior .rh-board-profile .rh-profile-counts span{font-size:12.5px}
+}
