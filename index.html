@@ -1139,6 +1139,121 @@ body{background:var(--bg);color:var(--text)}
 .rh-record-context label{font-size:.75rem;font-weight:800;color:var(--text)}
 .rh-record-context select{width:100%;min-height:48px;font-size:.92rem;font-weight:800;background:var(--surface)}
 .rh-record-context p{font-size:.73rem;color:var(--text2);line-height:1.55}
+
+/* =============== Rodme Health | interfaz de atención =============== */
+.rh-wix-home-layout .top-bar.rh-desktop-header{
+ position:sticky;top:0;left:auto;right:auto;border-radius:0;width:100%;height:78px;min-height:78px;
+ padding:9px clamp(18px,4vw,58px);background:var(--surface);border:0;border-bottom:1px solid var(--border);
+ box-shadow:0 5px 18px rgba(36,51,40,.035);backdrop-filter:none;z-index:110;
+}
+.rh-wix-home-layout .top-bar.rh-desktop-header .rh-nav-brand small{display:block}
+.rh-wix-home-layout .top-bar.rh-desktop-header .rh-nav-avatar{display:grid}
+.rh-wix-home-layout .page-content{padding:0!important}
+.rh-care-home{background:var(--bg);width:100%;max-width:1450px;margin:0 auto;padding:29px clamp(19px,3.6vw,56px) 82px;color:var(--text)}
+.rh-care-welcome{position:relative;overflow:hidden;display:flex;align-items:center;min-height:250px;border-radius:22px;background:#E6EDE5;color:#25382C}
+.rh-care-welcome-copy{z-index:2;position:relative;padding:40px 44px;width:72%}
+.rh-care-overline{font-weight:800;letter-spacing:.035em;font-size:.77rem;text-transform:capitalize;color:#546A56;margin-bottom:16px}
+.rh-care-welcome h1{font-family:var(--serif);font-size:clamp(2.65rem,5vw,4.8rem);font-weight:400;letter-spacing:-.064em;line-height:1.06;color:#263A2C}
+.rh-care-lede{font-size:.91rem;color:#526454;margin:14px 0 22px}
+.rh-care-primary-actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.rh-care-action-primary,.rh-care-action-secondary{min-height:46px;padding:10px 19px;display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:99px;cursor:pointer;font-weight:800;font-size:.8rem}
+.rh-care-action-primary{background:#314A37;color:white;border:1px solid #314A37}
+.rh-care-action-secondary{background:rgba(255,255,255,.68);color:#314A37;border:1px solid rgba(45,65,45,.26)}
+.rh-care-welcome-photo{width:36%;height:100%;position:absolute;right:0;top:0;bottom:0;overflow:hidden;background:radial-gradient(circle,#DCE5DC,#BAC9BB)}
+.rh-care-welcome-photo img{width:100%;height:100%;object-fit:cover;object-position:center 46%;filter:saturate(.74)}
+.rh-care-welcome-photo:after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,#E6EDE5 0%,rgba(230,237,229,.15) 55%,transparent)}
+.rh-care-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0 22px}
+.rh-care-stat{display:grid;grid-template-columns:48px 1fr 21px;grid-template-rows:auto auto;align-items:center;text-align:left;gap:2px 12px;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:15px;min-height:108px;padding:19px;cursor:pointer;transition:border-color .2s,transform .2s}
+.rh-care-stat:hover{border-color:var(--accent2);transform:translateY(-1px)}
+.rh-care-stat-icon{grid-column:1;grid-row:1/3;display:grid;place-items:center;background:var(--accent-bg);border-radius:12px;height:47px;color:var(--accent)}
+.rh-care-stat-value{font-family:var(--serif);font-size:2.05rem;line-height:1;font-weight:400;grid-column:2;grid-row:1}
+.rh-care-stat-label{font-size:.72rem;color:var(--text2);font-weight:700;grid-column:2;grid-row:2}
+.rh-care-stat-arrow{grid-column:3;grid-row:1/3;justify-self:end;color:var(--text3);font-size:1.2rem}
+.rh-care-priority-grid,.rh-care-second-grid{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr);gap:17px;margin-top:17px}
+.rh-care-second-grid{grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr)}
+.rh-care-section{border:1px solid var(--border);border-radius:17px;background:var(--surface);padding:24px 26px;min-width:0}
+.rh-care-section-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:22px}
+.rh-care-section-head h2{font-family:var(--serif);font-size:1.55rem;line-height:1.2;letter-spacing:-.045em;font-weight:400;color:var(--text)}
+.rh-care-inline-link{border:0;background:transparent;color:var(--accent);font-size:.76rem;font-weight:800;cursor:pointer;min-height:40px;padding:7px}
+.rh-care-next-detail{display:grid;grid-template-columns:108px 1fr auto;gap:19px;align-items:center}
+.rh-care-next-date{border-radius:13px;background:var(--accent-bg);padding:16px 9px;min-height:125px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--accent)}
+.rh-care-next-date>span{font-size:.69rem;letter-spacing:.04em;font-weight:800;text-transform:capitalize}
+.rh-care-next-date strong{font-family:var(--serif);font-weight:400;font-size:3.15rem;line-height:1.15}
+.rh-care-next-date small{font-size:.68rem;text-transform:capitalize}
+.rh-care-next-info{display:flex;flex-direction:column;gap:5px;min-width:0}
+.rh-care-next-info strong{font-size:1.05rem;overflow-wrap:anywhere}
+.rh-care-next-info>span{font-weight:800;font-size:.81rem;color:var(--accent)}
+.rh-care-next-info small{font-size:.78rem;color:var(--text2)}
+.rh-care-detail-btn{border:1px solid var(--border);border-radius:99px;background:var(--surface2);color:var(--text);min-height:42px;padding:10px 13px;display:flex;align-items:center;gap:10px;font-weight:800;font-size:.76rem;cursor:pointer}
+.rh-care-checklist-progress{grid-column:1/-1;margin-top:3px}
+.rh-care-checklist-progress>div:first-child{display:flex;justify-content:space-between;color:var(--text2);font-size:.72rem;font-weight:800;margin-bottom:9px}
+.rh-care-progress-track{height:8px;width:100%;background:var(--surface2);border-radius:50px;overflow:hidden}
+.rh-care-progress-track>span{height:100%;display:block;border-radius:50px;background:var(--green)}
+.rh-care-med-row,.rh-care-agenda-row,.rh-care-family-row{display:flex;align-items:center;gap:12px;width:100%;min-height:61px;text-align:left;background:transparent;border:0;border-bottom:1px solid var(--border);padding:10px 0;color:var(--text);cursor:pointer}
+.rh-care-med-row:last-child,.rh-care-agenda-row:last-child,.rh-care-family-row:last-child{border-bottom:0}
+.rh-care-med-icon{flex-shrink:0;display:grid;place-items:center;width:42px;height:42px;border-radius:13px;background:var(--green-bg);color:var(--green)}
+.rh-care-med-main,.rh-care-agenda-main,.rh-care-family-name{display:flex;flex-direction:column;gap:4px;flex:1;min-width:0}
+.rh-care-med-main strong,.rh-care-agenda-main strong,.rh-care-family-name strong{font-size:.86rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rh-care-med-main small,.rh-care-agenda-main small,.rh-care-family-name small{font-size:.72rem;color:var(--text2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rh-care-med-count{font-size:.69rem;flex-shrink:0;background:var(--surface2);border-radius:99px;color:var(--text2);padding:6px 8px}
+.rh-care-agenda-date{width:49px;height:51px;border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--accent-bg);color:var(--accent);flex-shrink:0}
+.rh-care-agenda-date strong{font-family:var(--serif);font-size:1.35rem;font-weight:400;line-height:1.15}
+.rh-care-agenda-date small{text-transform:uppercase;font-size:.62rem;font-weight:800}
+.rh-care-agenda-time{font-size:.72rem;color:var(--text2);font-weight:800;flex-shrink:0}
+.rh-care-family-avatar{flex-shrink:0;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--accent-bg);font-weight:800;color:var(--accent);overflow:hidden;font-size:.72rem}
+.rh-care-family-avatar img{width:100%;height:100%;object-fit:cover}
+.rh-care-family-row>span:last-child{color:var(--text3)}
+.rh-care-blank{min-height:149px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;color:var(--text2);padding:20px 0}
+.rh-care-blank strong{font-size:.88rem;color:var(--text)}
+.rh-care-blank button{background:transparent;border:0;border-bottom:1px solid var(--accent);color:var(--accent);padding:6px;cursor:pointer;font-size:.76rem;font-weight:800}
+.rh-care-empty-text{padding:36px 0;color:var(--text2);font-size:.82rem;text-align:center}
+.rh-care-bottom-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:18px;padding:15px 19px;border:1px solid var(--border);border-radius:13px;color:var(--text2);background:var(--surface2)}
+.rh-care-bottom-bar>div{display:flex;align-items:center;gap:10px;font-size:.73rem;line-height:1.6}
+.rh-care-bottom-bar button{border:0;background:transparent;white-space:nowrap;color:var(--accent);font-weight:800;font-size:.73rem;cursor:pointer;min-height:35px}
+[data-theme=dark] .rh-care-welcome{background:#304837}
+[data-theme=dark] .rh-care-welcome-photo:after{background:linear-gradient(90deg,#304837 0%,rgba(48,72,55,.33) 65%,transparent)}
+[data-theme=dark] .rh-care-welcome h1{color:#F6F7F0}
+[data-theme=dark] .rh-care-overline,[data-theme=dark] .rh-care-lede{color:#D7E2D6}
+@media(max-width:1070px){
+ .rh-care-priority-grid,.rh-care-second-grid{grid-template-columns:1fr 1fr}
+ .rh-care-next-detail{grid-template-columns:95px 1fr;gap:12px}
+ .rh-care-detail-btn{grid-column:2;justify-self:start}
+}
+@media(max-width:760px){
+ .rh-care-home{padding:17px 15px 115px}
+ .rh-care-welcome{min-height:220px;border-radius:17px}
+ .rh-care-welcome-copy{width:77%;padding:28px 20px}
+ .rh-care-welcome h1{font-size:clamp(2.15rem,7.7vw,3.5rem)}
+ .rh-care-welcome-photo{width:47%;opacity:.6}
+ .rh-care-welcome-photo:after{background:linear-gradient(90deg,#E6EDE5 0%,rgba(230,237,229,.53) 50%,transparent)}
+ .rh-care-lede{font-size:.78rem}
+ .rh-care-primary-actions{gap:7px}
+ .rh-care-action-primary,.rh-care-action-secondary{font-size:.74rem;padding:10px 13px}
+ .rh-care-stats{gap:8px;margin:12px 0}
+ .rh-care-stat{min-height:100px;padding:13px 9px;display:flex;flex-direction:column;gap:4px;align-items:flex-start}
+ .rh-care-stat-icon{width:34px;height:34px;border-radius:8px}
+ .rh-care-stat-icon svg{width:16px;height:16px}
+ .rh-care-stat-value{font-size:1.7rem}
+ .rh-care-stat-label{font-size:.66rem;line-height:1.4}
+ .rh-care-stat-arrow{display:none}
+ .rh-care-priority-grid,.rh-care-second-grid{grid-template-columns:1fr;gap:12px;margin-top:12px}
+ .rh-care-section{padding:19px 17px}
+ .rh-care-section-head{margin-bottom:12px}
+ .rh-care-section-head h2{font-size:1.4rem}
+ .rh-care-next-detail{grid-template-columns:81px 1fr}
+ .rh-care-next-date{min-height:116px}
+ .rh-care-next-date strong{font-size:2.5rem}
+ .rh-care-bottom-bar{align-items:flex-start;flex-direction:column}
+}
+@media(max-width:400px){
+ .rh-care-welcome-photo{width:60%;opacity:.31}
+ .rh-care-welcome-copy{width:100%}
+ .rh-care-primary-actions{flex-wrap:wrap}
+ .rh-care-next-info strong{font-size:.92rem}
+ .rh-care-agenda-time{font-size:.63rem}
+}
+@media(prefers-reduced-motion:reduce){.rh-care-stat:hover{transform:none}}
+
 </style>
 </head>
 <body>
@@ -1236,130 +1351,150 @@ function Sheet(p){
 
 // ── HOME ── (replica exacta de la imagen)
 function HomeView(p){
-  var store=p.store,sm=p.sm,ssa=p.ssa,sv=p.sv,user=p.user;
+  var store=p.store,sv=p.sv,sm=p.sm,ssa=p.ssa,ssp=p.ssp,user=p.user;
   var prefs=lsg(uk(user,'prefs'))||{};
-  var records=lsg(uk(user,'records'))||{};
-  var legacyRec=lsg(uk(user,'rec'))||{};
-  var selectedRecordPatient=(store.patients||[]).find(function(p){return p.id===(lsg(uk(user,'record_patient'))||store.patients[0]?.id);});
-  var rec=selectedRecordPatient?rhReadRecord(user,selectedRecordPatient.id,store.patients):{};
-  var due=store.appointments.filter(function(a){return !a.attended&&du(a.date)!==null&&du(a.date)>=0;})
-    .sort(function(a,b){return (a.date+(a.time||''))>(b.date+(b.time||''))?1:-1;}).slice(0,3);
-  var meds=store.medications.slice(0,3);
-  var nextPatient=function(id){return store.patients.find(function(x){return x.id===id;});};
-  var done=store.appointments.filter(function(a){return a.attended;}).length;
-  var stats=[
-    {count:store.patients.length,title:'Familiares registrados',n:'user',target:'patients'},
-    {count:store.appointments.filter(function(a){return !a.attended;}).length,title:'Citas pendientes',n:'calendar',target:'appointments'},
-    {count:store.medications.length,title:'Medicamentos',n:'pill',target:'medications'},
-    {count:done,title:'Consultas asistidas',n:'check',target:'appointments'}
+  var today=rhCalDay(new Date());
+  var all=(store.appointments||[]);
+  var upcoming=all.filter(function(a){return !a.attended&&a.date>=today;})
+    .sort(function(a,b){return (a.date+'T'+(a.time||'23:59')).localeCompare(b.date+'T'+(b.time||'23:59'));});
+  var next=upcoming[0]||null;
+  var nextPatient=next?store.patients.find(function(pt){return pt.id===next.patientId;}):null;
+  var treatments=(store.medications||[]).filter(function(m){return m.status!=='completed'&&m.status!=='paused';});
+  var recentDoses=(store.doseLogs||[]).filter(function(d){return rhCalDay(new Date(d.at))===today;});
+  var shortDate=new Date().toLocaleDateString('es-CR',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  var checkpoints=next&&(next.prepItems||[]);
+  var completed=checkpoints?checkpoints.filter(function(v){return v.done;}).length:0;
+  var totals=[
+    {label:'Citas pendientes',value:all.filter(function(a){return !a.attended;}).length,icon:'calendar',to:'appointments'},
+    {label:'Pacientes',value:store.patients.length,icon:'user',to:'patients'},
+    {label:'Tratamientos activos',value:treatments.length,icon:'pill',to:'medications'}
   ];
-  return h('div',{className:'wix-home fi'},
-    h('section',{className:'wix-hero','aria-label':'Rodme Health, inicio'},
-      h('div',{className:'wix-hero-photo','aria-hidden':'true'},
-        h('img',{src:'https://images.pexels.com/photos/7446757/pexels-photo-7446757.jpeg?auto=compress&cs=tinysrgb&w=1920',alt:'',loading:'eager',decoding:'async',onError:function(e){e.currentTarget.style.display='none';}})
-      ),
-      h('div',{className:'wix-hero-body'},
-        h('h1',null,'Rodme',h('br'),'Health'),
-        h('div',{className:'wix-hero-buttons'},
-          h('button',{className:'wix-button wix-button-dark',onClick:function(){sm('add-apt');}},'Agendar una cita',h('span',{'aria-hidden':'true'},'↗')),
-          h('button',{className:'wix-button wix-button-outline',onClick:function(){sv('appointments');}},'Ver calendario')
+  function goA(a){ssa(a);sm('view-apt');}
+  function goPatient(patient){if(ssp){ssp(patient);sv('patient');}else sv('patients');}
+  return h('main',{className:'rh-care-home',id:'contenido-principal'},
+    h('section',{className:'rh-care-welcome','aria-labelledby':'rh-care-heading'},
+      h('div',{className:'rh-care-welcome-copy'},
+        h('p',{className:'rh-care-overline'},shortDate),
+        h('h1',{id:'rh-care-heading'},'Mi panel de salud'),
+        h('p',{className:'rh-care-lede'},'Citas, pacientes y tratamientos'),
+        h('div',{className:'rh-care-primary-actions'},
+          h('button',{className:'rh-care-action-primary',onClick:function(){sm('add-apt');}},
+            h(Ic,{n:'plus',s:17,c:'currentColor'}),' Nueva cita'),
+          h('button',{className:'rh-care-action-secondary',onClick:function(){sv('appointments');}},
+            h(Ic,{n:'calendar',s:17,c:'currentColor'}),' Ver calendario')
         )
       ),
-    ),
-    h('section',{className:'wix-agenda-section'},
-      h('div',{className:'wix-section-heading'},
-        h('div',null,h('h2',null,'Agenda')),
-      ),
-      h('div',{className:'wix-agenda-grid'},
-        h('div',{className:'wix-agenda-card'},
-          h('div',{className:'wix-card-head'},h('h3',null,'Próximas citas'),
-            h('button',{onClick:function(){sv('appointments');}},'Ver todas ↗')),
-          due.length
-            ?due.map(function(a){
-              var patient=nextPatient(a.patientId);
-              return h('button',{key:a.id,className:'wix-entry',onClick:function(){ssa(a);sm('view-apt');}},
-                h('span',{className:'wix-entry-date'},new Date(a.date+'T00:00:00').toLocaleDateString('es-CR',{day:'2-digit',month:'short'})),
-                h('span',{className:'wix-entry-text'},h('strong',null,a.doctor||a.reason||'Cita médica'),
-                  h('small',null,(patient?patient.name+' · ':'')+fmtD(a.date)+(a.time?' · '+fmtT(a.time):''))),
-                h('span',{className:'wix-entry-arrow','aria-hidden':'true'},'↗')
-              );
-            })
-            :h('div',{className:'wix-empty-state'},
-              h(Ic,{n:'calendar',s:28,c:'var(--accent)'}),
-              h('p',null,'Sin citas próximas'),
-              h('button',{onClick:function(){sm('add-apt');}},'Agregar una cita ↗')
-            )
-        ),
-        h('div',{className:'wix-agenda-card'},
-          h('div',{className:'wix-card-head'},h('h3',null,'Mis medicamentos'),
-            h('button',{onClick:function(){sv('medications');}},'Ver todos ↗')),
-          meds.length
-            ?meds.map(function(m){
-              var patient=nextPatient(m.patientId);
-              return h('button',{key:m.id,className:'wix-entry',onClick:function(){sv('medications');}},
-                h('span',{className:'wix-entry-icon'},h(Ic,{n:'pill',s:19,c:'currentColor'})),
-                h('span',{className:'wix-entry-text'},h('strong',null,m.name),
-                  h('small',null,(m.dosage||'Dosis sin especificar')+(patient?' · '+patient.name:''))),
-                h('span',{className:'wix-entry-arrow','aria-hidden':'true'},'↗')
-              );
-            })
-            :h('div',{className:'wix-empty-state'},
-              h(Ic,{n:'pill',s:28,c:'var(--accent)'}),
-              h('p',null,'Sin medicamentos registrados'),
-              h('button',{onClick:function(){sm('add-med');}},'Agregar medicamento ↗')
-            )
-        )
+      h('div',{className:'rh-care-welcome-photo','aria-hidden':'true'},
+        h('img',{src:'https://images.pexels.com/photos/7446757/pexels-photo-7446757.jpeg?auto=compress&cs=tinysrgb&w=850',alt:'',loading:'lazy',decoding:'async',
+          onError:function(e){e.currentTarget.style.display='none';}})
       )
     ),
-    h('section',{className:'wix-service-section','aria-label':'Servicios y accesos'},
-      h('div',{className:'wix-section-heading'},
-        h('div',null,
-          h('h2',null,'Accesos')
+    h('section',{className:'rh-care-stats','aria-label':'Resumen de registros'},
+      totals.map(function(x){return h('button',{className:'rh-care-stat',key:x.label,onClick:function(){sv(x.to);}},
+        h('span',{className:'rh-care-stat-icon'},h(Ic,{n:x.icon,s:19,c:'currentColor'})),
+        h('span',{className:'rh-care-stat-value'},x.value),
+        h('span',{className:'rh-care-stat-label'},x.label),
+        h('span',{className:'rh-care-stat-arrow','aria-hidden':'true'},'↗')
+      );})
+    ),
+    h('div',{className:'rh-care-priority-grid'},
+      h('section',{className:'rh-care-section rh-care-next','aria-labelledby':'rh-care-next-title'},
+        h('div',{className:'rh-care-section-head'},
+          h('h2',{id:'rh-care-next-title'},'Próxima cita'),
+          h('button',{className:'rh-care-inline-link',onClick:function(){sv('appointments');}},'Calendario ↗')
         ),
+        next?h('div',{className:'rh-care-next-detail'},
+          h('div',{className:'rh-care-next-date'},
+            h('span',null,rhCalDate(next.date).toLocaleDateString('es-CR',{month:'long'})),
+            h('strong',null,rhCalDate(next.date).getDate()),
+            h('small',null,rhCalDate(next.date).toLocaleDateString('es-CR',{weekday:'long'}))
+          ),
+          h('div',{className:'rh-care-next-info'},
+            h('strong',null,next.reason||next.specialty||(next.doctor?'Consulta médica':'Cita médica')),
+            h('span',null,nextPatient?nextPatient.name:'Paciente sin identificar'),
+            h('small',null,next.clinic||'Lugar sin indicar'),
+            h('small',null,next.time?'Hora: '+fmtT(next.time):'Hora por confirmar')
+          ),
+          h('button',{className:'rh-care-detail-btn',onClick:function(){goA(next);}},'Detalles',h('span',{'aria-hidden':'true'},'→')),
+          checkpoints&&checkpoints.length>0&&h('div',{className:'rh-care-checklist-progress'},
+            h('div',null,h('span',null,'Preparación'),h('span',null,completed+' de '+checkpoints.length+' listos')),
+            h('div',{className:'rh-care-progress-track'},h('span',{style:{width:Math.round(completed/checkpoints.length*100)+'%'}}))
+          )
+        ):h('div',{className:'rh-care-blank'},
+          h(Ic,{n:'calendar',s:26,c:'var(--accent)'}),
+          h('strong',null,'No hay citas próximas'),
+          h('button',{onClick:function(){sm('add-apt');}},'Agregar una cita ↗')
+        )
       ),
-      h('div',{className:'wix-services'},
-        [
-          {n:'calendar',id:'appointments',title:'Citas médicas',action:'Ver mis citas',tone:'sand'},
-          {n:'pill',id:'medications',title:'Medicamentos',action:'Ver tratamientos',tone:'sage'},
-          {n:'user',id:'patients',title:'Mi familia',action:'Ver familiares',tone:'rose'}
-        ].map(function(item){
-          return h('button',{key:item.id,className:'wix-service-card '+item.tone,onClick:function(){sv(item.id);}},
-            h('div',{className:'wix-service-card-top'},h(Ic,{n:item.n,s:31,c:'currentColor'})),
-            h('div',{className:'wix-service-card-content'},h('h3',null,item.title)),
-            h('div',{className:'wix-service-card-bottom'},h('span',{'aria-hidden':'true'},'Abrir ↗'))
+      h('section',{className:'rh-care-section rh-care-meds','aria-labelledby':'rh-care-med-title'},
+        h('div',{className:'rh-care-section-head'},
+          h('h2',{id:'rh-care-med-title'},'Tratamientos'),
+          h('button',{className:'rh-care-inline-link',onClick:function(){sv('medications');}},'Ver todos ↗')
+        ),
+        treatments.length?treatments.slice(0,4).map(function(m){
+          var pt=store.patients.find(function(v){return v.id===m.patientId;});
+          var n=recentDoses.filter(function(d){return d.medicationId===m.id;}).length;
+          return h('button',{key:m.id,className:'rh-care-med-row',onClick:function(){sv('medications');}},
+            h('span',{className:'rh-care-med-icon'},h(Ic,{n:'pill',s:18,c:'currentColor'})),
+            h('span',{className:'rh-care-med-main'},
+              h('strong',null,m.name),
+              h('small',null,[m.dosage,m.frequency,pt&&pt.name].filter(Boolean).join(' · '))
+            ),
+            h('span',{className:'rh-care-med-count'},n+' hoy')
           );
-        })
+        }):h('div',{className:'rh-care-blank'},
+          h(Ic,{n:'pill',s:25,c:'var(--accent)'}),
+          h('strong',null,'Sin tratamientos activos'),
+          h('button',{onClick:function(){sm('add-med');}},'Agregar medicamento ↗')
+        )
       )
     ),
-    h('section',{className:'wix-stat-band','aria-label':'Tu resumen personal'},
-      h('div',{className:'wix-stat-intro'},
-        h('h2',null,'Resumen')
+    h('div',{className:'rh-care-second-grid'},
+      h('section',{className:'rh-care-section','aria-labelledby':'rh-care-agenda-title'},
+        h('div',{className:'rh-care-section-head'},
+          h('h2',{id:'rh-care-agenda-title'},'Próximas fechas'),
+          h('button',{className:'rh-care-inline-link',onClick:function(){sv('appointments');}},'Todas las citas ↗')
+        ),
+        upcoming.length?upcoming.slice(0,4).map(function(a){
+          var pt=store.patients.find(function(v){return v.id===a.patientId;});
+          return h('button',{className:'rh-care-agenda-row',key:a.id,onClick:function(){goA(a);}},
+            h('span',{className:'rh-care-agenda-date'},
+              h('strong',null,rhCalDate(a.date).getDate()),
+              h('small',null,rhCalDate(a.date).toLocaleDateString('es-CR',{month:'short'}))
+            ),
+            h('span',{className:'rh-care-agenda-main'},
+              h('strong',null,a.reason||a.specialty||a.doctor||'Cita médica'),
+              h('small',null,(pt?pt.name+' · ':'')+(a.clinic||'Sin ubicación'))
+            ),
+            h('span',{className:'rh-care-agenda-time'},a.time?fmtT(a.time):'Sin hora')
+          );
+        }):h('p',{className:'rh-care-empty-text'},'No tienes citas próximas registradas.')
       ),
-      h('div',{className:'wix-stat-grid'},
-        stats.map(function(x){return h('button',{key:x.title,className:'wix-stat-item',onClick:function(){sv(x.target);}},
-          h('span',{className:'wix-stat-item-top'},h(Ic,{n:x.n,s:18,c:'currentColor'}),' ↗'),
-          h('strong',null,x.count),
-          h('span',null,x.title)
-        );})
+      h('section',{className:'rh-care-section','aria-labelledby':'rh-care-family-title'},
+        h('div',{className:'rh-care-section-head'},
+          h('h2',{id:'rh-care-family-title'},'Pacientes'),
+          h('button',{className:'rh-care-inline-link',onClick:function(){sv('patients');}},'Ver todos ↗')
+        ),
+        store.patients.length?store.patients.slice(0,5).map(function(pt){
+          var future=upcoming.filter(function(a){return a.patientId===pt.id;}).length;
+          return h('button',{className:'rh-care-family-row',key:pt.id,onClick:function(){goPatient(pt);}},
+            h('span',{className:'rh-care-family-avatar'},pt.avatar?h('img',{src:pt.avatar,alt:''}):ini(pt.name)),
+            h('span',{className:'rh-care-family-name'},h('strong',null,pt.name),h('small',null,future+' cita'+(future===1?'':'s')+' próxima'+(future===1?'':'s'))),
+            h('span',{'aria-hidden':'true'},'→')
+          );
+        }):h('div',{className:'rh-care-blank'},
+          h(Ic,{n:'user',s:25,c:'var(--accent)'}),
+          h('strong',null,'Sin pacientes registrados'),
+          h('button',{onClick:function(){sm('add-patient');}},'Agregar paciente ↗')
+        )
       )
     ),
-    h('section',{className:'wix-health-note'},
-      h('div',{className:'wix-note-symbol'},h(Ic,{n:'heart',s:34,c:'currentColor'})),
-      h('div',null,h('h2',null,'Expediente')),
-      h('div',{className:'wix-vitals-list'},
-        h('div',null,h('span',null,'Frecuencia cardíaca'),h('strong',null,rec.heartRate?rec.heartRate+' bpm':'Sin registrar')),
-        h('div',null,h('span',null,'Presión arterial'),h('strong',null,rec.bloodPressure||'Sin registrar')),
-        h('button',{className:'wix-button wix-button-dark',onClick:function(){sv('record');}},'Abrir expediente ↗')
-      )
-    ),
-    h('footer',{className:'wix-home-footer'},
-      h('div',null,h('strong',null,'rodme ',h('em',null,'health'))),
-      h('div',{className:'wix-home-footer-links'},
-        h('button',{onClick:function(){sv('patients');}},'Pacientes'),
-        h('button',{onClick:function(){sv('appointments');}},'Citas'),
-        h('button',{onClick:function(){sv('settings');}},'Configuración')
+    h('section',{className:'rh-care-bottom-bar','aria-label':'Accesos y almacenamiento'},
+      h('div',null,
+        h(Ic,{n:'shield',s:19,c:'var(--text2)'}),
+        h('span',null,'Datos locales: este dispositivo no requiere contraseña y no sincroniza automáticamente.')
       ),
-      h('p',null,'Datos guardados en este navegador. Evita registrar información médica sensible.',h('span',{className:'rh-version'},' · 13.10.26 / 2'))
+      h('button',{onClick:function(){sv('settings');}},'Copias de seguridad ↗')
     )
   );
 }
@@ -2328,14 +2463,6 @@ function App(){
     sideOpen&&h('aside',{className:'sidebar open'},h(Sidebar)),
 
     h('div',{className:'main-content'},
-      // Notif
-      notifs.length>0&&view==='home'&&showNb&&h('div',{className:'notif-bar'},
-        h(Ic,{n:'bell',s:13,c:'white'}),
-        h('span',{style:{flex:1}},notifs.length+' cita'+(notifs.length>1?'s':'')+' pr\u00f3xima'+(notifs.length>1?'s':'')+' esta semana'),
-        h('button',{onClick:function(){stab('pending');sv('appointments');},style:{background:'rgba(255,255,255,.22)',border:'none',color:'white',padding:'3px 10px',borderRadius:'var(--r-full)',fontSize:'.7rem',cursor:'pointer',fontFamily:'var(--font)',fontWeight:700}},'Ver'),
-        h('button',{onClick:function(){sNb(false);},style:{background:'none',border:'none',color:'white',cursor:'pointer',padding:4}},h(Ic,{n:'close',s:12,c:'white'}))
-      ),
-
       // Cabecera superior y navegación horizontal
       h('div',{className:'top-bar rh-desktop-header'},
         h('button',{className:'rh-nav-brand',onClick:function(){sv('home');}},
@@ -2371,7 +2498,7 @@ function App(){
 
       // Page content
       h('div',{className:'page-content'},
-        view==='home'&&h(HomeView,{store:store,sv:sv,sm:sm,ssa:ssa,user:user}),
+        view==='home'&&h(HomeView,{store:store,sv:sv,sm:sm,ssa:ssa,ssp:ssp,user:user}),
         view==='patients'&&h(PatientsView,{store:store,sm:sm,ssp:ssp,sv:sv}),
         view==='patient'&&h(PatientProfile,{store:store,patient:(store.patients.find(function(x){return selP&&x.id===selP.id;})||selP),onBack:function(){sv('patients');},onEdit:function(pt){ssp(pt);sm('edit-patient');},onAddApt:function(){setDraftDate('');sm('add-apt');},onAddMed:function(){sm('add-med');},onApt:function(apt){ssa(apt);sm('view-apt');}}),
         view==='appointments'&&h(ApptsView,{store:store,sm:sm,tab:tab,stab:stab,ssa:ssa,setDraftDate:setDraftDate}),
