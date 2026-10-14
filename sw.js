@@ -1,5 +1,5 @@
 /* Static-only caching. No patient data, files, API responses or localStorage. */
-const VERSION='rh-static-20261014-v2';
+const VERSION='rh-static-20261014-v3';
 const APP=['./','./index.html','./manifest.webmanifest','./app-icon.svg'];
 const REACT=['https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js','https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js'];
 self.addEventListener('install',event=>{
