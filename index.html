@@ -1419,6 +1419,9 @@ outline:3px solid #8AAB8C!important;outline-offset:3px
 .rh-care-pending-item strong{font-size:.81rem;overflow-wrap:anywhere}.rh-care-pending-item small{font-size:.7rem;color:var(--text2);line-height:1.4}
 .rh-care-pending-item span{font-size:.68rem;color:var(--accent);font-weight:800}
 @media(max-width:650px){.rh-care-pending-panel{padding:17px}.rh-care-pending-grid{grid-template-columns:1fr}}
+
+.rh-center-related-link,.rh-track-related{display:block;width:100%;text-align:left;border:1px solid var(--border);border-radius:10px;background:var(--accent-bg);padding:10px 12px;color:var(--accent);font-size:.73rem;font-weight:800;cursor:pointer;line-height:1.5}
+.rh-track-related{width:auto}
 </style>
 </head>
 <body>
@@ -2437,7 +2440,9 @@ function TrackingView(p){
             h('small',null,(date?fmtD(date):'Sin fecha')+' · '+info)
           )),
           (item.notes||item.description)&&h('p',{className:'rh-track-note'},item.notes||item.description),
-          tab==='followups'&&linked(item)&&h('p',{className:'rh-track-link'},linked(item)),
+          tab==='followups'&&linked(item)&&h('button',{className:'rh-track-link rh-track-related',onClick:function(){
+            var appt=(store.appointments||[]).find(function(x){return x.id===item.appointmentId;});if(appt&&p.onAppointment)p.onAppointment(appt);
+          }},linked(item)+' →'),
           h('div',{className:'rh-track-actions'},
             tab==='followups'&&h('button',{onClick:function(){mark(item,item.status!=='done');}},item.status==='done'?'Reabrir':'Marcar completado'),
             tab==='pending'&&item.kind==='followup'&&h('button',{onClick:function(){mark(source,true);}},'Completar'),
@@ -2600,8 +2605,10 @@ function HealthCenterView(p){
             h('span',{className:'rh-center-pill'},badge)
           ),
           h('p',{className:'rh-center-meta'},[fmtD(item.date),item.provider].filter(Boolean).join(' · ')),
-          item.appointmentId&&h('p',{className:'rh-track-link'},'Relacionado con cita: '+
-            ((store.appointments||[]).find(function(a){return a.id===item.appointmentId;})?.reason||'Consulta')),
+          item.appointmentId&&h('button',{className:'rh-center-related-link',onClick:function(){
+              var appt=(store.appointments||[]).find(function(a){return a.id===item.appointmentId;});
+              if(appt&&p.onAppointment)p.onAppointment(appt);
+            }},'Abrir cita relacionada → '+((store.appointments||[]).find(function(a){return a.id===item.appointmentId;})?.reason||'Consulta')),
           tab==='labs'&&item.value!==undefined&&item.value!==''&&h('div',{className:'rh-center-result'},
             h('strong',null,item.value+' '+(item.unit||'')),
             item.reference&&h('small',null,'Referencia indicada: '+item.reference),
@@ -3440,9 +3447,9 @@ function App(){
         view==='patient'&&h(PatientProfile,{store:store,patient:(store.patients.find(function(x){return selP&&x.id===selP.id;})||selP),onBack:function(){sv('patients');},onEdit:function(pt){ssp(pt);sm('edit-patient');},onAddApt:function(){setDraftDate('');sm('add-apt');},onRecord:function(){if(selP)lss(uk(user,'record_patient'),selP.id);sv('record');},onTracking:function(){openTracking(selP?.id||'all','vitals');},onEmergency:function(){if(selP)rhEmergencyCard(selP,rhReadRecord(user,selP.id,store.patients),store.medications);},onHealth:function(){setHealthPatient(selP?.id||'all');sv('health');},user:user,onAddMed:function(){sm('add-med');},onApt:function(apt){ssa(apt);sm('view-apt');}}),
         view==='appointments'&&h(ApptsView,{store:store,sm:sm,tab:tab,stab:stab,ssa:ssa,setDraftDate:setDraftDate}),
         view==='medications'&&h(MedsView,{store:store,sm:sm,ssm:ssm}),
-        view==='health'&&h(HealthCenterView,{store:store,user:user,initialPatientId:healthPatient,initialTab:healthTab,
+        view==='health'&&h(HealthCenterView,{store:store,user:user,initialPatientId:healthPatient,initialTab:healthTab,onAppointment:function(a){ssa(a);sm('view-apt');},
           onTracking:function(){openTracking(healthPatient,'pending',null);}}),
-        view==='tracking'&&h(TrackingView,{store:store,initialPatientId:healthPatient,initialTab:trackTab,
+        view==='tracking'&&h(TrackingView,{store:store,initialPatientId:healthPatient,initialTab:trackTab,onAppointment:function(a){ssa(a);sm('view-apt');},
           initialAppointmentId:aptForTracking&&aptForTracking.id,
           onRecords:function(){setHealthTab('labs');sv('health');},
           onOpenPending:function(item){
