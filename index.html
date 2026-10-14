@@ -1872,6 +1872,415 @@ input,textarea,select{accent-color:var(--accent)}
   .med1820-service-card:hover,.med1820-btn-main:hover,.med1820-btn-light:hover{transform:none}
 }
 
+
+/* ================================================================
+   RODME HEALTH · UNIFIED WIX 1820 CLINIC DESIGN SYSTEM
+   Authoritative shared design across EVERY screen, not only Home.
+   Older component rules remain for compatibility but cannot change
+   these visible surfaces, palette, typography and interaction states.
+   ================================================================ */
+:root{
+  --med1820-ink:#173A50;
+  --med1820-muted:#607D8C;
+  --med1820-blue:#008EAA;
+  --med1820-tint:#E5F6F9;
+  --med1820-border:#D8E9EE;
+  --med1820-canvas:#F5F9FB;
+  --med1820-card:#FFFFFF;
+  --med1820-shadow:0 5px 28px rgba(18,77,102,.055);
+}
+[data-theme=dark]{
+  --med1820-ink:#EFFAFF;
+  --med1820-muted:#B7D1DD;
+  --med1820-blue:#6BDFEB;
+  --med1820-tint:#1C4653;
+  --med1820-border:#365664;
+  --med1820-canvas:#101F29;
+  --med1820-card:#19303C;
+  --med1820-shadow:0 8px 30px rgba(0,0,0,.12);
+}
+body,.main-content{background:var(--bg);color:var(--text)}
+body,button,input,select,textarea{font-family:var(--font)}
+h1,h2,h3,.ph-title,.sheet-title{font-family:var(--serif);letter-spacing:-.04em}
+.med1820-interior{
+  padding:clamp(17px,3.2vw,48px) clamp(15px,3.4vw,54px) 88px!important;
+  margin:0 auto!important;max-width:1510px!important;
+  width:100%;min-height:calc(100vh - 83px);
+}
+.rh-wix-home-layout .med1820-interior{
+  padding:clamp(17px,3.2vw,48px) clamp(15px,3.4vw,54px) 88px!important;
+  margin:0 auto!important;max-width:1510px!important;width:100%;
+}
+.med1820-interior>:first-child{max-width:1210px;margin:0 auto}
+.med1820-interior .ph,
+.med1820-interior .rh-calendar-toolbar,
+.med1820-interior .rh-center-header,
+.med1820-interior .rh-track-head{
+  padding:0 0 21px;margin:0 0 24px;
+  border-bottom:1px solid var(--med1820-border);
+  display:flex;align-items:center;justify-content:space-between;
+  gap:15px;flex-wrap:wrap;min-height:75px;
+}
+.med1820-interior .ph-sub,
+.med1820-interior .rh-center-kicker,
+.med1820-interior .sheet-sub{
+  font-family:var(--font);font-size:.67rem;line-height:1.5;
+  color:var(--accent);font-weight:800;letter-spacing:.12em;text-transform:uppercase;
+  margin-bottom:7px;
+}
+.med1820-interior .ph-title,
+.med1820-interior .rh-calendar-toolbar h1,
+.med1820-interior .rh-center-header h1,
+.med1820-interior .rh-track-head h1{
+  font-family:var(--serif);font-size:clamp(1.85rem,3.1vw,2.65rem);
+  line-height:1.13;color:var(--text);font-weight:800;letter-spacing:-.052em;margin:0;
+}
+.med1820-interior .rh-center-header,
+.med1820-interior .rh-track-head{padding-bottom:22px}
+.med1820-interior .rh-calendar-toolbar>div:first-child>span{color:var(--text2);font-size:.78rem}
+.med1820-interior .rh-center-header button,
+.med1820-interior .rh-track-head button{flex-shrink:0}
+/* Common button/field system */
+.med1820-interior .btn,
+.med1820-interior .btn-primary,
+.med1820-interior .btn-outline,
+.med1820-interior .rh-mini-btn,
+.med1820-interior .rh-mini-primary,
+.med1820-interior .rh-backup-main,
+.med1820-interior .rh-center-save,
+.med1820-interior .rh-track-actions button,
+.med1820-interior .rh-center-item-actions button{
+  border-radius:9px!important;font-family:var(--font);min-height:43px;
+  font-size:.78rem;font-weight:800;letter-spacing:-.01em;cursor:pointer;
+}
+.med1820-interior .btn-primary,
+.med1820-interior .rh-mini-primary,
+.med1820-interior .rh-backup-main,
+.med1820-interior .rh-center-save,
+.med1820-interior .rh-patient-history,
+.med1820-interior .rh-backup-tabs button.active{
+  background:var(--accent)!important;color:#fff!important;
+  border:1px solid var(--accent)!important;
+  box-shadow:0 7px 18px rgba(0,142,170,.095);
+}
+.med1820-interior .rh-patient-history:hover,
+.med1820-interior .btn-primary:hover,
+.med1820-interior .rh-mini-primary:hover{
+  filter:brightness(.93)
+}
+.med1820-interior .btn-outline,
+.med1820-interior .rh-mini-btn:not(.rh-mini-primary){
+  background:var(--surface);border:1px solid var(--border);
+  color:var(--text);
+}
+.med1820-interior button:disabled{cursor:not-allowed;opacity:.58}
+.med1820-interior input:not([type=checkbox]):not([type=radio]):not([type=range]),
+.med1820-interior select,.med1820-interior textarea,
+.med1820-sheet input:not([type=checkbox]):not([type=radio]):not([type=range]),
+.med1820-sheet select,.med1820-sheet textarea{
+  border:1px solid var(--med1820-border);
+  color:var(--text);background:var(--surface);
+  border-radius:9px;min-height:45px;box-shadow:none;
+}
+.med1820-interior input:focus,.med1820-interior select:focus,.med1820-interior textarea:focus,
+.med1820-sheet input:focus,.med1820-sheet select:focus,.med1820-sheet textarea:focus{
+  border-color:var(--accent)!important;
+  outline:2px solid rgba(0,142,170,.19)!important;
+}
+.med1820-interior input::placeholder,
+.med1820-sheet input::placeholder,
+.med1820-sheet textarea::placeholder{color:var(--text3);opacity:1}
+.med1820-interior label,.med1820-sheet label{color:var(--text2)}
+.med1820-interior label>span,.med1820-sheet label>span{letter-spacing:0}
+.med1820-interior .chip,.med1820-sheet .chip{border-radius:7px;font-size:.67rem;padding:5px 8px;font-weight:800}
+.med1820-interior .chip-green{background:var(--green-bg);color:var(--green);border-color:var(--green-border)}
+.med1820-interior .chip-amber{color:var(--text);border-color:var(--border)}
+.med1820-interior .chip-gray{color:var(--text2);background:var(--surface2)}
+/* Family cards and medicine cards */
+.med1820-interior .pt-card,
+.med1820-interior .med-card,
+.med1820-interior .apt-row,
+.med1820-interior .card,
+.med1820-interior .card-flat{
+  border:1px solid var(--med1820-border);
+  background:var(--surface);border-radius:13px!important;
+  box-shadow:var(--med1820-shadow);
+}
+.med1820-interior .pt-card{padding:17px 19px;margin-bottom:12px;min-height:85px}
+.med1820-interior .pt-card:hover,
+.med1820-interior .med-card:hover,
+.med1820-interior .apt-row:hover{border-color:var(--accent2);box-shadow:0 10px 24px rgba(18,77,102,.095)}
+.med1820-interior .av{background:var(--accent-bg);color:var(--accent);box-shadow:none;border:0}
+.med1820-interior .pt-card .av{border-radius:12px}
+.med1820-interior .pt-card .rh-patient-history{padding:9px 13px}
+.med1820-interior .srch{margin-bottom:19px!important}
+.med1820-interior .srch input{padding-left:42px;background:var(--surface);border:1px solid var(--border)}
+.med1820-interior .srch-ico{left:15px}
+.med1820-interior .med-card{padding:20px 22px;margin-bottom:12px}
+.med1820-interior .rh-med-top>div strong{font-size:.95rem}
+.med1820-interior .rh-dose-btn{background:var(--accent-bg);border-color:var(--border);color:var(--accent);border-radius:9px;min-height:42px}
+.med1820-interior .rh-med-expanded{border-top:1px solid var(--border)}
+.med1820-interior .rh-dose-line button,
+.med1820-interior .rh-mini-btn:not(.rh-mini-primary){color:var(--text2)}
+.med1820-interior .rh-med-schedule,
+.med1820-interior .rh-med-inventory{
+  background:var(--surface2);border:1px solid var(--border);border-radius:10px
+}
+/* Profile: clinic record cards and neutral vital panels */
+.med1820-interior .rh-profile{max-width:1180px}
+.med1820-interior .rh-profile-back{margin-bottom:17px}
+.med1820-interior .rh-profile-back button{color:var(--accent);font-weight:800;min-height:40px}
+.med1820-interior .rh-profile-hero{
+  background:linear-gradient(105deg,var(--accent-bg),var(--surface) 72%);
+  border:1px solid var(--border);border-radius:16px;padding:28px;box-shadow:var(--med1820-shadow);
+}
+.med1820-interior .rh-profile-photo{border-radius:14px;background:var(--surface);border:2px solid var(--surface)}
+.med1820-interior .rh-profile-info>span{color:var(--accent);letter-spacing:.12em;font-weight:800}
+.med1820-interior .rh-profile-info h1{
+  font-family:var(--serif);font-size:clamp(1.9rem,3.7vw,2.85rem);
+  font-weight:800;letter-spacing:-.055em;color:var(--text)
+}
+.med1820-interior .rh-profile-counts{
+  background:var(--surface);border:1px solid var(--border);border-radius:13px;margin:14px 0;
+  box-shadow:var(--med1820-shadow)
+}
+.med1820-interior .rh-profile-counts strong{font-family:var(--serif);font-weight:800;color:var(--accent)}
+.med1820-interior .rh-profile-panel{
+  border:1px solid var(--border);border-radius:13px;background:var(--surface);
+  box-shadow:var(--med1820-shadow);padding:25px
+}
+.med1820-interior .rh-profile-panel-head h2,
+.med1820-interior .rh-health-key-info h2,
+.med1820-interior .rh-profile-timeline h2{
+  font-family:var(--serif);font-weight:800;
+  font-size:1.36rem;color:var(--text);letter-spacing:-.04em
+}
+.med1820-interior .rh-profile-panel-head button{color:var(--accent);font-weight:800;min-height:40px}
+.med1820-interior .rh-profile-next{background:var(--surface2);border:1px solid var(--border);border-radius:10px}
+.med1820-interior .rh-profile-next:hover{border-color:var(--accent)}
+.med1820-interior .rh-profile-med{border-color:var(--border)}
+.med1820-interior .rh-health-key-cell{border-radius:11px;background:var(--surface2);border:1px solid var(--border)}
+.med1820-interior .rh-health-key-cell strong{color:var(--text)}
+.med1820-interior .rh-timeline-rail>span{background:var(--accent)}
+.med1820-interior .rh-timeline-item button{color:var(--accent);font-weight:800}
+/* Calendar: aligned with service cards and forms */
+.med1820-interior .rh-calendar-area{max-width:1200px}
+.med1820-interior .rh-calendar-toolbar-actions{align-items:center}
+.med1820-interior .rh-calendar-mode,
+.med1820-interior .tab-group,
+.med1820-interior .rh-center-tabs,
+.med1820-interior .rh-track-tabs{background:transparent}
+.med1820-interior .rh-calendar-mode{border:1px solid var(--border);padding:4px;border-radius:10px}
+.med1820-interior .rh-calendar-mode button{border-radius:8px;font-weight:800}
+.med1820-interior .rh-calendar-mode button.active{background:var(--accent);color:#fff}
+.med1820-interior .rh-calendar-shell{background:var(--surface);border:1px solid var(--border);border-radius:14px;box-shadow:var(--med1820-shadow)}
+.med1820-interior .rh-calendar-switcher{padding:17px 22px}
+.med1820-interior .rh-calendar-switcher strong{font-family:var(--font);font-size:.95rem}
+.med1820-interior .rh-calendar-switcher>button{border-radius:9px;background:var(--surface2);color:var(--text)}
+.med1820-interior .rh-calendar-switcher .rh-calendar-today{border-radius:9px}
+.med1820-interior .rh-calendar-weekday{background:var(--accent-bg);color:var(--accent);border-bottom-color:var(--border)}
+.med1820-interior .rh-calendar-cell{border-color:var(--border);background:var(--surface)}
+.med1820-interior .rh-calendar-cell.is-outside{background:var(--surface2)}
+.med1820-interior .rh-calendar-cell.is-today .rh-calendar-day{background:var(--accent);color:#fff}
+.med1820-interior .rh-calendar-event{background:var(--accent-bg);border-left:3px solid var(--accent);border-radius:6px;color:var(--text)}
+.med1820-interior .rh-calendar-event small{color:var(--text2)}
+.med1820-interior .rh-cal-hint{border-top:1px solid var(--border)}
+.med1820-interior .tab-btn.on{color:var(--accent);background:var(--accent-bg);border-radius:7px}
+/* Clinic-style health center, results, charting and pending tasks */
+.med1820-interior .rh-center,.med1820-interior .rh-tracking{max-width:1190px}
+.med1820-interior .rh-center-tabs button,
+.med1820-interior .rh-track-tabs button{
+  border-radius:9px;background:var(--surface);color:var(--text2);
+  border:1px solid var(--border);font-weight:800;min-height:45px
+}
+.med1820-interior .rh-center-tabs button.active,
+.med1820-interior .rh-track-tabs button.active{
+  background:var(--accent);color:#fff;border-color:var(--accent)
+}
+.med1820-interior .rh-center-toolbar,
+.med1820-interior .rh-center-item,
+.med1820-interior .rh-track-item,
+.med1820-interior .rh-track-trends,
+.med1820-interior .rh-center-empty,
+.med1820-interior .rh-track-empty{
+  border:1px solid var(--border);border-radius:13px;background:var(--surface);
+  box-shadow:var(--med1820-shadow);
+}
+.med1820-interior .rh-center-toolbar{padding:20px;gap:15px}
+.med1820-interior .rh-center-toolbar label,
+.med1820-interior .rh-center-field,
+.med1820-interior .rh-track-patient,
+.med1820-interior .rh-track-field{color:var(--text2);font-weight:800}
+.med1820-interior .rh-center-item,
+.med1820-interior .rh-track-item{padding:22px}
+.med1820-interior .rh-center-item-head h2{font-family:var(--serif);font-size:1.02rem;font-weight:800;color:var(--text)}
+.med1820-interior .rh-center-pill,
+.med1820-interior .rh-center-patient{background:var(--accent-bg);color:var(--accent);border-radius:6px}
+.med1820-interior .rh-center-patient{background:transparent}
+.med1820-interior .rh-center-result,
+.med1820-interior .rh-med-inventory,
+.med1820-interior .rh-track-link{background:var(--accent-bg);border-radius:10px}
+.med1820-interior .rh-center-result strong{font-family:var(--serif);font-weight:800;color:var(--text)}
+.med1820-interior .rh-track-trends{padding:22px}
+.med1820-interior .rh-track-trends label{color:var(--text2)}
+.med1820-interior .rh-track-item-top span{color:var(--accent)}
+.med1820-interior .rh-track-actions button,
+.med1820-interior .rh-center-item-actions button{background:var(--surface2);border-color:var(--border);color:var(--text2)}
+.med1820-interior .rh-center-save{background:var(--accent)}
+.med1820-interior .rh-center-footnote{color:var(--text2)}
+.med1820-interior .rh-center-related-link,
+.med1820-interior .rh-track-related{background:var(--accent-bg);border-color:var(--border);color:var(--accent)}
+/* Settings and backup panels: same cards, no legacy olive styling */
+.med1820-interior .rh-local-settings{max-width:1120px}
+.med1820-interior .rh-settings-grid{gap:17px}
+.med1820-interior .rh-settings-section,
+.med1820-interior .rh-backup-panel,
+.med1820-interior .rh-install-panel,
+.med1820-interior .rh-local-reminders,
+.med1820-interior .rh-record-context{
+  border:1px solid var(--border);border-radius:13px;background:var(--surface);
+  box-shadow:var(--med1820-shadow);padding:24px
+}
+.med1820-interior .rh-settings-section h2,
+.med1820-interior .rh-backup-title h2,
+.med1820-interior .rh-install-panel h2,
+.med1820-interior .rh-local-reminders h2{
+  font-family:var(--serif);font-size:1.3rem;font-weight:800;letter-spacing:-.042em;color:var(--text)
+}
+.med1820-interior .rh-record-context{padding:17px 20px;background:var(--accent-bg);box-shadow:none}
+.med1820-interior .rh-record-context select{background:var(--surface)}
+.med1820-interior .rh-backup-tabs button{border-radius:8px!important}
+.med1820-interior .rh-backup-panel input,
+.med1820-interior .rh-install-panel input{background:var(--surface)}
+.med1820-interior .rh-backup-title svg{color:var(--accent)}
+.med1820-interior .rh-settings-section>.rh-setting-field{margin-top:3px}
+.med1820-interior .rh-sett-notes{color:var(--text2)}
+/* Expeditious clinical record components */
+.med1820-interior .bt-btn{
+  border-radius:9px;border:1px solid var(--border);background:var(--surface);
+  color:var(--text);min-height:46px;font-weight:800
+}
+.med1820-interior .bt-btn.on,.med1820-interior .bt-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.med1820-interior .card-flat>div:first-child{border-color:var(--border)}
+.med1820-interior .rh-health-key-info{padding:22px}
+.med1820-interior .rh-patient-track-actions .rh-mini-btn{min-height:45px}
+/* All input sheets, appointment details, inline errors and private import */
+.med1820-sheet,.sheet,
+.rh-import-panel{
+  background:var(--surface);color:var(--text);
+  border:1px solid var(--border);
+  border-radius:17px;box-shadow:0 25px 78px rgba(12,44,59,.2)
+}
+.med1820-sheet .sheet-grip{background:var(--border)}
+.med1820-sheet .sheet-hd{background:var(--surface);padding:22px 26px 17px;border-bottom:1px solid var(--border)}
+.med1820-sheet .sheet-bd{padding:23px 26px 27px;gap:14px}
+.med1820-sheet .sheet-title,.rh-import-top h2{font-family:var(--serif);font-weight:800;letter-spacing:-.04em;color:var(--text);font-size:1.3rem}
+.med1820-sheet .sheet-sub{font-weight:800;font-size:.65rem;color:var(--accent);letter-spacing:.12em}
+.med1820-sheet .btn-icon,.rh-import-x{background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:9px;min-height:38px;min-width:38px}
+.med1820-sheet .btn-primary,.rh-import-confirm{
+  background:var(--accent);color:#fff;border:1px solid var(--accent);
+  border-radius:9px;min-height:44px
+}
+.med1820-sheet .tab-btn{border-radius:8px;min-height:42px}
+.med1820-sheet .tab-btn.on{background:var(--accent-bg);color:var(--accent)}
+.med1820-sheet .rh-prep-edit,.med1820-sheet .rh-detail-prep,
+.med1820-sheet .rh-detail-followups,.med1820-sheet .rh-med-extra-settings{
+  background:var(--surface2);border:1px solid var(--border);border-radius:11px
+}
+.med1820-sheet .rh-prep-edit h3,.med1820-sheet .rh-detail-prep h3,.med1820-sheet .rh-detail-followups h3{font-family:var(--serif);font-weight:800;font-size:1.15rem}
+.med1820-sheet .rh-ics-button{border-color:var(--accent);background:var(--accent-bg);color:var(--accent);border-radius:9px}
+.med1820-sheet .rh-appointment-status-actions button{border-radius:8px}
+.med1820-sheet .rh-appointment-status-actions button.active{background:var(--accent);color:#fff}
+.med1820-sheet .rh-prep-add button{background:var(--accent);border-radius:9px}
+.med1820-sheet .rh-center-save{background:var(--accent);border-radius:9px}
+.med1820-sheet .rh-track-form,.med1820-sheet .rh-center-form{gap:17px}
+.med1820-sheet .rh-track-link{background:var(--accent-bg)}
+.rh-import-overlay{background:rgba(15,42,57,.65)}
+.rh-import-panel{border-radius:17px;padding:25px}
+.rh-import-item,.rh-import-entry{background:var(--surface2);border-radius:10px}
+.rh-import-confirm{background:var(--accent)!important}
+.rh-import-cancel{border-radius:9px!important}
+/* Sidebar, floating quick access and bottom tabs unified */
+.mobile-header,.rh-wix-home-layout .mobile-header,
+.bottom-nav,.sidebar{
+  background:var(--surface);color:var(--text);border-color:var(--border)
+}
+.sidebar .nav-item.active,.sidebar .nav-item:hover{background:var(--accent-bg);color:var(--accent)}
+.sidebar .sidebar-logo{border-color:var(--border)}
+.sidebar .logo-mark{background:var(--accent);border-radius:9px}
+.bottom-nav .bn-btn.active{color:var(--accent);background:var(--accent-bg)}
+.rh-quick-toggle{
+  background:var(--accent)!important;color:#fff;border-radius:10px!important;
+  box-shadow:0 6px 19px rgba(0,142,170,.19)!important
+}
+.rh-quick-menu{border:1px solid var(--border);border-radius:12px;background:var(--surface)}
+.rh-quick-menu button{color:var(--text)}
+/* All former serif/rounded olive UI overrides are visually superseded here. */
+.page-content.med1820-interior .rh-profile-panel h2,
+.page-content.med1820-interior .rh-calendar-toolbar h1,
+.page-content.med1820-interior .rh-track-head h1,
+.page-content.med1820-interior .rh-center-header h1,
+.page-content.med1820-interior .rh-setting-card h2{
+  font-family:var(--serif);font-weight:800;
+}
+.med1820-interior .empty{background:var(--surface);border:1px dashed var(--border);border-radius:12px;padding:36px 20px}
+.med1820-interior .empty-ico{background:var(--accent-bg);color:var(--accent)}
+.med1820-interior .rh-no-patient{background:var(--accent-bg);color:var(--text2)}
+@media(min-width:1400px){
+  .med1820-interior{padding-top:47px!important}
+  .med1820-interior .rh-center,.med1820-interior .rh-tracking{max-width:1250px}
+}
+@media(max-width:1000px){
+  .med1820-interior{padding:24px 22px 105px!important}
+  .rh-wix-home-layout .med1820-interior{padding:24px 22px 105px!important}
+  .med1820-interior .rh-settings-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .med1820-interior .rh-profile-panel{padding:19px}
+}
+@media(max-width:768px){
+  .med1820-interior{padding:19px 13px 124px!important;min-height:calc(100vh - 65px)}
+  .rh-wix-home-layout .med1820-interior{padding:19px 13px 124px!important}
+  .med1820-interior .ph,
+  .med1820-interior .rh-calendar-toolbar,
+  .med1820-interior .rh-center-header,
+  .med1820-interior .rh-track-head{gap:13px;min-height:0;padding-bottom:17px;margin-bottom:20px}
+  .med1820-interior .ph-title,
+  .med1820-interior .rh-calendar-toolbar h1,
+  .med1820-interior .rh-center-header h1,
+  .med1820-interior .rh-track-head h1{font-size:clamp(1.55rem,6vw,2.1rem)}
+  .med1820-interior .rh-calendar-toolbar-actions{width:100%}
+  .med1820-interior .rh-calendar-toolbar-actions button{flex:1;min-height:44px}
+  .med1820-interior .rh-center-header>button,.med1820-interior .rh-track-head>button{min-height:44px}
+  .med1820-interior .rh-settings-grid{grid-template-columns:1fr}
+  .med1820-interior .rh-settings-section,
+  .med1820-interior .rh-backup-panel,
+  .med1820-interior .rh-install-panel,
+  .med1820-interior .rh-local-reminders{padding:19px}
+  .med1820-interior .rh-profile-hero{padding:19px}
+  .med1820-interior .rh-profile-panel{padding:17px}
+  .med1820-interior .rh-profile-counts strong{font-size:1.8rem}
+  .med1820-sheet{border-radius:16px 16px 0 0}
+  .med1820-sheet .sheet-hd{padding:18px 19px 15px}
+  .med1820-sheet .sheet-bd{padding:19px 18px 28px}
+  .med1820-interior .rh-calendar-cell{min-height:72px}
+  .med1820-interior .rh-center-records,.med1820-interior .rh-track-list{grid-template-columns:1fr}
+  .med1820-interior .rh-quick-menu button{min-height:45px}
+  .bottom-nav{border-radius:0;box-shadow:0 -5px 25px rgba(17,77,102,.07)}
+}
+@media(max-width:440px){
+  .med1820-interior{padding-left:12px!important;padding-right:12px!important}
+  .med1820-interior .rh-calendar-switcher{padding:10px}
+  .med1820-interior .rh-calendar-cell{min-height:62px}
+  .med1820-interior .rh-calendar-day{width:25px;height:25px;font-size:.68rem}
+  .med1820-interior .rh-calendar-event{font-size:.55rem;padding:3px 2px}
+  .med1820-interior .rh-center-tabs button{font-size:.67rem;gap:5px}
+  .med1820-interior .rh-center-tabs button svg{width:13px;height:13px}
+}
+@media(prefers-reduced-motion:reduce){
+  .med1820-interior button,.med1820-interior .pt-card,.med1820-interior .med-card{
+    transition:none!important;animation:none!important
+  }
+}
+
 </style>
 </head>
 <body>
