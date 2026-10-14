@@ -313,6 +313,7 @@ function PatientProfile(p){
   var user=p.user;
   var medical=pt?rhReadRecord(user,pt.id,store.patients):{};
   var countState=useState(15),limit=countState[0],setLimit=countState[1];
+  var tabState=useState('summary'),profileTab=tabState[0],setProfileTab=tabState[1];
   if(!pt)return h('div',{className:'rh-profile-empty'},'Selecciona un paciente.');
   var apts=store.appointments.filter(function(a){return a.patientId===pt.id;});
   var meds=store.medications.filter(function(m){return m.patientId===pt.id;});
@@ -355,7 +356,14 @@ function PatientProfile(p){
         return h('div',{key:i},h('strong',null,x[0]),h('span',null,x[1]));
       })
     ),
-    h('section',{className:'rh-profile-panel rh-health-key-info','aria-label':'Información del paciente'},
+    h('nav',{className:'rh-profile-tabbar','aria-label':'Secciones del paciente',role:'tablist'},
+      [['summary','Resumen'],['appointments','Citas'],['medications','Tratamientos'],['history','Historial'],['documents','Documentos']].map(function(item){
+        return h('button',{key:item[0],type:'button',role:'tab','aria-selected':profileTab===item[0],
+          className:'rh-profile-tab'+(profileTab===item[0]?' active':''),
+          onClick:function(){setProfileTab(item[0]);}},item[1]);
+      })
+    ),
+    profileTab==='summary'&&h('section',{className:'rh-profile-panel rh-health-key-info','aria-label':'Información del paciente'},
       h('div',{className:'rh-profile-panel-head'},
         h('h2',null,'Información importante'),
         h('button',{onClick:p.onRecord},'Editar expediente ↗')
@@ -375,12 +383,12 @@ function PatientProfile(p){
       ),
       h('p',{className:'rh-health-record-note'},'Estos datos son los que has anotado. No se verifican con ningún centro médico.')
     ),
-    h('div',{className:'rh-patient-track-actions'},
+    (profileTab==='summary'||profileTab==='history')&&h('div',{className:'rh-patient-track-actions'},
       h('button',{className:'rh-mini-btn rh-mini-primary',onClick:p.onTracking},'Ver signos vitales y síntomas →'),
       h('button',{className:'rh-mini-btn',onClick:p.onEmergency},'Imprimir ficha de emergencia')
     ),
-    h('div',{className:'rh-profile-columns'},
-      h('section',{className:'rh-profile-panel'},
+    (profileTab==='summary'||profileTab==='appointments'||profileTab==='medications')&&h('div',{className:'rh-profile-columns'},
+      (profileTab==='summary'||profileTab==='appointments')&&h('section',{className:'rh-profile-panel'},
         h('div',{className:'rh-profile-panel-head'},h('h2',null,'Próximas citas')),
         next.length?next.slice(0,6).map(function(a){return h('button',{className:'rh-profile-next',key:a.id,onClick:function(){p.onApt(a);}},
           h('span',null,fmtD(a.date)+(a.time?' · '+fmtT(a.time):'')),
@@ -388,7 +396,7 @@ function PatientProfile(p){
           h('small',null,a.clinic||'Sin ubicación')
         );}):h('p',{className:'rh-profile-muted'},'Sin citas próximas.')
       ),
-      h('section',{className:'rh-profile-panel'},
+      (profileTab==='summary'||profileTab==='medications')&&h('section',{className:'rh-profile-panel'},
         h('div',{className:'rh-profile-panel-head'},h('h2',null,'Tratamientos'),
           h('button',{onClick:p.onAddMed},'+ Agregar')),
         meds.length?meds.map(function(m){
@@ -400,7 +408,7 @@ function PatientProfile(p){
         }):h('p',{className:'rh-profile-muted'},'Sin medicamentos.')
       )
     ),
-    h('section',{className:'rh-profile-panel rh-center-profile-summary'},
+    (profileTab==='summary'||profileTab==='documents')&&h('section',{className:'rh-profile-panel rh-center-profile-summary'},
       h('div',{className:'rh-profile-panel-head'},h('h2',null,'Otros registros'),
         h('button',{onClick:p.onHealth},'Ver centro de salud ↗')),
       h('div',{className:'rh-profile-counts'},
@@ -409,7 +417,11 @@ function PatientProfile(p){
         })
       )
     ),
-    h('section',{className:'rh-profile-panel rh-profile-timeline'},
+    profileTab==='documents'&&h('div',{className:'rh-profile-doc-actions'},
+      h('button',{className:'rh-mini-btn rh-mini-primary',onClick:p.onHealth},'Ver laboratorios, vacunas y documentos →'),
+      h('p',null,'Los archivos y resultados están organizados por paciente en Centro de salud.')
+    ),
+    profileTab==='history'&&h('section',{className:'rh-profile-panel rh-profile-timeline'},
       h('div',{className:'rh-profile-panel-head'},h('h2',null,'Historial cronológico')),
       events.length?events.slice(0,limit).map(function(ev){
         return h('div',{className:'rh-timeline-row',key:ev.id},
