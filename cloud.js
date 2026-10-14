@@ -190,6 +190,7 @@
       await c.user.sendEmailVerification();return c.user;
     },
     signIn:async function(email,password){api();return auth.signInWithEmailAndPassword(email.trim(),password);},
+    resetPassword:async function(email){api();if(!email||email.indexOf('@')<1)throw Error('Escribe tu correo para recuperar la contraseña.');await auth.sendPasswordResetEmail(email.trim());},
     sendVerification:async function(){api();if(!auth.currentUser)throw Error('Inicia sesión.');await auth.currentUser.sendEmailVerification();},
     refreshVerification:async function(){
       api();if(!auth.currentUser)throw Error('Inicia sesión.');
