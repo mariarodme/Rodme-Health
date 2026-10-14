@@ -124,6 +124,9 @@ function HomeView(p){
   var treatments=(store.medications||[]).filter(function(m){return !['completed','paused'].includes(m.status);});
   var doses=(store.doseLogs||[]).filter(function(x){return x.status!=='missed'&&rhCalDay(new Date(x.at))===today;});
   var overdue=all.filter(function(x){return rhAppointmentActive(x)&&x.date<today;}).length;
+  var backupLast=lsg(uk(p.user,'last_backup_export'));
+  var backupAge=backupLast?Math.floor((new Date().getTime()-new Date(backupLast).getTime())/86400000):null;
+  var backupDue=backupAge===null||!Number.isFinite(backupAge)||backupAge>=30;
   var labPending=(store.labs||[]).filter(function(x){return x.status!=='reviewed';}).length;
   var shortDate=new Date().toLocaleDateString('es-CR',{day:'numeric',month:'long',year:'numeric'});
   var links=[
@@ -283,6 +286,12 @@ function HomeView(p){
         !pending.length&&h('span',{className:'med1820-pending-empty'},'Sin pendientes registrados.')
       ),
       h('button',{className:'med1820-pending-button',onClick:p.onPending},'Abrir seguimiento →')
+    ),
+    backupDue&&h('section',{className:'rh-backup-reminder','aria-label':'Revisar copia de seguridad'},
+      h(Ic,{n:'shield',s:20,c:'currentColor'}),
+      h('div',null,h('strong',null,backupAge===null?'Crea tu primera copia cifrada':'Es recomendable actualizar tu copia cifrada'),
+        h('p',null,'Los registros no tienen respaldo automático. Guarda periódicamente un archivo privado para poder recuperarlos.')),
+      h('button',{onClick:function(){sv('settings');}},'Crear copia →')
     ),
     h('section',{className:'med1820-trust-strip'},
       h(Ic,{n:'shield',s:20,c:'currentColor'}),
