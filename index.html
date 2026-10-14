@@ -1391,24 +1391,17 @@ var lss=function(k,v){
 var uk=function(u,s){return'rh_'+(u||'x').replace(/[^a-z0-9]/gi,'_').toLowerCase()+'_'+s;};
 
 function useStore(user){
-  var keys={patients:'p',appointments:'a',medications:'m',doseLogs:'d',labs:'labs',vaccines:'vaccines',documents:'docs'};
-  var p=useState(function(){return lsg(uk(user,'p'))||[];}),a=useState(function(){return lsg(uk(user,'a'))||[];});
-  var m=useState(function(){return lsg(uk(user,'m'))||[];}),d=useState(function(){return lsg(uk(user,'d'))||[];});
-  var l=useState(function(){return lsg(uk(user,'labs'))||[];}),v=useState(function(){return lsg(uk(user,'vaccines'))||[];});
-  var docs=useState(function(){return lsg(uk(user,'docs'))||[];});
-  var all=[p,a,m,d,l,v,docs];
-  useEffect(function(){Object.keys(keys).forEach(function(name,i){all[i][1](lsg(uk(user,keys[name]))||[]);});},[user]);
+  var keys={patients:'p',appointments:'a',medications:'m',doseLogs:'d',labs:'labs',vaccines:'vaccines',documents:'docs',vitals:'vitals',symptoms:'symptoms',followups:'followups'};
+  var values=Object.keys(keys).map(function(name){return useState(function(){return lsg(uk(user,keys[name]))||[];});});
+  useEffect(function(){Object.keys(keys).forEach(function(name,i){values[i][1](lsg(uk(user,keys[name]))||[]);});},[user]);
   function setter(state,key){return function(next){state(function(prev){var value=typeof next==='function'?next(prev):next;
     if(lss(uk(user,key),value)===false)return prev;return value;});};}
-  return {
-    patients:p[0],setPatients:setter(p[1],'p'),
-    appointments:a[0],setAppointments:setter(a[1],'a'),
-    medications:m[0],setMedications:setter(m[1],'m'),
-    doseLogs:d[0],setDoseLogs:setter(d[1],'d'),
-    labs:l[0],setLabs:setter(l[1],'labs'),
-    vaccines:v[0],setVaccines:setter(v[1],'vaccines'),
-    documents:docs[0],setDocuments:setter(docs[1],'docs')
-  };
+  var result={};
+  Object.keys(keys).forEach(function(name,i){
+    result[name]=values[i][0];
+    result['set'+name.charAt(0).toUpperCase()+name.slice(1)]=setter(values[i][1],keys[name]);
+  });
+  return result;
 }
 
 function sv2(s,c,sw,ch){return h('svg',{width:s,height:s,fill:'none',stroke:c||'currentColor',strokeWidth:sw||'1.6',viewBox:'0 0 24 24',strokeLinecap:'round',strokeLinejoin:'round'},ch);}
@@ -2081,6 +2074,9 @@ function rhBackupPayload(user){
       labs:lsg(uk(user,'labs'))||[],
       vaccines:lsg(uk(user,'vaccines'))||[],
       docs:lsg(uk(user,'docs'))||[],
+      vitals:lsg(uk(user,'vitals'))||[],
+      symptoms:lsg(uk(user,'symptoms'))||[],
+      followups:lsg(uk(user,'followups'))||[],
       prefs:lsg(uk(user,'prefs'))||{},
       rec:lsg(uk(user,'rec'))||{},
       records:records
@@ -2090,7 +2086,7 @@ function rhBackupPayload(user){
 function rhValidateBackup(data){
   if(!data||data.app!=='rodme-health'||data.version!==1||!data.data||typeof data.data!=='object')throw Error('El archivo no es una copia compatible');
   ['p','a','m','d'].forEach(function(k){if(!Array.isArray(data.data[k])||data.data[k].length>20000)throw Error('Datos inválidos: '+k);});
-  ['labs','vaccines','docs'].forEach(function(k){
+  ['labs','vaccines','docs','vitals','symptoms','followups'].forEach(function(k){
     if(data.data[k]===undefined)data.data[k]=[];
     if(!Array.isArray(data.data[k])||data.data[k].length>5000)throw Error('Registros inválidos: '+k);
   });
@@ -2107,6 +2103,13 @@ function rhValidateBackup(data){
   var medIds=new Set();
   data.data.m.forEach(function(v){if(!v||typeof v.id!=='string'||!v.id||typeof v.name!=='string'||!patientIds.has(v.patientId))throw Error('Medicamento inválido');medIds.add(v.id);});
   data.data.d.forEach(function(v){if(!v||typeof v.id!=='string'||typeof v.at!=='string'||!medIds.has(v.medicationId))throw Error('Registro de dosis inválido');});
+  ['vitals','symptoms','followups'].forEach(function(k){data.data[k].forEach(function(v){
+    if(!v||typeof v.id!=='string'||!v.id||!patientIds.has(v.patientId)||typeof v.date!=='string'||!/^20\d\d-\d\d-\d\d$/.test(v.date))throw Error('Registro de seguimiento inválido: '+k);
+    if(k==='vitals'&&(!['weight','pressure','glucose','oxygen','pulse','temperature'].includes(v.metric)||!Number.isFinite(Number(v.value))||
+      (v.value2!==undefined&&v.value2!==''&&!Number.isFinite(Number(v.value2)))))throw Error('Signos vitales incompatibles');
+    if(k==='symptoms'&&typeof v.title!=='string')throw Error('Síntoma incompatible');
+    if(k==='followups'&&typeof v.title!=='string')throw Error('Pendiente incompatible');
+  });});
   ['labs','vaccines','docs'].forEach(function(k){data.data[k].forEach(function(v){
     if(!v||typeof v.id!=='string'||!v.id||typeof v.title!=='string'||!v.title||
       !patientIds.has(v.patientId)||typeof v.date!=='string')throw Error('Registro inválido: '+k);
@@ -2158,7 +2161,7 @@ function BackupPanel(p){
       var plaintext=await crypto.subtle.decrypt({name:'AES-GCM',iv:iv},key,rhFromB64(envelope.payload));
       var payload=JSON.parse(new TextDecoder().decode(plaintext)),data=rhValidateBackup(payload);data.records=data.records||{};
       if(!window.confirm('La restauración reemplazará los registros de este espacio en este navegador. ¿Ya guardaste una copia de los datos actuales y deseas continuar?')){setStatus('Restauración cancelada; no se cambió ningún dato.');return;}
-      var keys=['p','a','m','d','labs','vaccines','docs','prefs','rec','records'],old={};
+      var keys=['p','a','m','d','labs','vaccines','docs','vitals','symptoms','followups','prefs','rec','records'],old={};
       keys.forEach(function(k){old[k]=localStorage.getItem(uk(p.user,k));});
       try{keys.forEach(function(k){localStorage.setItem(uk(p.user,k),JSON.stringify(data[k]));});}
       catch(e){
@@ -2178,7 +2181,7 @@ function BackupPanel(p){
       h('button',{className:mode==='export'?'active':'',onClick:function(){switchMode('export');}},'Guardar copia'),
       h('button',{className:mode==='import'?'active':'',onClick:function(){switchMode('import');}},'Restaurar copia')
     ),
-    mode==='export'?h('p',{className:'rh-backup-description'},'Descarga un archivo cifrado con pacientes, expedientes, citas, tratamientos, laboratorios, vacunas, documentos y preferencias. La copia no se envía a ningún servidor.')
+    mode==='export'?h('p',{className:'rh-backup-description'},'Descarga un archivo cifrado con pacientes, expedientes, citas, tratamientos, signos vitales, síntomas, seguimientos, laboratorios, vacunas, documentos y preferencias. La copia no se envía a ningún servidor.')
       :h('p',{className:'rh-backup-description'},'Selecciona un archivo .rhbackup generado en Rodme Health. Antes de reemplazar información se solicitará confirmación.'),
     mode==='import'&&h('label',{className:'rh-backup-field'},h('span',null,'Archivo de copia'),
       h('input',{type:'file',accept:'.rhbackup,application/json',onChange:function(e){setFile(e.target.files&&e.target.files[0]||null);setStatus('');}})),
@@ -2464,7 +2467,7 @@ function SettingsView(p){
   function save(){lss(pk,form);setSavedOk(true);}
   function clearSpace(){
     if(confirm('¿Borrar todos los registros de este espacio en este navegador? Esta acción no se puede deshacer.')){
-      ['p','a','m','d','labs','vaccines','docs','rec','records','prefs','record_patient','notifications','notices_sent'].forEach(function(k){localStorage.removeItem(uk(user,k));});
+      ['p','a','m','d','labs','vaccines','docs','vitals','symptoms','followups','rec','records','prefs','record_patient','notifications','notices_sent'].forEach(function(k){localStorage.removeItem(uk(user,k));});
       location.reload();
     }
   }
@@ -2623,6 +2626,9 @@ function PatientModal(p){
     store.setLabs(function(arr){return arr.filter(function(x){return x.patientId!==patient.id;});});
     store.setVaccines(function(arr){return arr.filter(function(x){return x.patientId!==patient.id;});});
     store.setDocuments(function(arr){return arr.filter(function(x){return x.patientId!==patient.id;});});
+    store.setVitals(function(arr){return arr.filter(function(x){return x.patientId!==patient.id;});});
+    store.setSymptoms(function(arr){return arr.filter(function(x){return x.patientId!==patient.id;});});
+    store.setFollowups(function(arr){return arr.filter(function(x){return x.patientId!==patient.id;});});
     if(p.user){
       var key=uk(p.user,'records'),all=lsg(key)||{};
       if(Object.prototype.hasOwnProperty.call(all,patient.id)){delete all[patient.id];lss(key,all);}
