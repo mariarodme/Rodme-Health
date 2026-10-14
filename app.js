@@ -101,9 +101,11 @@ function Sheet(p){
   var closeRef=useRef(null);
   function requestClose(){
     if(p.dirty&&!window.confirm('Hay cambios sin guardar. ¿Cerrar y descartar esos cambios?'))return;
+    window.__rhSheetExitApproved=true;
     if(p.onClose)p.onClose();
   }
   closeRef.current=requestClose;
+  useEffect(function(){window.__rhSheetDirty=!!p.dirty;},[p.dirty]);
   useEffect(function(){
     var previous=document.activeElement;
     var oldOverflow=document.body.style.overflow;
@@ -120,6 +122,7 @@ function Sheet(p){
     }
     document.addEventListener('keydown',keydown);
     return function(){document.removeEventListener('keydown',keydown);document.body.style.overflow=oldOverflow;
+      window.__rhSheetDirty=false;window.__rhSheetExitApproved=false;
       if(previous&&previous.isConnected&&previous.focus)previous.focus();};
   },[]);
   return h('div',{className:'overlay fi',onClick:function(e){if(e.target===e.currentTarget&&p.onClose)requestClose();}},
@@ -2082,6 +2085,13 @@ function RodmeLocalApp(){
     function onPopState(e){
       var state=e.state;
       if(!state||!state.rhRodmeNavigation||!Number.isInteger(state.step))return;
+      if(window.__rhSheetDirty&&!window.__rhSheetExitApproved){
+        if(!window.confirm('Hay cambios sin guardar. ¿Volver y descartarlos?')){
+          window.history.pushState({rhRodmeNavigation:true,step:routeIndex.current},'');
+          return;
+        }
+      }
+      window.__rhSheetExitApproved=false;
       var next=routeEntries.current[state.step];
       if(!next)return;
       routeIndex.current=state.step;
