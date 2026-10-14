@@ -18,7 +18,7 @@ Aplicación web para organizar información personal de salud familiar. Interfaz
 - PWA instalable con caché de archivos estáticos; avisos locales opcionales únicamente mientras se utiliza la aplicación.
 
 ## Almacenamiento y privacidad
-Los datos de pacientes se guardan mediante `localStorage` **sin cifrar en reposo**. No hay servidor, inicio de sesión, sincronización entre dispositivos, autenticación familiar, permisos de acceso verificables, auditoría segura, respaldo automático remoto ni notificaciones push persistentes. Un tercero con acceso al dispositivo/perfil del navegador podría leer los datos. **No utilizar para datos médicos sensibles en un entorno no confiable ni como expediente clínico oficial.**
+Los datos de pacientes se guardan mediante `localStorage` **sin cifrar en reposo**. El modo predeterminado continúa siendo LOCAL. Se preparó un modo en línea con Firebase Auth y Firestore, pero no funcionará hasta conectar un proyecto Firebase real y publicar las reglas de seguridad. Sin la configuración, no hay sincronización, autenticación familiar, auditoría segura, respaldo automático remoto ni notificaciones push persistentes. Un tercero con acceso al dispositivo/perfil del navegador podría leer los datos. **No utilizar para datos médicos sensibles en un entorno no confiable ni como expediente clínico oficial.**
 
 Las nuevas mediciones, síntomas y tareas de seguimiento se guardan y se eliminan junto con el paciente correspondiente, y se incluyen en los respaldos. Los archivos antiguos de respaldo siguen siendo compatibles.
 
@@ -48,3 +48,30 @@ Antes de utilizar datos médicos reales de familiares o pacientes, implementar u
 - `sw.js`: caché limitada a recursos públicos estáticos, incluidos CSS y JS.
 
 No incluir nunca expedientes ni datos reales de pacientes en el repositorio público.
+
+## Modo familiar en línea (preparado; requiere activación)
+
+**IMPORTANTE: la sincronización todavía no está activa.** Este sitio se aloja públicamente en GitHub Pages. No coloques datos médicos reales en un proyecto Firebase en modo de prueba o con reglas que permitan acceso público.
+
+### Pasos de puesta en marcha
+
+1. Crear un proyecto propio en la consola Firebase; activar Authentication con proveedor Email/Password y Cloud Firestore en modo de reglas privadas.
+2. Publicar el archivo firestore.rules en Firestore Database > Rules. No usar reglas de lectura o escritura pública.
+3. Añadir mariarodme.github.io a Authentication > Settings > Authorized domains.
+4. Registrar una aplicación web en Firebase y copiar SOLAMENTE su configuración web pública (apiKey, authDomain, projectId, appId) al archivo firebase-config.js, sustituyendo el valor null. Nunca publicar credenciales privadas ni un service account.
+5. Verificar las reglas con Firebase Emulator Suite: cuenta no verificada, persona no invitada, lectura solamente, editor, propietaria, acceso revocado y sesión caducada.
+6. Abrir Rodme Health, crear una cuenta, verificar el correo y crear una familia. Desde Configuración se pueden invitar familiares por correo, elegir permiso y copiar el código familiar; cada familiar usa su propia cuenta.
+7. Si se poseen registros anteriores en un navegador, la propietaria puede importarlos a un espacio en línea vacío. Se conserva la copia local anterior. Comprobar primero que los registros hayan llegado a la nube.
+
+### Diseño técnico
+
+- El módulo cloud.js inicializa Firebase solo si está configurado; en caso contrario la web sigue funcionando en modo local y muestra claramente que no sincroniza.
+- Firestore guarda por ID pacientes, citas, medicamentos, dosis, laboratorios, vacunas, documentos con sus adjuntos pequeños, signos vitales, síntomas, pendientes y expedientes individuales. Las preferencias se almacenan en documentos separados.
+- Las personas invitadas usan correo verificado. El propietario invita con rol editor o solo lectura; las reglas de Firestore comprueban el rol en el servidor. Revocar un miembro elimina su autorización de acceso.
+- El cliente escucha cambios en tiempo real. Durante una sesión en línea los registros se mantienen en memoria, no se duplican automáticamente al almacenamiento local; los registros previos del modo local no se borran.
+- Exportar una copia cifrada sigue disponible. Restaurar la copia al espacio remoto está deshabilitado intencionalmente para evitar borrar cambios de otros familiares.
+- El navegador sin conexión bloquea nuevas ediciones, se muestran errores de escritura y se evita afirmar que los cambios han terminado de sincronizarse mientras hay escrituras pendientes.
+
+### Límites y protección de datos
+
+Esta integración NO se ha probado todavía contra un proyecto Firebase real, por falta de conexión y credenciales del propietario. Debe verificarse antes de depender de ella. Dos ediciones simultáneas del mismo registro pueden entrar en conflicto (prevalece la última). Los datos almacenados en Firebase no llevan cifrado extremo a extremo; administradores con permisos sobre el proyecto podrían acceder a ellos. Mantener copias de seguridad verificadas, control de sesiones y accesos, auditoría, consentimiento familiar, política de privacidad y cumplimiento normativo aplicable en Costa Rica. No es un expediente clínico certificado.
