@@ -1388,7 +1388,7 @@ function InstallAppPanel(){
 }
 
 function SettingsView(p){
-  var user=p.user,sv=p.sv,theme=p.theme,setTheme=p.setTheme;
+  var user=p.user,sv=p.sv,theme=p.theme,setTheme=p.setTheme,fontSize=p.fontSize,setFontSize=p.setFontSize;
   var pk=uk(user,'prefs'),saved=lsg(pk)||{};
   var fs=useState(xt({ownerName:'',email:'',phone:'',language:'es',timezone:'America/Costa_Rica'},saved));
   var form=fs[0],sf=fs[1];
@@ -1434,6 +1434,18 @@ function SettingsView(p){
             h('button',{className:'btn '+(theme==='light'?'rh-theme-active':''),onClick:function(){setTheme('light');}},h(Ic,{n:'sun',s:15,c:'currentColor'}),'Claro'),
             h('button',{className:'btn '+(theme==='dark'?'rh-theme-active':''),onClick:function(){setTheme('dark');}},h(Ic,{n:'moon',s:15,c:'currentColor'}),'Oscuro')
           )
+        ),
+        h('div',{className:'rh-setting-field rh-font-setting'},
+          h('span',null,'Tamaño de letra'),
+          h('div',{className:'rh-font-options',role:'group','aria-label':'Seleccionar tamaño de letra'},
+            [['large','Grande'],['xlarge','Muy grande']].map(function(option){
+              return h('button',{key:option[0],type:'button',
+                className:'rh-font-option'+(fontSize===option[0]?' active':''),
+                'aria-pressed':fontSize===option[0],
+                onClick:function(){setFontSize(option[0]);}},option[1]);
+            })
+          ),
+          h('p',{className:'rh-font-setting-help'},'Puedes cambiarlo cuando quieras. Se conserva en este navegador.')
         ),
         h('button',{className:'rh-settings-link',onClick:function(){sv('record');}},
           h(Ic,{n:'file',s:18,c:'var(--accent)'}),'Abrir mi expediente',h('span',null,'→'))
@@ -1928,6 +1940,19 @@ function App(){
   var theme=th[0],setThState=th[1];
   function setTheme(t){setThState(t);localStorage.setItem('rh_theme',t);document.documentElement.setAttribute('data-theme',t);}
   useEffect(function(){document.documentElement.setAttribute('data-theme',theme);},[theme]);
+  // Preferencia tipográfica local, independiente de los expedientes.
+  var fontState=useState(function(){
+    try{return localStorage.getItem('rh_font_size')==='large'?'large':'xlarge';}
+    catch(e){return'xlarge';}
+  });
+  var fontSize=fontState[0],setFontState=fontState[1];
+  function setFontSize(next){
+    var value=next==='large'?'large':'xlarge';
+    setFontState(value);
+    try{localStorage.setItem('rh_font_size',value);}catch(e){}
+    document.documentElement.setAttribute('data-rh-font',value);
+  }
+  useEffect(function(){document.documentElement.setAttribute('data-rh-font',fontSize);},[fontSize]);
 
   // Acceso directo: reutilizar los registros existentes de la última sesión local.
   // No enviar ni verificar identificaciones ante servicios externos.
@@ -2135,7 +2160,7 @@ function App(){
             if(item.kind==='appointment'){ssa(item.source);sm('view-apt');}
             else{setHealthTab(item.kind==='vaccine'?'vaccines':'labs');sv('health');}
           }}),
-        view==='settings'&&h(SettingsView,{store:store,sv:sv,user:user,theme:theme,setTheme:setTheme}),
+        view==='settings'&&h(SettingsView,{store:store,sv:sv,user:user,theme:theme,setTheme:setTheme,fontSize:fontSize,setFontSize:setFontSize}),
         view==='record'&&h(RecordView,{store:store,sv:sv,user:user})
       ),
 
