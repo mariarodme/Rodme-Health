@@ -654,7 +654,7 @@ function LegacyApptsList(p){
 function MedsView(p){
   var store=p.store,sm=p.sm,ssm=p.ssm;
   var fstate=useState('all'),filter=fstate[0],setFilter=fstate[1];
-  var displayed=store.medications.filter(function(m){return filter==='all'||m.status===(filter==='active'?'active':filter==='paused'?'paused':'completed');});
+  var displayed=store.medications.filter(function(m){return filter==='all'||(m.status||'active')===(filter==='active'?'active':filter==='paused'?'paused':'completed');});
   var grouped={};
   displayed.forEach(function(m){if(!grouped[m.patientId])grouped[m.patientId]=[];grouped[m.patientId].push(m);});
   return h('div',null,
@@ -714,8 +714,10 @@ function MedCard(p){
   }
   return h('div',{className:'med-card',onClick:function(){setExpanded(!exp);}},
     h('div',{className:'rh-med-top'},
-      h('div',null,h('strong',null,med.name),
-        h('p',null,(med.dosage||'')+(med.frequency?' · '+med.frequency:''))),
+      h('div',{className:'rh-board-med-card-heading'},
+        h('span',{className:'rh-board-med-pill-icon'},h(Ic,{n:'pill',s:19,c:'currentColor'})),
+        h('div',null,h('strong',null,med.name),
+          h('p',null,[med.dosage,med.frequency].filter(Boolean).join(' · ')))),
       h('span',{className:'chip '+(med.status==='completed'?'chip-gray':med.status==='paused'?'chip-amber':'chip-green')},
         med.status==='completed'?'Finalizado':med.status==='paused'?'Pausado':'Activo')
     ),
