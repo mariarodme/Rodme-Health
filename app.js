@@ -2065,7 +2065,11 @@ function RodmeLocalApp(){
   }
   function sm(nextModal){
     if(nextModal===null){
-      if(routeRef.current.modal!==null)goBack();
+      // Si el formulario ya se guardó, no pedir nuevamente descartar cambios.
+      if(routeRef.current.modal!==null){
+        window.__rhSheetExitApproved=true;
+        goBack();
+      }
       return;
     }
     pushRoute({view:routeRef.current.view,modal:nextModal});
