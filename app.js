@@ -165,7 +165,29 @@ function HomeView(p){
   var backupAge=backupLast?Math.floor((Date.now()-new Date(backupLast).getTime())/86400000):null;
   var backupDue=backupAge===null||!Number.isFinite(backupAge)||backupAge>=30;
   var prefs=lsg(uk(p.user,'prefs'))||{},firstName=(prefs.ownerName||'').trim().split(/\s+/)[0];
+  // Agenda del día: no supone que una dosis programada se ha administrado.
+  var todayDate=new Date(),todayNice=todayDate.toLocaleDateString('es-CR',{weekday:'long',day:'numeric',month:'long'});
+  var todayApts=upcoming.filter(function(a){return a.date===today;});
+  var dueToday=pending.filter(function(x){return x.date&&x.date<=today;});
+  var doseSlots=[];
+  treatments.forEach(function(m){
+    if(m.startDate&&m.startDate>today)return;
+    if(m.startDate&&Number(m.totalDays)>0){
+      var finalDay=new Date(m.startDate+'T12:00:00');
+      finalDay.setDate(finalDay.getDate()+Number(m.totalDays)-1);
+      if(today>rhCalDay(finalDay))return;
+    }
+    String(m.doseTimes||'').split(',').forEach(function(t){
+      t=t.trim();
+      if(/^([01]\d|2[0-3]):[0-5]\d$/.test(t))
+        doseSlots.push({id:m.id+'_'+t,med:m,time:t});
+    });
+  });
+  doseSlots.sort(function(x,y){return x.time.localeCompare(y.time);});
   function person(id){return patients.find(function(x){return x.id===id;});}
+  function todayDoseCount(id){return (store.doseLogs||[]).filter(function(x){
+    return x.medicationId===id&&x.status!=='missed'&&x.at&&rhCalDay(new Date(x.at))===today;
+  }).length;}
   function openA(a){ssa(a);sm('view-apt');}
   function openP(pt){ssp(pt);sv('patient');}
   var services=[
@@ -191,6 +213,56 @@ function HomeView(p){
       h('div',{className:'rh-board-hero-image','aria-hidden':true},
         h('img',{src:'https://images.pexels.com/photos/8459996/pexels-photo-8459996.jpeg?auto=compress&cs=tinysrgb&w=1300',alt:'',loading:'eager',decoding:'async'}),
         h('span',{className:'rh-board-hero-quote'},'Tu familia,',h('br'),'tu prioridad.')
+      )
+    ),
+    h('section',{className:'rh-today-section','aria-labelledby':'rh-today-title'},
+      h('div',{className:'rh-today-header'},
+        h('div',null,h('span',{className:'rh-board-eyebrow'},'TU AGENDA'),
+          h('h2',{id:'rh-today-title'},'Mi día'),
+          h('p',null,todayNice.charAt(0).toUpperCase()+todayNice.slice(1))),
+        h('button',{className:'rh-today-all',onClick:function(){sv('appointments');}},
+          h(Ic,{n:'calendar',s:18,c:'currentColor'}),'Ver calendario')
+      ),
+      h('div',{className:'rh-today-grid'},
+        h('article',{className:'rh-today-panel'},
+          h('div',{className:'rh-today-panel-title'},h('span',{className:'rh-today-icon'},h(Ic,{n:'calendar',s:19,c:'currentColor'})),
+            h('h3',null,'Citas de hoy'),h('b',null,todayApts.length)),
+          todayApts.length?todayApts.slice(0,3).map(function(ap){
+            return h('button',{key:ap.id,className:'rh-today-entry',onClick:function(){openA(ap);}},
+              h('span',{className:'rh-today-time'},ap.time?fmtT(ap.time):'Sin hora'),
+              h('span',{className:'rh-today-entry-copy'},h('strong',null,ap.reason||ap.specialty||'Cita médica'),
+                h('small',null,(person(ap.patientId)?.name||'Paciente')+(ap.clinic?' · '+ap.clinic:''))),
+              h(Ic,{n:'chevron',s:16,c:'currentColor'}));
+          }):h('p',{className:'rh-today-empty'},'No tienes citas programadas para hoy.'),
+          todayApts.length>3&&h('button',{className:'rh-today-more',onClick:function(){sv('appointments');}},
+            'Ver todas las citas de hoy')
+        ),
+        h('article',{className:'rh-today-panel'},
+          h('div',{className:'rh-today-panel-title'},h('span',{className:'rh-today-icon'},h(Ic,{n:'pill',s:19,c:'currentColor'})),
+            h('h3',null,'Horarios de medicamentos'),h('b',null,doseSlots.length)),
+          doseSlots.length?doseSlots.slice(0,3).map(function(slot){
+            return h('button',{key:slot.id,className:'rh-today-entry',onClick:function(){sv('medications');}},
+              h('span',{className:'rh-today-time'},fmtT(slot.time)),
+              h('span',{className:'rh-today-entry-copy'},h('strong',null,slot.med.name),
+                h('small',null,(person(slot.med.patientId)?.name||'Paciente')+
+                  ' · '+todayDoseCount(slot.med.id)+' dosis registradas hoy')),
+              h(Ic,{n:'chevron',s:16,c:'currentColor'}));
+          }):h('p',{className:'rh-today-empty'},'No hay horarios de medicamentos registrados para hoy.'),
+          doseSlots.length>3&&h('button',{className:'rh-today-more',onClick:function(){sv('medications');}},
+            'Ver todos los horarios'),
+          doseSlots.length>0&&h('p',{className:'rh-today-note'},'Horarios orientativos; cada dosis se confirma en Medicamentos.')
+        ),
+        h('article',{className:'rh-today-panel rh-today-due'},
+          h('div',{className:'rh-today-panel-title'},h('span',{className:'rh-today-icon'},h(Ic,{n:'check',s:19,c:'currentColor'})),
+            h('h3',null,'Pendientes por revisar'),h('b',null,dueToday.length)),
+          dueToday.length?dueToday.slice(0,3).map(function(item){
+            return h('button',{key:item.id,className:'rh-today-entry',onClick:p.onPending},
+              h('span',{className:'rh-today-due-pin'},h(Ic,{n:'clock',s:18,c:'currentColor'})),
+              h('span',{className:'rh-today-entry-copy'},h('strong',null,item.title),h('small',null,item.detail)),
+              h(Ic,{n:'chevron',s:16,c:'currentColor'}));
+          }):h('p',{className:'rh-today-empty'},'No hay pendientes con fecha vencida o para hoy.'),
+          dueToday.length>3&&h('button',{className:'rh-today-more',onClick:p.onPending},'Ver todos los pendientes')
+        )
       )
     ),
     h('section',{className:'rh-board-summary','aria-label':'Resumen de salud familiar'},
