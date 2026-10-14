@@ -3275,3 +3275,267 @@ body{font-size:var(--rh-copy-size)}
     transition:none;transform:none;
   }
 }
+
+
+/* RH v16 · Agenda diaria y fichas médicas coherentes */
+#root .page-content .rh-today-section{
+  width:100%;margin:21px auto 0;
+  border-radius:19px;padding:22px 22px 21px;
+  background:linear-gradient(125deg,var(--surface) 0%,var(--accent-light) 150%);
+  border:1px solid var(--rh-ui-border,var(--border));
+  box-shadow:var(--rh-ui-elevation,var(--shadow));
+}
+#root .page-content .rh-today-header{
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;
+  gap:12px 20px;margin-bottom:20px;
+}
+#root .page-content .rh-today-header h2{
+  font-size:var(--rh-section-title)!important;
+  font-family:var(--serif);color:var(--text);line-height:1.25;
+  letter-spacing:-.045em;margin:3px 0 1px;
+}
+#root .page-content .rh-today-header p{
+  font-size:var(--rh-caption-size)!important;color:var(--text2);
+  line-height:1.5;margin-top:2px;
+}
+#root .page-content .rh-today-all{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  padding:10px 15px;min-height:47px;
+  border:1px solid var(--border);background:var(--surface);
+  color:var(--accent);font-weight:800;border-radius:11px;
+  box-shadow:0 2px 8px rgba(17,68,89,.025);
+}
+#root .page-content .rh-today-all:hover{
+  background:var(--accent-bg);border-color:var(--accent2)
+}
+#root .page-content .rh-today-grid{
+  display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;
+}
+#root .page-content .rh-today-panel{
+  display:flex;flex-direction:column;min-width:0;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:15px;padding:17px 16px 15px;
+}
+#root .page-content .rh-today-panel-title{
+  display:flex;align-items:center;gap:10px;margin-bottom:11px;min-width:0;
+}
+#root .page-content .rh-today-icon{
+  width:39px;height:39px;display:grid;place-items:center;flex:0 0 39px;
+  border-radius:11px;background:var(--accent-bg);color:var(--accent);
+}
+#root .page-content .rh-today-panel-title h3{
+  flex:1;min-width:0;font-size:var(--rh-caption-size)!important;
+  letter-spacing:-.02em;line-height:1.35;font-weight:800;
+}
+#root .page-content .rh-today-panel-title b{
+  display:grid;place-items:center;min-width:31px;height:31px;
+  padding:0 7px;border-radius:9px;background:var(--surface2);
+  color:var(--text);font-size:15px!important;line-height:1;
+  font-variant-numeric:tabular-nums;
+}
+#root .page-content .rh-today-entry{
+  display:flex;align-items:center;gap:9px;
+  width:100%;min-height:64px;padding:11px 3px;
+  text-align:left;background:transparent;border:0;
+  border-bottom:1px solid var(--border);color:var(--text);
+}
+#root .page-content .rh-today-entry:last-of-type{border-bottom:0}
+#root .page-content .rh-today-entry:hover{
+  background:var(--surface2);border-radius:8px;
+}
+#root .page-content .rh-today-entry>svg{flex-shrink:0;color:var(--accent)}
+#root .page-content .rh-today-time{
+  display:flex;align-items:center;justify-content:center;flex:0 0 83px;
+  padding:6px 7px;min-height:36px;border-radius:9px;
+  background:var(--accent-bg);color:var(--accent);
+  font-size:14px!important;font-weight:800;line-height:1.35;
+  text-align:center;white-space:normal;
+}
+#root .page-content .rh-today-due-pin{
+  display:grid;place-items:center;flex:0 0 39px;
+  width:39px;height:39px;border-radius:10px;
+  background:var(--amber-bg);color:var(--amber)
+}
+#root .page-content .rh-today-entry-copy{
+  display:flex;flex-direction:column;flex:1;min-width:0;gap:4px;
+}
+#root .page-content .rh-today-entry-copy strong{
+  font-size:var(--rh-caption-size)!important;
+  color:var(--text);font-weight:800;line-height:1.35;
+  white-space:normal;overflow-wrap:anywhere;
+}
+#root .page-content .rh-today-entry-copy small{
+  font-size:14px!important;
+  color:var(--text2);line-height:1.45;
+  white-space:normal;overflow-wrap:anywhere;
+}
+#root .page-content .rh-today-empty{
+  display:flex;align-items:center;flex:1;
+  min-height:72px;font-size:var(--rh-caption-size)!important;
+  color:var(--text2);line-height:1.52;
+}
+#root .page-content .rh-today-note{
+  font-size:14px!important;color:var(--text2);line-height:1.5;
+  margin-top:auto;padding-top:9px;
+}
+#root .page-content .rh-today-more{
+  padding:12px 2px 3px;margin-top:auto;align-self:start;
+  background:none;border:0;color:var(--accent);font-weight:800;
+  text-align:left;
+}
+#root .page-content .rh-today-more:hover{text-decoration:underline}
+#root .page-content .rh-profile-essentials{
+  width:100%;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;margin:0 0 15px;
+}
+#root .page-content .rh-profile-essential{
+  display:flex;gap:11px;align-items:flex-start;
+  min-width:0;padding:17px 15px;
+  border:1px solid var(--rh-ui-border,var(--border));
+  border-radius:15px;background:var(--surface);
+  box-shadow:0 3px 17px rgba(17,68,89,.03);
+}
+#root .page-content .rh-profile-essential-icon{
+  display:grid;place-items:center;width:42px;height:42px;flex:0 0 42px;
+  color:var(--accent);background:var(--accent-bg);border-radius:12px;
+}
+#root .page-content .rh-profile-essential.rh-profile-allergies .rh-profile-essential-icon{
+  background:var(--amber-bg);color:var(--amber);
+}
+#root .page-content .rh-profile-essential>div{
+  flex:1;display:flex;flex-direction:column;gap:5px;min-width:0;
+}
+#root .page-content .rh-profile-essential small{
+  color:var(--text2);font-size:14px!important;
+  font-weight:700;line-height:1.35;
+}
+#root .page-content .rh-profile-essential strong{
+  font-size:var(--rh-caption-size)!important;
+  font-weight:800;line-height:1.38;overflow-wrap:anywhere;
+}
+#root .page-content .rh-profile-essential>div>span{
+  color:var(--text2);font-size:14px!important;
+  line-height:1.45;overflow-wrap:anywhere;
+}
+#root .page-content .rh-profile-essential button{
+  flex:0 0 auto;align-self:start;
+  min-height:41px;padding:8px 11px;
+  border:1px solid var(--border);
+  border-radius:10px;background:var(--accent-bg);
+  color:var(--accent);font-size:15px!important;font-weight:800;
+}
+#root .page-content .rh-profile-essential button:hover{
+  border-color:var(--accent2);background:var(--surface2)
+}
+#root .page-content .rh-med-highlighted{
+  border-color:var(--accent)!important;
+  box-shadow:0 0 0 3px var(--accent-bg),0 9px 24px rgba(17,68,89,.09);
+  scroll-margin-top:120px;
+}
+#root .page-content .rh-med-day-status{
+  display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-top:14px;
+}
+#root .page-content .rh-med-day-status>span{
+  display:inline-flex;align-items:center;gap:6px;max-width:100%;
+  padding:8px 10px;min-height:35px;
+  font-size:14px!important;line-height:1.35;
+  font-weight:800;border-radius:9px;
+  overflow-wrap:anywhere;
+}
+#root .page-content .rh-med-day-taken{
+  background:var(--green-bg);color:var(--green);
+}
+#root .page-content .rh-med-day-missed{
+  color:var(--red);background:var(--red-bg);
+}
+#root .page-content .rh-med-day-schedule{
+  color:var(--text2);background:var(--surface2);
+}
+#root .sheet .rh-search-filters{
+  display:flex;gap:7px;overflow-x:auto;
+  padding:3px 1px 11px;margin:13px 0 4px;
+  scrollbar-width:thin;
+}
+#root .sheet .rh-search-filters button{
+  flex:0 0 auto;min-height:44px;
+  padding:9px 13px;border-radius:99px;
+  border:1px solid var(--border);background:var(--surface2);
+  color:var(--text);font-size:15px!important;
+  font-weight:750;white-space:nowrap;
+}
+#root .sheet .rh-search-filters button.active{
+  color:white;background:var(--accent);border-color:var(--accent);
+}
+#root .sheet .rh-form-section-label{
+  display:block;margin:18px 0 13px;
+  padding:12px 14px;
+  border-left:4px solid var(--accent);
+  border-radius:0 10px 10px 0;
+  background:var(--accent-bg);color:var(--text);
+  font-size:17px!important;font-weight:800;line-height:1.35;
+}
+#root .sheet .rh-form-section-label:first-of-type{margin-top:3px}
+#root .rh-save-toast{
+  display:flex;align-items:center;gap:11px;
+  position:fixed;right:25px;bottom:26px;z-index:1500;
+  width:max-content;max-width:min(440px,calc(100vw - 30px));
+  padding:12px 13px;border-radius:14px;
+  color:var(--text);background:var(--surface);
+  border:1px solid var(--border);
+  box-shadow:0 14px 46px rgba(9,42,61,.18);
+}
+#root .rh-save-toast .rh-save-toast-icon{
+  display:grid;place-items:center;flex:0 0 35px;
+  width:35px;height:35px;border-radius:11px;
+  background:var(--green-bg);color:var(--green);
+}
+#root .rh-save-toast>span:nth-child(2){
+  font-size:15px!important;font-weight:750;line-height:1.35;
+  overflow-wrap:anywhere;
+}
+#root .rh-save-toast button{
+  margin-left:auto;background:transparent;border:0;
+  color:var(--text2);width:35px;height:35px;flex:0 0 35px;
+  border-radius:9px;display:grid;place-items:center;
+}
+#root .rh-save-toast button:hover{background:var(--surface2)}
+@media(max-width:1120px){
+  #root .page-content .rh-today-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+  #root .page-content .rh-today-due{grid-column:1/-1}
+  #root .page-content .rh-profile-essentials{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #root .page-content .rh-profile-essential:last-child{grid-column:1/-1}
+}
+@media(max-width:768px){
+  #root .page-content .rh-today-section{
+    margin-top:17px;padding:18px 15px;border-radius:16px;
+  }
+  #root .page-content .rh-today-grid{
+    display:flex;flex-direction:column;gap:11px;
+  }
+  #root .page-content .rh-today-panel{padding:16px 14px}
+  #root .page-content .rh-today-all{min-height:47px}
+  #root .page-content .rh-profile-essentials{
+    grid-template-columns:1fr;gap:10px;
+  }
+  #root .page-content .rh-profile-essential:last-child{grid-column:auto}
+  #root .rh-save-toast{
+    bottom:calc(120px + env(safe-area-inset-bottom,0px));
+    left:14px;right:14px;width:auto;max-width:none;padding:11px;
+  }
+}
+@media(max-width:420px){
+  #root .page-content .rh-today-header{align-items:stretch}
+  #root .page-content .rh-today-all{width:100%}
+  #root .page-content .rh-today-time{flex-basis:71px;font-size:13px!important}
+  #root .page-content .rh-today-entry{gap:7px}
+  #root .page-content .rh-today-entry-copy strong{font-size:16px!important}
+  #root .page-content .rh-profile-essential{flex-wrap:wrap}
+  #root .page-content .rh-profile-essential>div{flex:1 1 calc(100% - 55px)}
+  #root .page-content .rh-profile-essential button{margin-left:auto}
+}
+@media(prefers-reduced-motion:reduce){
+  #root .page-content .rh-today-entry,
+  #root .page-content .rh-med-highlighted{transition:none;animation:none}
+}
