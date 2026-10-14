@@ -96,7 +96,9 @@ function Fld(p){return h('div',null,h('label',null,p.label),p.children);}
 function upd(sf,k){return function(e){var v=e.target.value;sf(function(f){var n=xt(f,{});n[k]=v;return n;});};}
 
 // ── SHEET ──────────────────────────────────────────────────────────────────
+var RodmeNavContext=React.createContext(null);
 function Sheet(p){
+  var onGoHome=React.useContext(RodmeNavContext);
   var panel=useRef(null);
   var closeRef=useRef(null);
   function requestClose(){
@@ -130,9 +132,14 @@ function Sheet(p){
       h('div',{className:'sheet-grip'}),
       h('div',{className:'sheet-hd'},
         h('div',{className:'rh-sheet-heading'},
-          h('button',{type:'button',className:'rh-sheet-back',onClick:requestClose,
-            'aria-label':'Volver y cerrar esta ventana'},
-            h(Ic,{n:'back',s:19,c:'currentColor'}),'Volver'),
+          h('div',{className:'rh-sheet-nav-actions'},
+            h('button',{type:'button',className:'rh-sheet-back',onClick:requestClose,
+              'aria-label':'Volver y cerrar esta ventana'},
+              h(Ic,{n:'back',s:19,c:'currentColor'}),'Volver'),
+            onGoHome&&h('button',{type:'button',className:'rh-sheet-home',onClick:onGoHome,
+              'aria-label':'Volver directamente al inicio'},
+              h(Ic,{n:'home',s:19,c:'currentColor'}),'Volver al inicio')
+          ),
           p.sub&&h('div',{className:'sheet-sub'},p.sub),
           h('div',{className:'sheet-title'},p.title)
         ),
@@ -2074,6 +2081,13 @@ function RodmeLocalApp(){
     }
     pushRoute({view:routeRef.current.view,modal:nextModal});
   }
+  function goHome(){
+    if(routeRef.current.view==='home'&&routeRef.current.modal===null)return;
+    if(window.__rhSheetDirty&&!window.__rhSheetExitApproved &&
+       !window.confirm('Hay cambios sin guardar. ¿Volver al inicio y descartarlos?'))return;
+    window.__rhSheetExitApproved=true;
+    sv('home');
+  }
   function goBack(){
     if(routeIndex.current>0){
       if(browserActive.current)window.history.back();
@@ -2240,7 +2254,8 @@ function RodmeLocalApp(){
     );
   }
 
-  return h('div',{className:'app-layout'+(view==='home'?' rh-wix-home-layout':'')},
+  return h(RodmeNavContext.Provider,{value:goHome},
+    h('div',{className:'app-layout'+(view==='home'?' rh-wix-home-layout':'')},
     h('aside',{className:'sidebar'},h(Sidebar)),
     sideOpen&&h('div',{className:'sidebar-overlay show',onClick:function(){setSideOpen(false);},'aria-hidden':true}),
     sideOpen&&h('aside',{className:'sidebar open'},h(Sidebar)),
@@ -2299,8 +2314,8 @@ function RodmeLocalApp(){
               settings:'Configuración',record:'Expediente médico'
             })[view]||'Inicio')
           ),
-          h('button',{type:'button',className:'rh-route-home',onClick:function(){sv('home');},
-            'aria-label':'Ir al inicio'},h(Ic,{n:'home',s:18,c:'currentColor'}),'Inicio')
+          h('button',{type:'button',className:'rh-route-home',onClick:goHome,
+            'aria-label':'Volver directamente al inicio'},h(Ic,{n:'home',s:19,c:'currentColor'}),'Volver al inicio')
         ),
         h('div',{className:'rh-cloud-banner'+(cloudSession?' active':'')},
           h(Ic,{n:cloudSession?'shield':'alert',s:18,c:'currentColor'}),
@@ -2344,8 +2359,13 @@ function RodmeLocalApp(){
       h('section',{className:'rh-import-panel',role:'dialog','aria-modal':true,'aria-label':'Confirmar citas'},
         h('div',{className:'rh-import-top'},
           h('h2',null,'Confirmar citas'),
-          h('button',{className:'rh-import-back',onClick:closeImport,'aria-label':'Volver y cerrar la importación'},
-            h(Ic,{n:'back',s:18,c:'currentColor'}),'Volver')
+          h('div',{className:'rh-import-nav-actions'},
+            h('button',{className:'rh-import-back',onClick:closeImport,'aria-label':'Volver y cerrar la importación'},
+              h(Ic,{n:'back',s:18,c:'currentColor'}),'Volver'),
+            h('button',{type:'button',className:'rh-import-home',onClick:function(){closeImport();goHome();},
+              'aria-label':'Volver al inicio y cerrar la importación'},
+              h(Ic,{n:'home',s:18,c:'currentColor'}),'Volver al inicio')
+          )
         ),
         h('p',{className:'rh-import-help'},'Revisa la información antes de agregarla a tu espacio de salud.'),
         h('div',{className:'rh-import-list'},importItems.map(function(a,i){
@@ -2389,7 +2409,7 @@ function RodmeLocalApp(){
     modal==='view-apt'&&h(AptDetail,{store:store,appt:(store.appointments.find(function(a){return selA&&a.id===selA.id;})||selA),onClose:function(){sm(null);},onEdit:function(){ssa(store.appointments.find(function(a){return selA&&a.id===selA.id;})||selA);sm('edit-apt');},onFollowup:function(){if(selA){openTracking(selA.patientId,'followups',selA);sm(null);}}}),
     modal==='add-med'&&h(MedModal,{store:store,initialPatientId:view==='patient'&&selP?selP.id:null,onClose:function(){sm(null);}}),
     modal==='edit-med'&&h(MedModal,{store:store,med:selM,onClose:function(){sm(null);}})
-  );
+  ));
 }
 
 
