@@ -1760,7 +1760,7 @@ function PatientProfile(p){
   var events=[];
   apts.forEach(function(a){events.push({id:'a'+a.id,at:a.date+(a.time?'T'+a.time:'T12:00'),title:a.reason||a.specialty||(a.doctor?'Consulta con Dr. '+a.doctor:'Cita médica'),
     meta:(a.clinic||'')+(a.time?' · '+fmtT(a.time):''),status:rhAppointmentLabel(a),kind:'apt',apt:a});});
-  doses.forEach(function(d){events.push({id:'d'+d.id,at:d.at,title:'Dosis administrada',meta:medName(d.medicationId),kind:'dose'});});
+  doses.forEach(function(d){events.push({id:'d'+d.id,at:d.at,title:d.status==='missed'?'Dosis omitida':'Dosis administrada',meta:medName(d.medicationId),kind:'dose'});});
   meds.forEach(function(m){if(m.startDate)events.push({id:'m'+m.id,at:m.startDate+'T08:00',title:'Inicio de tratamiento',meta:m.name,kind:'med'});});
   labs.forEach(function(x){events.push({id:'l'+x.id,at:x.date+'T12:00',title:'Laboratorio: '+x.title,meta:x.provider||'',kind:'med'});});
   vaccines.forEach(function(x){events.push({id:'v'+x.id,at:x.date+'T12:00',title:'Vacuna: '+x.title,meta:x.dose||'',kind:'med'});});
@@ -3079,7 +3079,7 @@ function AptDetail(p){
     appt.type==='private'&&appt.amount?IR('money','Monto','CRC '+Number(appt.amount).toLocaleString(),appt.deposit?'Dep: CRC '+Number(appt.deposit).toLocaleString()+' \u00b7 Saldo: CRC '+(Number(appt.amount)-Number(appt.deposit)).toLocaleString():''):null,
     IR('file','Notas',appt.notes),
     rhAppointmentActive(appt)&&dT?IR('bell','Tiempo',dT,null,dc):null,
-    IR('file','Diagnostico',appt.attendedNotes),
+    IR('file','Notas e indicaciones posteriores',appt.attendedNotes),
     appt.attendedDoc&&h('div',{style:{margin:'9px 0 5px'}},h('p',{className:'ir-lbl',style:{marginBottom:5}},'Documento'),h('img',{src:appt.attendedDoc,style:{width:'100%',borderRadius:'var(--r)',maxHeight:160,objectFit:'cover'}})),
     h('div',{className:'rh-detail-prep'},
       h('h3',null,'Preparación'),
@@ -3189,8 +3189,8 @@ function generatePDF(record,store,directPt){
   var followups=(store.followups||[]).filter(function(v){return v.patientId===patient.id;}).map(safeObject);
   patient=safeObject(patient);
   record=safeObject(record);
-  var pen=apts.filter(function(a){return !a.attended;}).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
-  var att=apts.filter(function(a){return a.attended;}).sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+  var pen=apts.filter(rhAppointmentActive).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+  var att=apts.filter(function(a){return rhAppointmentStatus(a)==='completed';}).sort(function(a,b){return new Date(b.date)-new Date(a.date);});
   function row(l,v){if(!v)return'';return '<tr><td style="padding:6px 12px;font-weight:700;color:#6B7280;font-size:11px;text-transform:uppercase;letter-spacing:.05em;width:140px;vertical-align:top;border-bottom:1px solid #F3F4F6">'+l+'</td><td style="padding:6px 12px;color:#111827;font-size:13px;border-bottom:1px solid #F3F4F6">'+v+'</td></tr>';}
   function sec(title,col,rows){if(!rows.trim())return'';return '<div style="margin-bottom:16px"><div style="background:'+col+';border-radius:8px 8px 0 0;padding:8px 14px"><h3 style="color:white;font-size:11px;font-weight:800;margin:0;letter-spacing:.06em;text-transform:uppercase">'+title+'</h3></div><table style="width:100%;border-collapse:collapse;border:1px solid #E5E7EB;border-top:none">'+rows+'</table></div>';}
   function aptC(a){var d=a.date?new Date(a.date+'T00:00:00').toLocaleDateString('es-CR',{day:'2-digit',month:'short',year:'numeric'}):'';var t=a.time?(function(x){var pp=x.split(':'),hr=parseInt(pp[0]);return(hr>12?hr-12:(hr||12))+':'+pp[1]+' '+(hr>=12?'PM':'AM');})(a.time):'';return '<div style="border:1px solid #E5E7EB;border-radius:7px;padding:9px 12px;margin-bottom:6px"><div style="display:flex;justify-content:space-between;margin-bottom:2px"><strong style="font-size:13px">'+(a.doctor?'Dr. '+a.doctor:(a.reason||'Cita médica'))+'</strong><span style="font-size:10px;background:'+(a.attended?'#ECFDF5':'#FFFBEB')+';color:'+(a.attended?'#065F46':'#92400E')+';padding:2px 8px;border-radius:20px;font-weight:700">'+(a.attended?'Asistida':'Pendiente')+'</span></div>'+(a.specialty?'<div style="font-size:11px;color:#C4956A;font-weight:700">'+a.specialty+'</div>':'')+'<div style="font-size:11px;color:#6B7280">'+d+(t?' \u00b7 '+t:'')+(a.clinic?' \u00b7 '+a.clinic:'')+'</div>'+(a.attendedNotes?'<div style="font-size:11px;color:#047857;font-weight:600">Post-cita: '+a.attendedNotes+'</div>':'')+'</div>';}
