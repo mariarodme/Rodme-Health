@@ -23,13 +23,20 @@ var lsg=function(k,d){
   catch(e){return d!==undefined?d:null;}
 };
 var rhStorageWarned=false;
+// Confirmar acciones de edición sin interpretar una escritura en cola como sincronizada.
+function rhSignalWrite(key,cloud){
+  if(!/^(p|a|m|d|labs|vaccines|docs|vitals|symptoms|followups|records)$/.test(String(key).split('_').pop()))return;
+  try{window.setTimeout(function(){
+    window.dispatchEvent(new CustomEvent('rh-write-confirmed',{detail:{cloud:cloud}}));
+  },0);}catch(e){}
+}
 var lss=function(k,v){
   var suffix=rhCloudSuffix(k);
   if(suffix!==null){
-    try{return window.RHCloud.writeKey(suffix,v);}
+    try{var uploaded=window.RHCloud.writeKey(suffix,v);if(uploaded!==false)rhSignalWrite(suffix,true);return uploaded;}
     catch(e){window.alert('No se guardó en línea: '+(e.message||'Comprueba tu conexión.'));return false;}
   }
-  try{localStorage.setItem(k,JSON.stringify(v));return true;}
+  try{localStorage.setItem(k,JSON.stringify(v));rhSignalWrite(k,false);return true;}
   catch(e){if(!rhStorageWarned){rhStorageWarned=true;window.alert('No fue posible guardar los datos en este navegador. Revisa el espacio disponible o la configuración de almacenamiento.');}return false;}
 };
 var uk=function(u,s){return'rh_'+(u||'x').replace(/[^a-z0-9]/gi,'_').toLowerCase()+'_'+s;};
@@ -1805,6 +1812,7 @@ function AptModal(p){
   function loadDoc(e){var f=e.target.files[0];if(!f)return;b64(f).then(function(bv){sf(function(x){return xt(x,{attendedDoc:bv});});});}
   var saldo=(form.amount&&form.deposit&&Number(form.amount)>Number(form.deposit))?(Number(form.amount)-Number(form.deposit)):null;
   return h(Sheet,{title:'Cita médica',sub:appt?'Editar':'Nueva',onClose:onClose,dirty:JSON.stringify(form)!==JSON.stringify(appt?xt(appt,{}):def)},
+    h('p',{className:'rh-form-section-label'},'1 · Datos de la cita'),
     h(Fld,{label:'Paciente'},
       store.patients.length?h('select',{value:form.patientId,onChange:upd(sf,'patientId')},
         store.patients.map(function(pt){return h('option',{key:pt.id,value:pt.id},pt.name);}))
@@ -1816,6 +1824,7 @@ function AptModal(p){
     h(Fld,{label:'Hospital / Clinica'},h('input',{value:form.clinic||'',onChange:upd(sf,'clinic'),placeholder:'Hospital CIMA...'})),
     h(Fld,{label:'Direccion'},h('input',{value:form.address||'',onChange:upd(sf,'address'),placeholder:'Escazu, costado norte...'})),
     h('div',{className:'fg'},h(Fld,{label:'Fecha'},h('input',{type:'date',value:form.date,onChange:upd(sf,'date')})),h(Fld,{label:'Hora'},h('input',{type:'time',value:form.time||'',onChange:upd(sf,'time')}))),
+    h('p',{className:'rh-form-section-label'},'2 · Detalles y estado'),
     h(Fld,{label:'Tipo'},h('div',{className:'tab-group',style:{marginTop:2}},h('button',{className:'tab-btn'+(form.type==='private'?' on':''),onClick:function(){setT('private');}},'Privada'),h('button',{className:'tab-btn'+(form.type==='ccss'?' on':''),onClick:function(){setT('ccss');}},'CCSS'))),
     form.type==='private'&&h('div',{style:{background:'var(--amber-bg)',borderRadius:'var(--r)',padding:'11px 13px',border:'1px solid var(--amber-border)'}},
       h('p',{style:{fontSize:'.67rem',fontWeight:800,color:'var(--amber)',textTransform:'uppercase',letterSpacing:'.07em',marginBottom:9}},'Informacion de pago'),
@@ -1826,6 +1835,7 @@ function AptModal(p){
       [['pending','Pendiente'],['confirmed','Confirmada'],['rescheduled','Reprogramada'],['cancelled','Cancelada'],['completed','Realizada']].map(function(x){return h('option',{key:x[0],value:x[0]},x[1]);})
     )),
     h(Fld,{label:'Notas'},h('textarea',{value:form.notes||'',onChange:upd(sf,'notes'),placeholder:'Traer resultados, ayuno de 8h...',rows:2})),
+    h('p',{className:'rh-form-section-label'},'3 · Preparación y recordatorios'),
     h('section',{className:'rh-prep-edit'},
       h('h3',null,'Preparación de la cita'),
       h(Fld,{label:'Indicaciones importantes'},h('textarea',{rows:2,value:form.prepInstructions||'',onChange:upd(sf,'prepInstructions'),placeholder:'Indicaciones dadas por el hospital o médico'})),
@@ -1953,6 +1963,7 @@ function MedModal(p){
     existing?store.setMedications(function(arr){return arr.map(function(m){return m.id===existing.id?xt(m,form):m;});}):store.setMedications(function(arr){return arr.concat([xt(form,{id:uid()})]);});onClose();}
   function loadImg(e){var f=e.target.files[0];if(!f)return;b64(f).then(function(bv){sf(function(x){return xt(x,{prescriptionImg:bv});});});}
   return h(Sheet,{title:existing?'Editar medicamento':'Nuevo medicamento',sub:'Medicamento',onClose:onClose,dirty:JSON.stringify(form)!==JSON.stringify(existing?xt(existing,{}):def)},
+    h('p',{className:'rh-form-section-label'},'1 · Información del tratamiento'),
     h(Fld,{label:'Paciente'},
       store.patients.length?h('select',{value:form.patientId,onChange:upd(sf,'patientId')},
         store.patients.map(function(pt){return h('option',{key:pt.id,value:pt.id},pt.name);}))
@@ -1963,6 +1974,7 @@ function MedModal(p){
     h('div',{className:'fg'},h(Fld,{label:'Fecha de inicio'},h('input',{type:'date',value:form.startDate||'',onChange:upd(sf,'startDate')})),h(Fld,{label:'Duracion (dias)'},h('input',{type:'number',value:form.totalDays||'',onChange:upd(sf,'totalDays'),placeholder:'30'}))),
     h(Fld,{label:'Tipo'},h('div',{className:'tab-group',style:{marginTop:2}},h('button',{className:'tab-btn'+(form.type==='ccss'?' on':''),onClick:function(){setT('ccss');}},'CCSS'),h('button',{className:'tab-btn'+(form.type==='private'?' on':''),onClick:function(){setT('private');}},'Privado'))),
     h(Fld,{label:'Estado del tratamiento'},h('select',{value:form.status||'active',onChange:upd(sf,'status')},h('option',{value:'active'},'Activo'),h('option',{value:'paused'},'Pausado'),h('option',{value:'completed'},'Finalizado'))),
+    h('p',{className:'rh-form-section-label'},'2 · Horarios y existencias'),
     h('div',{className:'rh-med-extra-settings'},
       h(Fld,{label:'Horarios establecidos (24 h)'},h('input',{value:form.doseTimes||'',placeholder:'08:00, 20:00',onChange:upd(sf,'doseTimes')})),
       h('div',{className:'fg'},
@@ -1971,6 +1983,7 @@ function MedModal(p){
       ),
       h('p',{className:'rh-prep-caption'},'La cantidad es manual: se actualiza al editar el medicamento y no se descuenta automáticamente.')
     ),
+    h('p',{className:'rh-form-section-label'},'3 · Indicaciones y receta'),
     h(Fld,{label:'Instrucciones / Notas'},h('textarea',{value:form.notes||'',onChange:upd(sf,'notes'),placeholder:'Tomar con alimentos...',rows:2})),
     h(Fld,{label:'Foto de receta'},
       h('button',{className:'btn',style:{width:'100%',padding:'10px',borderRadius:'var(--r-full)',background:form.prescriptionImg?'var(--accent-bg)':'var(--surface2)',border:'1.5px dashed '+(form.prescriptionImg?'var(--accent)':'var(--border)'),color:form.prescriptionImg?'var(--accent)':'var(--text2)',fontSize:'.8rem',fontWeight:700,gap:7},onClick:function(){ref.current.click();}},h(Ic,{n:'camera',s:14,c:form.prescriptionImg?'var(--accent)':'var(--text3)'}),form.prescriptionImg?'\u2713 Foto cargada':'Agregar foto de receta'),
@@ -2149,6 +2162,17 @@ function RodmeLocalApp(){
     return function(){window.removeEventListener('rh-cloud-data',redraw);};
   },[]);
   var store=useStore(user);
+  var toastState=useState(''),toast=toastState[0],setToast=toastState[1];
+  useEffect(function(){
+    var timer=null;
+    function onWritten(e){
+      if(timer)window.clearTimeout(timer);
+      setToast(e.detail&&e.detail.cloud?'Cambio registrado · sincronización en curso':'Cambios guardados en este dispositivo');
+      timer=window.setTimeout(function(){setToast('');},2900);
+    }
+    window.addEventListener('rh-write-confirmed',onWritten);
+    return function(){window.removeEventListener('rh-write-confirmed',onWritten);if(timer)window.clearTimeout(timer);};
+  },[]);
   var vs=useState('home');var view=vs[0],setView=vs[1];
   var adt=useState(''),draftDate=adt[0],setDraftDate=adt[1];
   var ms=useState(null);var modal=ms[0],setModal=ms[1];
@@ -2536,6 +2560,11 @@ function RodmeLocalApp(){
         )
       ),
 
+    toast&&h('div',{className:'rh-save-toast',role:'status','aria-live':'polite'},
+      h('span',{className:'rh-save-toast-icon'},h(Ic,{n:'check',s:17,c:'currentColor'})),
+      h('span',null,toast),
+      h('button',{type:'button',onClick:function(){setToast('');},'aria-label':'Cerrar aviso'},h(Ic,{n:'close',s:16,c:'currentColor'}))
+    ),
     searchOpen&&h(GlobalHealthSearch,{store:store,onSelect:selectSearchResult,onClose:function(){setSearchOpen(false);}}),
     // Modals
     modal==='add-patient'&&h(PatientModal,{store:store,user:user,onClose:function(){sm(null);}}),
