@@ -3539,3 +3539,23 @@ body{font-size:var(--rh-copy-size)}
   #root .page-content .rh-today-entry,
   #root .page-content .rh-med-highlighted{transition:none;animation:none}
 }
+
+/* RH status banners v16 */
+#root .page-content .rh-cloud-banner.error{
+  border-left-color:var(--red);
+  background:var(--red-bg);color:var(--text)
+}
+#root .page-content .rh-cloud-banner.error svg{color:var(--red)}
+#root .page-content .rh-cloud-banner.offline{
+  border-left-color:var(--amber);
+  background:var(--amber-bg);color:var(--text)
+}
+#root .page-content .rh-cloud-banner.offline svg{color:var(--amber)}
+#root .page-content .rh-cloud-banner.pending{
+  border-left-color:var(--accent2);
+  background:var(--accent-bg);color:var(--text)
+}
+#root .page-content .rh-cloud-banner.pending svg{color:var(--accent)}
+#root .page-content .rh-cloud-banner.active:not(.error):not(.offline):not(.pending){
+  border-left-color:var(--green)
+}
