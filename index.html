@@ -1267,6 +1267,11 @@ body{background:var(--bg);color:var(--text)}
 outline:3px solid #8AAB8C!important;outline-offset:3px
 }
 @media(max-width:650px){.rh-health-key-grid{grid-template-columns:1fr}.rh-health-key-cell{padding:13px 15px}}
+
+.rh-care-review-notice{width:100%;display:flex;align-items:center;gap:11px;min-height:48px;padding:12px 17px;border:1px solid var(--amber-border);border-radius:12px;background:var(--amber-bg);color:var(--text);cursor:pointer;text-align:left}
+.rh-care-review-notice>span{font-size:.77rem;line-height:1.5;flex:1}
+.rh-care-review-notice strong{font-size:.73rem;color:var(--text);white-space:nowrap}
+@media(max-width:480px){.rh-care-review-notice{flex-wrap:wrap}.rh-care-review-notice strong{margin-left:28px}}
 </style>
 </head>
 <body>
@@ -1350,8 +1355,27 @@ function upd(sf,k){return function(e){var v=e.target.value;sf(function(f){var n=
 
 // ── SHEET ──────────────────────────────────────────────────────────────────
 function Sheet(p){
+  var panel=useRef(null);
+  useEffect(function(){
+    var previous=document.activeElement;
+    var oldOverflow=document.body.style.overflow;
+    document.body.style.overflow='hidden';
+    var close=panel.current&&panel.current.querySelector('.sheet-hd .btn-icon');
+    if(close)close.focus();
+    function keydown(e){
+      if(e.key==='Escape'&&p.onClose){e.preventDefault();p.onClose();return;}
+      if(e.key!=='Tab'||!panel.current)return;
+      var els=Array.from(panel.current.querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),a[href]')).filter(function(el){return el.getClientRects().length>0;});
+      if(!els.length)return;
+      if(e.shiftKey&&document.activeElement===els[0]){e.preventDefault();els[els.length-1].focus();}
+      else if(!e.shiftKey&&document.activeElement===els[els.length-1]){e.preventDefault();els[0].focus();}
+    }
+    document.addEventListener('keydown',keydown);
+    return function(){document.removeEventListener('keydown',keydown);document.body.style.overflow=oldOverflow;
+      if(previous&&previous.isConnected&&previous.focus)previous.focus();};
+  },[]);
   return h('div',{className:'overlay fi',onClick:function(e){if(e.target===e.currentTarget&&p.onClose)p.onClose();}},
-    h('div',{className:'sheet',role:'dialog','aria-modal':true,'aria-label':p.title},
+    h('div',{className:'sheet',ref:panel,role:'dialog','aria-modal':true,'aria-label':p.title},
       h('div',{className:'sheet-grip'}),
       h('div',{className:'sheet-hd'},
         h('div',null,p.sub&&h('div',{className:'sheet-sub'},p.sub),h('div',{className:'sheet-title'},p.title)),
@@ -1371,6 +1395,7 @@ function HomeView(p){
   var upcoming=all.filter(function(a){return !a.attended&&a.date>=today;})
     .sort(function(a,b){return (a.date+'T'+(a.time||'23:59')).localeCompare(b.date+'T'+(b.time||'23:59'));});
   var next=upcoming[0]||null;
+  var olderPending=all.filter(function(a){return !a.attended&&a.date&&a.date<today;});
   var nextPatient=next?store.patients.find(function(pt){return pt.id===next.patientId;}):null;
   var treatments=(store.medications||[]).filter(function(m){return m.status!=='completed'&&m.status!=='paused';});
   var recentDoses=(store.doseLogs||[]).filter(function(d){return rhCalDay(new Date(d.at))===today;});
@@ -1409,6 +1434,11 @@ function HomeView(p){
         h('span',{className:'rh-care-stat-label'},x.label),
         h('span',{className:'rh-care-stat-arrow','aria-hidden':'true'},'↗')
       );})
+    ),
+    olderPending.length>0&&h('button',{className:'rh-care-review-notice',onClick:function(){sv('appointments');}},
+      h(Ic,{n:'calendar',s:17,c:'currentColor'}),
+      h('span',null,olderPending.length+' cita'+(olderPending.length===1?'':'s')+' de fechas anteriores aún '+(olderPending.length===1?'figura':'figuran')+' pendiente'+(olderPending.length===1?'':'s')+'.'),
+      h('strong',null,'Revisar →')
     ),
     h('div',{className:'rh-care-priority-grid'},
       h('section',{className:'rh-care-section rh-care-next','aria-labelledby':'rh-care-next-title'},
