@@ -1666,3 +1666,31 @@ h1,h2,h3,.ph-title,.sheet-title{font-family:var(--serif);letter-spacing:-.04em}
   .med1820-sheet{max-height:calc(100dvh - 15px)}
   .med1820-sheet .sheet-bd{padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
 }
+
+/* Backup health and recoverability indicators */
+.rh-backup-reminder{
+ display:flex;align-items:center;gap:14px;margin-top:17px;padding:17px 20px;
+ background:var(--accent-bg);color:var(--accent);border:1px solid var(--border);
+ border-radius:12px;
+}
+.rh-backup-reminder>div{flex:1;min-width:0}
+.rh-backup-reminder strong{display:block;font-size:.84rem;font-weight:800;color:var(--text)}
+.rh-backup-reminder p{font-size:.71rem;color:var(--text2);line-height:1.65;margin-top:4px}
+.rh-backup-reminder button{
+ flex-shrink:0;min-height:43px;border:1px solid var(--accent);border-radius:9px;
+ background:var(--accent);color:#fff;font-size:.73rem;font-weight:800;padding:10px 14px;cursor:pointer
+}
+.rh-backup-last{margin-top:6px;color:var(--text2);font-size:.72rem;line-height:1.55}
+@media(max-width:600px){
+ .rh-backup-reminder{flex-direction:column;align-items:flex-start;padding:15px}
+ .rh-backup-reminder button{width:100%}
+}
+/* Keyboard and tap accessibility across the complete application */
+.rh-profile-tab:focus-visible,.rh-calendar-event:focus-visible,
+.btn:focus-visible,.rh-mini-btn:focus-visible,.bn-btn:focus-visible,.rh-nav-link:focus-visible{
+ outline:3px solid var(--accent2)!important;outline-offset:3px
+}
+@media(prefers-reduced-motion:reduce){
+ html{scroll-behavior:auto!important}
+ *,*::before,*::after{scroll-behavior:auto!important;transition-duration:0.01ms!important;animation-duration:0.01ms!important}
+}
