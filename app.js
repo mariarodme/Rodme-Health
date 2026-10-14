@@ -817,14 +817,23 @@ function MedsView(p){
               h('p',{style:{fontSize:'.72rem',fontWeight:800,color:'var(--text2)',textTransform:'uppercase',letterSpacing:'.06em'}},'Medicamentos de '+pt.name),
               h('span',{className:'chip chip-gray',style:{marginLeft:'auto'}},grouped[pid].length)
             ),
-            grouped[pid].map(function(med){return h(MedCard,{key:med.id,med:med,store:store,onEdit:function(){ssm(med);sm('edit-med');}});})
+            grouped[pid].map(function(med){return h(MedCard,{key:med.id,med:med,store:store,highlighted:med.id===p.focusMedicationId,
+               onEdit:function(){ssm(med);sm('edit-med');}});})
           );
         }))
   );
 }
 function MedCard(p){
   var med=p.med,store=p.store,onEdit=p.onEdit;
+  var rootRef=useRef(null);
   var es=useState(false),exp=es[0],setExpanded=es[1];
+  useEffect(function(){
+    if(!p.highlighted)return;
+    setExpanded(true);
+    if(rootRef.current&&rootRef.current.scrollIntoView){
+      rootRef.current.scrollIntoView({behavior:'smooth',block:'center'});
+    }
+  },[p.highlighted]);
   var logs=(store.doseLogs||[]).filter(function(x){return x.medicationId===med.id;}).sort(function(a,b){return b.at.localeCompare(a.at);});
   var today=rhCalDay(new Date()),count=logs.filter(function(x){return x.status!=='missed'&&rhCalDay(new Date(x.at))===today;}).length;
   var missed=logs.filter(function(x){return x.status==='missed'&&rhCalDay(new Date(x.at))===today;}).length;
@@ -851,7 +860,8 @@ function MedCard(p){
     store.setMedications(function(arr){return arr.filter(function(x){return x.id!==med.id;});});
     store.setDoseLogs(function(arr){return arr.filter(function(x){return x.medicationId!==med.id;});});
   }
-  return h('div',{className:'med-card',onClick:function(){setExpanded(!exp);}},
+  return h('div',{className:'med-card'+(p.highlighted?' rh-med-highlighted':''),ref:rootRef,
+    onClick:function(){setExpanded(!exp);}},
     h('div',{className:'rh-med-top'},
       h('div',{className:'rh-board-med-card-heading'},
         h('span',{className:'rh-board-med-pill-icon'},h(Ic,{n:'pill',s:19,c:'currentColor'})),
@@ -861,8 +871,15 @@ function MedCard(p){
         med.status==='completed'?'Finalizado':med.status==='paused'?'Pausado':'Activo')
     ),
     pct!==null&&h('div',{className:'prog-bar',style:{marginTop:10}},h('div',{className:'prog-fill',style:{width:pct+'%'}})),
+    h('div',{className:'rh-med-day-status','aria-label':'Registros del día'},
+      h('span',{className:'rh-med-day-taken'},h(Ic,{n:'check',s:16,c:'currentColor'}),
+        count+' administrada'+(count===1?'':'s')+' hoy'),
+      missed>0&&h('span',{className:'rh-med-day-missed'},
+        missed+' omitida'+(missed===1?'':'s')),
+      times.length>0&&h('span',{className:'rh-med-day-schedule'},'Horarios: '+times.map(fmtT).join(', '))
+    ),
     h('div',{className:'rh-dose-actions'},
-      h('span',null,count+' dosis registrada'+(count===1?'':'s')+' hoy'),
+      h('span',null,med.status==='paused'?'Tratamiento pausado':med.status==='completed'?'Tratamiento finalizado':'Registro manual de dosis'),
       h('button',{className:'rh-dose-btn',onClick:recordDose,disabled:med.status==='completed'||med.status==='paused'},
         h(Ic,{n:'check',s:14,c:'currentColor'}),' Registrar dosis')
     ),
@@ -2035,13 +2052,14 @@ function generatePDF(record,store,directPt){
 // Búsqueda privada dentro de este dispositivo: nunca modifica la URL ni envía consultas.
 function GlobalHealthSearch(p){
   var qs=useState(''),query=qs[0],setQuery=qs[1];
+  var fs=useState('all'),filter=fs[0],setFilter=fs[1];
   var store=p.store;
   var q=query.trim().toLocaleLowerCase('es');
   var records=[];
   function push(kind,title,subtitle,route,item){records.push({kind:kind,title:title,subtitle:subtitle,route:route,item:item});}
   (store.patients||[]).forEach(function(v){push('Paciente',v.name,'Ficha familiar','patient',v);});
   (store.appointments||[]).forEach(function(v){var person=store.patients.find(function(x){return x.id===v.patientId;});
-    push('Cita',v.reason||v.specialty||v.doctor||'Cita médica',[person&&person.name,v.clinic,fmtD(v.date)].filter(Boolean).join(' · '),'appointment',v);});
+    push('Cita',v.reason||v.specialty||v.doctor||'Cita médica',[person&&person.name,v.doctor,v.specialty,v.clinic,fmtD(v.date)].filter(Boolean).join(' · '),'appointment',v);});
   (store.medications||[]).forEach(function(v){var person=store.patients.find(function(x){return x.id===v.patientId;});
     push('Medicamento',v.name,[person&&person.name,v.dosage].filter(Boolean).join(' · '),'medications',v);});
   [['vitals','Medición','vitals'],['symptoms','Síntoma','symptoms'],['followups','Seguimiento','followups']].forEach(function(x){
@@ -2055,18 +2073,31 @@ function GlobalHealthSearch(p){
     (store[pair[0]]||[]).forEach(function(v){var person=store.patients.find(function(x){return x.id===v.patientId;});
       push(pair[1],v.title,[person&&person.name,fmtD(v.date)].filter(Boolean).join(' · '),'health',v);});
   });
-  var matches=q?records.filter(function(x){return (x.title+' '+x.subtitle+' '+x.kind).toLocaleLowerCase('es').includes(q);}).slice(0,25):[];
-  function open(item){p.onSelect(item);p.onClose();}
-  return h(Sheet,{title:'Buscar en Rodme Health',sub:'Búsqueda local',onClose:p.onClose},
+  var groups=[['all','Todos'],['patient','Pacientes'],['appointment','Citas'],['medications','Medicamentos'],['others','Registros']];
+  function category(x){
+    return x.route==='patient'?'patient':x.route==='appointment'?'appointment':
+      x.route==='medications'?'medications':'others';
+  }
+  var matches=records.filter(function(x){
+    return (filter==='all'||category(x)===filter)&&
+      (!q||(x.title+' '+x.subtitle+' '+x.kind).toLocaleLowerCase('es').includes(q));
+  }).slice(0,q?30:filter==='all'?8:15);
+  function open(item){p.onSelect(item);}
+  return h(Sheet,{title:'Buscar en Rodme Health',sub:'Pacientes y registros del espacio actual',onClose:p.onClose},
     h('div',{className:'rh-search-panel'},
       h('label',{className:'rh-search-field'},h(Ic,{n:'search',s:19,c:'var(--text2)'}),
         h('input',{value:query,autoFocus:true,onChange:function(e){setQuery(e.target.value);},
           placeholder:'Paciente, cita, medicamento, laboratorio…','aria-label':'Buscar registros'}),
         query&&h('button',{onClick:function(){setQuery('');},'aria-label':'Borrar búsqueda'},'×')
       ),
-      !q&&h('p',{className:'rh-search-hint'},'Busca entre los registros guardados en este navegador.'),
-      q&&h('p',{className:'rh-search-hint'},matches.length+' resultado'+(matches.length===1?'':'s')+
-        (matches.length===25?' (mostrando los primeros 25)':'')),
+      h('div',{className:'rh-search-filters',role:'group','aria-label':'Filtrar resultados'},
+        groups.map(function(g){return h('button',{key:g[0],type:'button',className:filter===g[0]?'active':'',
+          'aria-pressed':filter===g[0],onClick:function(){setFilter(g[0]);}},g[1]);})
+      ),
+      h('p',{className:'rh-search-hint'},
+        q?matches.length+' resultado'+(matches.length===1?'':'s')+' mostrado'+(matches.length===1?'':'s'):
+          filter==='all'?'Registros recientes del listado. Escribe para buscar en todos.':'Mostrando registros de esta categoría.'
+      ),
       matches.map(function(item,i){return h('button',{className:'rh-search-result',key:i,onClick:function(){open(item);}},
         h('span',{className:'rh-search-kind'},item.kind),h('strong',null,item.title),h('small',null,item.subtitle),
         h('span',{className:'rh-search-arrow','aria-hidden':'true'},'→')
@@ -2229,6 +2260,7 @@ function RodmeLocalApp(){
   var healthTabState=useState('labs'),healthTab=healthTabState[0],setHealthTab=healthTabState[1];
   var trackTabState=useState('pending'),trackTab=trackTabState[0],setTrackTab=trackTabState[1];
   var aptForTrackingState=useState(null),aptForTracking=aptForTrackingState[0],setAptForTracking=aptForTrackingState[1];
+  var medFocusState=useState(null),medFocus=medFocusState[0],setMedFocus=medFocusState[1];
   function openTracking(patientId,t,appointment){
     setHealthPatient(patientId||'all');setTrackTab(t||'pending');setAptForTracking(appointment||null);sv('tracking');
   }
@@ -2241,7 +2273,14 @@ function RodmeLocalApp(){
   function selectSearchResult(entry){
     if(entry.route==='patient'){ssp(entry.item);sv('patient');}
     else if(entry.route==='appointment'){ssa(entry.item);sm('view-apt');}
-    else if(entry.route==='health'){sv('health');}
+    else if(entry.route==='health'){
+      setHealthPatient(entry.item.patientId||'all');
+      setHealthTab(entry.kind==='Vacuna'?'vaccines':entry.kind==='Documento'?'documents':'labs');
+      sv('health');
+    }
+    else if(entry.route==='medications'){
+      setMedFocus(entry.item.id);sv('medications');
+    }
     else if(entry.route==='tracking'){
       setHealthPatient(entry.item.patientId||'all');
       setTrackTab(entry.kind==='Medición'?'vitals':entry.kind==='Síntoma'?'symptoms':'followups');
@@ -2426,7 +2465,7 @@ function RodmeLocalApp(){
         view==='patients'&&h(PatientsView,{store:store,sm:sm,ssp:ssp,sv:sv,user:user}),
         view==='patient'&&h(PatientProfile,{store:store,patient:(store.patients.find(function(x){return selP&&x.id===selP.id;})||selP),onBack:goBack,onEdit:function(pt){ssp(pt);sm('edit-patient');},onAddApt:function(){setDraftDate('');sm('add-apt');},onRecord:function(){if(selP)lss(uk(user,'record_patient'),selP.id);sv('record');},onTracking:function(){openTracking(selP?.id||'all','vitals');},onEmergency:function(){if(selP)rhEmergencyCard(selP,rhReadRecord(user,selP.id,store.patients),store.medications);},onHealth:function(){setHealthPatient(selP?.id||'all');sv('health');},user:user,onAddMed:function(){sm('add-med');},onApt:function(apt){ssa(apt);sm('view-apt');}}),
         view==='appointments'&&h(ApptsView,{store:store,sm:sm,tab:tab,stab:stab,ssa:ssa,setDraftDate:setDraftDate}),
-        view==='medications'&&h(MedsView,{store:store,sm:sm,ssm:ssm}),
+        view==='medications'&&h(MedsView,{store:store,sm:sm,ssm:ssm,focusMedicationId:medFocus}),
         view==='health'&&h(HealthCenterView,{store:store,user:user,initialPatientId:healthPatient,initialTab:healthTab,onAppointment:function(a){ssa(a);sm('view-apt');},
           onTracking:function(){openTracking(healthPatient,'pending',null);}}),
         view==='tracking'&&h(TrackingView,{store:store,initialPatientId:healthPatient,initialTab:trackTab,onAppointment:function(a){ssa(a);sm('view-apt');},
