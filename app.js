@@ -2025,6 +2025,7 @@ function RodmeLocalApp(){
     var previous=routeRef.current;
     routeRef.current=next;
     setView(next.view);setModal(next.modal);
+    setSearchOpenState(next.modal==='search');
     tickRoute(function(n){return n+1;});
     setSideOpen(false);setQuickOpen(false);
     if(previous.view!==next.view)window.scrollTo(0,0);
@@ -2089,7 +2090,12 @@ function RodmeLocalApp(){
   function openTracking(patientId,t,appointment){
     setHealthPatient(patientId||'all');setTrackTab(t||'pending');setAptForTracking(appointment||null);sv('tracking');
   }
-  var searchState=useState(false),searchOpen=searchState[0],setSearchOpen=searchState[1];
+  var searchState=useState(false),searchOpen=searchState[0],setSearchOpenState=searchState[1];
+  function setSearchOpen(open){
+    if(open){pushRoute({view:routeRef.current.view,modal:'search'});}
+    else if(routeRef.current.modal==='search'){goBack();}
+    else{setSearchOpenState(false);}
+  }
   function selectSearchResult(entry){
     if(entry.route==='patient'){ssp(entry.item);sv('patient');}
     else if(entry.route==='appointment'){ssa(entry.item);sm('view-apt');}
@@ -2130,7 +2136,7 @@ function RodmeLocalApp(){
   var istate=useState(readImport),importItems=istate[0],setImportItems=istate[1];
   function closeImport(){
     setImportItems(null);
-    if(window.location.hash.startsWith('#rh-import='))window.history.replaceState(null,'',window.location.pathname+window.location.search);
+    if(window.location.hash.startsWith('#rh-import='))window.history.replaceState(window.history.state||{},'',window.location.pathname+window.location.search);
   }
   function addImported(){
     if(!importItems)return;
@@ -2307,7 +2313,8 @@ function RodmeLocalApp(){
       h('section',{className:'rh-import-panel',role:'dialog','aria-modal':true,'aria-label':'Confirmar citas'},
         h('div',{className:'rh-import-top'},
           h('h2',null,'Confirmar citas'),
-          h('button',{className:'rh-import-x',onClick:closeImport,'aria-label':'Cerrar'},h(Ic,{n:'close',s:18,c:'currentColor'}))
+          h('button',{className:'rh-import-back',onClick:closeImport,'aria-label':'Volver y cerrar la importación'},
+            h(Ic,{n:'back',s:18,c:'currentColor'}),'Volver')
         ),
         h('p',{className:'rh-import-help'},'Revisa la información antes de agregarla a tu espacio de salud.'),
         h('div',{className:'rh-import-list'},importItems.map(function(a,i){
