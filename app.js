@@ -75,6 +75,10 @@ function upd(sf,k){return function(e){var v=e.target.value;sf(function(f){var n=
 // ── SHEET ──────────────────────────────────────────────────────────────────
 function Sheet(p){
   var panel=useRef(null);
+  function requestClose(){
+    if(p.dirty&&!window.confirm('Hay cambios sin guardar. ¿Cerrar y descartar esos cambios?'))return;
+    if(p.onClose)p.onClose();
+  }
   useEffect(function(){
     var previous=document.activeElement;
     var oldOverflow=document.body.style.overflow;
@@ -82,7 +86,7 @@ function Sheet(p){
     var close=panel.current&&panel.current.querySelector('.sheet-hd .btn-icon');
     if(close)close.focus();
     function keydown(e){
-      if(e.key==='Escape'&&p.onClose){e.preventDefault();p.onClose();return;}
+      if(e.key==='Escape'&&p.onClose){e.preventDefault();requestClose();return;}
       if(e.key!=='Tab'||!panel.current)return;
       var els=Array.from(panel.current.querySelectorAll('button:not(:disabled),input:not(:disabled),select:not(:disabled),textarea:not(:disabled),a[href]')).filter(function(el){return el.getClientRects().length>0;});
       if(!els.length)return;
@@ -93,12 +97,12 @@ function Sheet(p){
     return function(){document.removeEventListener('keydown',keydown);document.body.style.overflow=oldOverflow;
       if(previous&&previous.isConnected&&previous.focus)previous.focus();};
   },[]);
-  return h('div',{className:'overlay fi',onClick:function(e){if(e.target===e.currentTarget&&p.onClose)p.onClose();}},
+  return h('div',{className:'overlay fi',onClick:function(e){if(e.target===e.currentTarget&&p.onClose)requestClose();}},
     h('div',{className:'sheet med1820-sheet',ref:panel,role:'dialog','aria-modal':true,'aria-label':p.title},
       h('div',{className:'sheet-grip'}),
       h('div',{className:'sheet-hd'},
         h('div',null,p.sub&&h('div',{className:'sheet-sub'},p.sub),h('div',{className:'sheet-title'},p.title)),
-        h('button',{className:'btn-icon',onClick:p.onClose,'aria-label':'Cerrar ventana'},h(Ic,{n:'close',s:17,c:'var(--text2)'}))
+        h('button',{className:'btn-icon',onClick:requestClose,'aria-label':'Cerrar ventana'},h(Ic,{n:'close',s:17,c:'var(--text2)'}))
       ),
       h('div',{className:'sheet-bd'},p.children)
     )
@@ -1504,7 +1508,13 @@ function PatientModal(p){
   var fs=useState(patient?xt(patient,{}):({name:'',whatsapp:'',notes:'',avatar:'',birthdate:'',gender:''}));
   var form=fs[0],sf=fs[1];
   var ref=useRef(null);
-  function save(){if(!form.name.trim())return;patient?store.setPatients(function(arr){return arr.map(function(x){return x.id===patient.id?xt(x,form):x;});}):store.setPatients(function(arr){return arr.concat([xt(form,{id:uid()})]);});onClose();}
+  function save(){
+    if(!form.name.trim()){window.alert('El nombre del paciente es obligatorio.');return;}
+    if(form.name.trim().length>100){window.alert('El nombre debe tener como máximo 100 caracteres.');return;}
+    if(form.birthdate&&(rhCalDay(rhCalDate(form.birthdate))!==form.birthdate||form.birthdate>rhCalDay(new Date()))){
+      window.alert('La fecha de nacimiento no puede estar en el futuro.');return;
+    }
+    patient?store.setPatients(function(arr){return arr.map(function(x){return x.id===patient.id?xt(x,form):x;});}):store.setPatients(function(arr){return arr.concat([xt(form,{id:uid()})]);});onClose();}
   function del(){
     if(!patient||!confirm('¿Eliminar este paciente, su expediente, citas, tratamientos y dosis registradas? Esta acción no se puede deshacer.'))return;
     store.setPatients(function(arr){return arr.filter(function(x){return x.id!==patient.id;});});
@@ -1528,7 +1538,7 @@ function PatientModal(p){
     onClose();
   }
   function loadAv(e){var f=e.target.files[0];if(!f)return;b64(f).then(function(bv){sf(function(x){return xt(x,{avatar:bv});});});}
-  return h(Sheet,{title:patient?'Editar paciente':'Nuevo paciente',sub:'Paciente',onClose:onClose},
+  return h(Sheet,{title:patient?'Editar paciente':'Nuevo paciente',sub:'Paciente',onClose:onClose,dirty:JSON.stringify(form)!==JSON.stringify(patient?xt(patient,{}):{name:'',whatsapp:'',notes:'',avatar:'',birthdate:'',gender:''})},
     h('div',{style:{display:'flex',justifyContent:'center',marginBottom:14}},
       h('div',{style:{position:'relative'}},
         h('div',{className:'av',style:{width:62,height:62,fontSize:'1rem',cursor:'pointer'},onClick:function(){ref.current.click();}},form.avatar?h('img',{src:form.avatar,style:{width:'100%',height:'100%',objectFit:'cover'}}):ini(form.name)),
@@ -1536,7 +1546,7 @@ function PatientModal(p){
         h('input',{ref:ref,type:'file',accept:'image/*',style:{display:'none'},onChange:loadAv})
       )
     ),
-    h(Fld,{label:'Nombre completo'},h('input',{value:form.name,onChange:upd(sf,'name'),placeholder:'Maria Garcia'})),
+    h(Fld,{label:'Nombre completo'},h('input',{value:form.name,onChange:upd(sf,'name'),maxLength:100,required:true,'aria-required':true,placeholder:'Nombre y apellidos'})),
     h('div',{className:'fg'},
       h(Fld,{label:'Fecha de nacimiento'},h('input',{type:'date',value:form.birthdate||'',onChange:upd(sf,'birthdate')})),
       h(Fld,{label:'Genero'},h('select',{value:form.gender||'',onChange:upd(sf,'gender')},h('option',{value:''},'Seleccionar'),h('option',{value:'F'},'Femenino'),h('option',{value:'M'},'Masculino'),h('option',{value:'O'},'Otro')))
@@ -1562,16 +1572,28 @@ function AptModal(p){
   function addPrep(){var t=prepInput.trim();if(!t||t.length>140||(form.prepItems||[]).length>=30)return;sf(function(prev){return xt(prev,{prepItems:(prev.prepItems||[]).concat([{id:uid(),text:t,done:false}])});});setPrepInput('');}
   function togglePrep(id){sf(function(prev){return xt(prev,{prepItems:(prev.prepItems||[]).map(function(a){return a.id===id?xt(a,{done:!a.done}):a;})});});}
   function removePrep(id){sf(function(prev){return xt(prev,{prepItems:(prev.prepItems||[]).filter(function(a){return a.id!==id;})});});}
-  var valid=!!(form.date&&form.patientId&&((form.doctor||'').trim()||(form.reason||'').trim()));
+  var valid=!!(form.date&&rhCalDay(rhCalDate(form.date))===form.date&&
+    form.patientId&&store.patients.some(function(p){return p.id===form.patientId;})&&
+    ((form.doctor||'').trim()||(form.reason||'').trim()));
+  function validateAppt(){
+    if(!valid){window.alert('Selecciona paciente, fecha válida y el nombre del médico o motivo de la cita.');return false;}
+    if(form.amount!==''&&form.amount!==undefined&&(!Number.isFinite(Number(form.amount))||Number(form.amount)<0)){
+      window.alert('El monto no puede ser negativo.');return false;
+    }
+    if(form.deposit!==''&&form.deposit!==undefined&&(!Number.isFinite(Number(form.deposit))||Number(form.deposit)<0)){
+      window.alert('El depósito no puede ser negativo.');return false;
+    }
+    return true;
+  }
   function setT(t){sf(function(f){return xt(f,{type:t});});}
   function gp(){return store.patients.find(function(x){return x.id===form.patientId;})||null;}
   function buildMsg(pt){var L=['Recordatorio de cita medica','','Paciente: '+pt.name];if(form.doctor)L.push('Doctor: Dr. '+form.doctor);if(form.specialty)L.push('Especialidad: '+form.specialty);L.push('Clinica: '+form.clinic);if(form.address)L.push('Direccion: '+form.address);L.push('Fecha: '+fmtDL(form.date),'Hora: '+fmtT(form.time));if(form.type==='private'&&form.amount)L.push('Monto: CRC '+Number(form.amount).toLocaleString());if(form.reason)L.push('','Motivo: '+form.reason);return encodeURIComponent(L.join('\n'));}
-  function persist(){if(!valid)return false;appt?store.setAppointments(function(arr){return arr.map(function(a){return a.id===appt.id?xt(a,form):a;});}):store.setAppointments(function(arr){return arr.concat([xt(form,{id:uid()})]);});return true;}
+  function persist(){if(!validateAppt())return false;appt?store.setAppointments(function(arr){return arr.map(function(a){return a.id===appt.id?xt(a,form):a;});}):store.setAppointments(function(arr){return arr.concat([xt(form,{id:uid()})]);});return true;}
   function saveOnly(){if(!persist())return;sSv(true);setTimeout(onClose,600);}
   function saveWA(){if(!persist())return;var pt=gp();if(pt&&pt.whatsapp){setTimeout(function(){window.open('https://wa.me/'+pt.whatsapp.replace(/\D/g,'')+'?text='+buildMsg(pt),'_blank');},200);}else{alert('Sin WhatsApp registrado.');}sSv(true);setTimeout(onClose,600);}
   function loadDoc(e){var f=e.target.files[0];if(!f)return;b64(f).then(function(bv){sf(function(x){return xt(x,{attendedDoc:bv});});});}
   var saldo=(form.amount&&form.deposit&&Number(form.amount)>Number(form.deposit))?(Number(form.amount)-Number(form.deposit)):null;
-  return h(Sheet,{title:'Cita medica',sub:appt?'Editar':'Nueva',onClose:onClose},
+  return h(Sheet,{title:'Cita médica',sub:appt?'Editar':'Nueva',onClose:onClose,dirty:JSON.stringify(form)!==JSON.stringify(appt?xt(appt,{}):def)},
     h(Fld,{label:'Paciente'},
       store.patients.length?h('select',{value:form.patientId,onChange:upd(sf,'patientId')},
         store.patients.map(function(pt){return h('option',{key:pt.id,value:pt.id},pt.name);}))
@@ -1712,13 +1734,14 @@ function MedModal(p){
   var ref=useRef(null);
   function setT(t){sf(function(f){return xt(f,{type:t});});}
   function save(){
-    if(!form.name.trim()||!form.patientId)return;
+    if(!form.name.trim()||!form.patientId){window.alert('Selecciona un paciente e indica el medicamento.');return;}
+    if(form.startDate&&rhCalDay(rhCalDate(form.startDate))!==form.startDate){window.alert('Revisa la fecha de inicio.');return;}
     var t=String(form.doseTimes||'').trim();
     if(t&&t.split(',').some(function(v){return !/^([01]\d|2[0-3]):[0-5]\d$/.test(v.trim());})){alert('Usa horarios de 24 horas separados por coma, por ejemplo 08:00, 20:00.');return;}
     if(['stockQty','stockThreshold'].some(function(k){return form[k]!==''&&form[k]!==undefined&&(Number(form[k])<0||!Number.isInteger(Number(form[k])));})){alert('Las cantidades deben ser números enteros iguales o mayores que cero.');return;}
     existing?store.setMedications(function(arr){return arr.map(function(m){return m.id===existing.id?xt(m,form):m;});}):store.setMedications(function(arr){return arr.concat([xt(form,{id:uid()})]);});onClose();}
   function loadImg(e){var f=e.target.files[0];if(!f)return;b64(f).then(function(bv){sf(function(x){return xt(x,{prescriptionImg:bv});});});}
-  return h(Sheet,{title:existing?'Editar medicamento':'Nuevo medicamento',sub:'Medicamento',onClose:onClose},
+  return h(Sheet,{title:existing?'Editar medicamento':'Nuevo medicamento',sub:'Medicamento',onClose:onClose,dirty:JSON.stringify(form)!==JSON.stringify(existing?xt(existing,{}):def)},
     h(Fld,{label:'Paciente'},
       store.patients.length?h('select',{value:form.patientId,onChange:upd(sf,'patientId')},
         store.patients.map(function(pt){return h('option',{key:pt.id,value:pt.id},pt.name);}))
