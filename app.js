@@ -2154,6 +2154,7 @@ function RodmeLocalApp(){
   }
   var sessState=useState(getLocalWorkspace),sess=sessState[0];
   var cloudSession=window.RH_ACTIVE_CLOUD;
+  var cloudStatus=cloudSession&&window.RHCloud?window.RHCloud.getState():null;
   var user=cloudSession?cloudSession.workspace:sess.u;
   var cloudRefresh=useState(0),setCloudRefresh=cloudRefresh[1];
   useEffect(function(){
@@ -2220,6 +2221,7 @@ function RodmeLocalApp(){
   function sv(nextView){
     var target=typeof nextView==='function'?nextView(routeRef.current.view):nextView;
     if(!allowedViews.includes(target))return;
+    if(target!=='medications')setMedFocus(null);
     pushRoute({view:target,modal:null});
   }
   function sm(nextModal){
@@ -2477,12 +2479,14 @@ function RodmeLocalApp(){
           h('button',{type:'button',className:'rh-route-home',onClick:goHome,
             'aria-label':'Volver directamente al inicio'},h(Ic,{n:'home',s:19,c:'currentColor'}),'Volver al inicio')
         ),
-        h('div',{className:'rh-cloud-banner'+(cloudSession?' active':'')},
-          h(Ic,{n:cloudSession?'shield':'alert',s:18,c:'currentColor'}),
+        h('div',{className:'rh-cloud-banner'+(cloudSession?' active':'')+
+          (cloudStatus&&cloudStatus.error?' error':cloudSession&&!navigator.onLine?' offline':cloudStatus&&cloudStatus.pending?' pending':''),
+          role:cloudStatus&&cloudStatus.error?'alert':'status'},
+          h(Ic,{n:cloudStatus&&cloudStatus.error?'alert':cloudSession?'shield':'alert',s:18,c:'currentColor'}),
           cloudSession
-            ?(window.RHCloud.getState().error?'Error al sincronizar: '+window.RHCloud.getState().error:
+            ?(cloudStatus&&cloudStatus.error?'Error al sincronizar: '+cloudStatus.error:
                !navigator.onLine?'Sin conexión: no podrás guardar cambios hasta volver a conectarte.':
-               window.RHCloud.getState().pending?'Sincronizando cambios con la familia…':
+               cloudStatus&&cloudStatus.pending?'Sincronizando cambios con la familia…':
                cloudSession.role==='viewer'?'Espacio familiar · Solo lectura':'Espacio familiar · Datos en línea')
             :'Modo local: los registros se guardan solo en este navegador, sin sincronización.'),
         view==='home'&&h(HomeView,{store:store,sv:sv,sm:sm,ssa:ssa,ssp:ssp,user:user,onPending:function(){openTracking('all','pending');}}),
@@ -2490,9 +2494,9 @@ function RodmeLocalApp(){
         view==='patient'&&h(PatientProfile,{store:store,patient:(store.patients.find(function(x){return selP&&x.id===selP.id;})||selP),onBack:goBack,onEdit:function(pt){ssp(pt);sm('edit-patient');},onAddApt:function(){setDraftDate('');sm('add-apt');},onRecord:function(){if(selP)lss(uk(user,'record_patient'),selP.id);sv('record');},onTracking:function(){openTracking(selP?.id||'all','vitals');},onEmergency:function(){if(selP)rhEmergencyCard(selP,rhReadRecord(user,selP.id,store.patients),store.medications);},onHealth:function(){setHealthPatient(selP?.id||'all');sv('health');},user:user,onAddMed:function(){sm('add-med');},onApt:function(apt){ssa(apt);sm('view-apt');}}),
         view==='appointments'&&h(ApptsView,{store:store,sm:sm,tab:tab,stab:stab,ssa:ssa,setDraftDate:setDraftDate}),
         view==='medications'&&h(MedsView,{store:store,sm:sm,ssm:ssm,focusMedicationId:medFocus}),
-        view==='health'&&h(HealthCenterView,{store:store,user:user,initialPatientId:healthPatient,initialTab:healthTab,onAppointment:function(a){ssa(a);sm('view-apt');},
+        view==='health'&&h(HealthCenterView,{key:'health-'+healthPatient+'-'+healthTab,store:store,user:user,initialPatientId:healthPatient,initialTab:healthTab,onAppointment:function(a){ssa(a);sm('view-apt');},
           onTracking:function(){openTracking(healthPatient,'pending',null);}}),
-        view==='tracking'&&h(TrackingView,{store:store,initialPatientId:healthPatient,initialTab:trackTab,onAppointment:function(a){ssa(a);sm('view-apt');},
+        view==='tracking'&&h(TrackingView,{key:'tracking-'+healthPatient+'-'+trackTab+'-'+(aptForTracking&&aptForTracking.id||''),store:store,initialPatientId:healthPatient,initialTab:trackTab,onAppointment:function(a){ssa(a);sm('view-apt');},
           initialAppointmentId:aptForTracking&&aptForTracking.id,
           onRecords:function(){setHealthTab('labs');sv('health');},
           onOpenPending:function(item){
