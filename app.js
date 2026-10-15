@@ -683,9 +683,9 @@ function ApptsView(p){
   var first=new Date(current.getFullYear(),current.getMonth(),1,12);
   var offset=(first.getDay()+6)%7;
   var beginning=new Date(first);beginning.setDate(first.getDate()-offset);
-  var count=mode==='week'?7:42;
+  var count=mode==='day'?1:mode==='week'?7:42;
   var weekBegin=rhCalDate(focus);weekBegin.setDate(weekBegin.getDate()-(weekBegin.getDay()+6)%7);
-  function move(dir){var d=rhCalDate(focus);if(mode==='month'){d.setDate(1);d.setMonth(d.getMonth()+dir);}else d.setDate(d.getDate()+7*dir);setFocus(rhCalDay(d));}
+  function move(dir){var d=rhCalDate(focus);if(mode==='month'){d.setDate(1);d.setMonth(d.getMonth()+dir);}else d.setDate(d.getDate()+(mode==='day'?1:7)*dir);setFocus(rhCalDay(d));}
   function openA(a){p.ssa(a);p.sm('view-apt');}
   function patient(a){return (p.store.patients||[]).find(function(x){return x.id===a.patientId;});}
   return h('div',{className:'rh-calendar-area med1820-section'},
@@ -698,30 +698,35 @@ function ApptsView(p){
       )
     ),
     h('div',{className:'rh-calendar-mode',role:'group','aria-label':'Vista de citas'},
-      [['month','Mes'],['week','Semana'],['list','Lista']].map(function(x){
-        return h('button',{key:x[0],className:mode===x[0]?'active':'',onClick:function(){setMode(x[0]);}},x[1]);
+      [['day','Día'],['week','Semana'],['month','Mes'],['list','Lista']].map(function(x){
+        return h('button',{key:x[0],type:'button',className:mode===x[0]?'active':'',onClick:function(){setMode(x[0]);},'aria-pressed':mode===x[0]},x[1]);
+      })
+    ),
+    h('div',{className:'rh-calendar-legend','aria-label':'Colores de estados'},
+      [['pending','Pendiente'],['confirmed','Confirmada'],['rescheduled','Reprogramada'],['completed','Realizada'],['cancelled','Cancelada']].map(function(s){
+        return h('span',{key:s[0]},h('i',{className:'rh-calendar-state-dot status-'+s[0],'aria-hidden':true}),s[1]);
       })
     ),
     mode==='list'?h(LegacyApptsList,p):
-    h('div',{className:'rh-calendar-shell'},
+    h('div',{className:'rh-calendar-shell rh-calendar-'+mode},
       h('div',{className:'rh-calendar-switcher'},
         h('button',{onClick:function(){move(-1);},'aria-label':'Periodo anterior'},'‹'),
-        h('strong',null,mode==='month'?current.toLocaleDateString('es-CR',{month:'long',year:'numeric'}):
+        h('strong',null,mode==='month'?current.toLocaleDateString('es-CR',{month:'long',year:'numeric'}):mode==='day'?current.toLocaleDateString('es-CR',{weekday:'long',day:'numeric',month:'long',year:'numeric'}):
           rhCalDate(rhCalDay(weekBegin)).toLocaleDateString('es-CR',{day:'numeric',month:'long',year:'numeric'})),
         h('button',{onClick:function(){move(1);},'aria-label':'Periodo siguiente'},'›'),
         h('button',{className:'rh-calendar-today',onClick:function(){setFocus(today);}},'Hoy')
       ),
-      h('div',{className:'rh-calendar-grid',role:'grid','aria-label':'Calendario de citas'},
-        weekdays.map(function(w){return h('div',{key:w,className:'rh-calendar-weekday'},w);}),
+      h('div',{className:'rh-calendar-grid rh-calendar-grid-'+mode,role:'grid','aria-label':'Calendario de citas'},
+        (mode==='day'?[weekdays[(current.getDay()+6)%7]]:weekdays).map(function(w){return h('div',{key:w,className:'rh-calendar-weekday'},w);}),
         Array.from({length:count},function(_,i){
-          var d=new Date(mode==='week'?weekBegin:beginning);d.setDate(d.getDate()+i);
+          var d=new Date(mode==='day'?current:mode==='week'?weekBegin:beginning);d.setDate(d.getDate()+i);
           var day=rhCalDay(d),events=all.filter(function(a){return a.date===day;});
           return h('div',{key:day,className:'rh-calendar-cell'+(day===today?' is-today':'')+(d.getMonth()!==current.getMonth()&&mode==='month'?' is-outside':'')},
             h('button',{className:'rh-calendar-day',onClick:function(){setFocus(day);},'aria-pressed':day===focus,
               title:'Ver citas del '+day,'aria-label':'Ver '+events.length+' cita'+(events.length===1?'':'s')+' del '+day},d.getDate()),
             events.length>0&&h('span',{className:'rh-calendar-day-count','aria-hidden':true},events.length),
             events.slice(0,mode==='week'?8:3).map(function(a){
-              return h('button',{key:a.id,className:'rh-calendar-event'+(!rhAppointmentActive(a)?' is-done':''),
+              return h('button',{key:a.id,className:'rh-calendar-event status-'+rhAppointmentStatus(a)+(!rhAppointmentActive(a)?' is-done':''),
                 title:(a.reason||a.doctor||'Cita')+' · '+(patient(a)?.name||''),
                 onClick:function(){openA(a);}},
                 h('span',null,a.time?a.time+' · ':'',a.reason||a.specialty||a.doctor||'Cita'),
@@ -740,13 +745,15 @@ function ApptsView(p){
         selectedEvents.length?selectedEvents.map(function(a){
           return h('button',{className:'rh-board-cal-item',key:a.id,onClick:function(){openA(a);}},
             h('span',{className:'rh-board-cal-time'},a.time?fmtT(a.time):'Sin hora'),
-            h('span',{className:'rh-board-cal-color','aria-hidden':true}),
+            h('span',{className:'rh-board-cal-color status-'+rhAppointmentStatus(a),'aria-hidden':true}),
             h('span',{className:'rh-board-cal-text'},h('strong',null,a.reason||a.specialty||a.doctor||'Cita médica'),
               h('small',null,[patient(a)?.name,a.clinic].filter(Boolean).join(' · '))),
             h('span',{className:'rh-board-cal-state'},rhAppointmentLabel(a)),
             h('span',{'aria-hidden':true},'›')
           );
-        }):h('p',{className:'rh-board-cal-empty'},'No hay citas registradas en esta fecha.')
+        }):h('div',{className:'rh-calendar-empty-state'},h(Ic,{n:'calendar',s:24,c:'var(--accent)'}),
+          h('p',null,'No hay citas registradas para este día.'),
+          h('button',{onClick:function(){if(p.setDraftDate)p.setDraftDate(focus);p.sm('add-apt');}},'Programar una cita'))
       ),
       h('p',{className:'rh-cal-hint'},'Selecciona un día para consultar sus citas; usa «Agregar cita» para programar una nueva.')
     )
