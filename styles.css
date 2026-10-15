@@ -3559,3 +3559,449 @@ body{font-size:var(--rh-copy-size)}
 #root .page-content .rh-cloud-banner.active:not(.error):not(.offline):not(.pending){
   border-left-color:var(--green)
 }
+
+
+/* RODME V17 COMPLETE DESIGN — uniformidad, agenda, biblioteca, accesibilidad */
+:root{
+  --rh-v17-soft-shadow:0 4px 25px rgba(14,61,84,.048);
+  --rh-v17-radius:17px;
+}
+#root .rh-skip-link{
+  position:fixed;left:14px;top:-140px;z-index:3000;
+  padding:13px 18px;border:2px solid var(--accent);border-radius:12px;
+  background:var(--surface);color:var(--text);font-size:17px;font-weight:800;
+}
+#root .rh-skip-link:focus{top:12px}
+#root .page-content:focus{outline:none}
+/* Surface system: consistent across main section types */
+#root .med1820-interior .rh-center-item,
+#root .med1820-interior .rh-profile-panel,
+#root .med1820-interior .rh-track-card,
+#root .med1820-interior .rh-track-item,
+#root .med1820-interior .rh-settings-section,
+#root .med1820-interior .rh-calendar-shell,
+#root .med1820-interior .med-card,
+#root .med1820-interior .pt-card,
+#root .med1820-interior .rh-local-reminders,
+#root .med1820-interior .rh-backup-panel,
+#root .med1820-interior .rh-install-panel{
+  border-radius:var(--rh-v17-radius);
+  border-color:var(--border);
+  box-shadow:var(--rh-v17-soft-shadow);
+}
+#root .page-content .rh-calendar-toolbar,
+#root .page-content .rh-center-header,
+#root .page-content .rh-track-head,
+#root .page-content .rh-local-settings>.ph,
+#root .page-content .rh-patient-directory>.ph{
+  margin-bottom:21px;
+}
+#root .page-content .rh-calendar-mode{
+  display:inline-flex;max-width:100%;align-items:stretch;gap:5px;
+  padding:5px;background:var(--surface2);border-radius:13px;
+  border:1px solid var(--border);margin-bottom:14px;
+}
+#root .page-content .rh-calendar-mode button{
+  min-height:46px;min-width:69px;border-radius:10px;
+  padding:10px 15px;color:var(--text2);
+  font-weight:800;cursor:pointer;white-space:normal;
+}
+#root .page-content .rh-calendar-mode button.active{
+  color:white;background:var(--accent);
+  box-shadow:0 4px 12px rgba(17,68,89,.12);
+}
+#root .page-content .rh-calendar-legend{
+  display:flex;gap:10px 16px;flex-wrap:wrap;
+  align-items:center;margin:0 0 15px;padding:0 2px;
+}
+#root .page-content .rh-calendar-legend>span{
+  display:inline-flex;gap:7px;align-items:center;
+  color:var(--text2);font-size:var(--rh-caption-size)!important;
+  line-height:1.35;
+}
+#root .page-content .rh-calendar-state-dot{
+  display:inline-block;flex:0 0 10px;width:10px;height:10px;
+  border-radius:50%;background:var(--amber)
+}
+#root .page-content .rh-calendar-state-dot.status-confirmed,
+#root .page-content .rh-board-cal-color.status-confirmed{background:var(--accent)}
+#root .page-content .rh-calendar-state-dot.status-rescheduled,
+#root .page-content .rh-board-cal-color.status-rescheduled{background:var(--purple)}
+#root .page-content .rh-calendar-state-dot.status-completed,
+#root .page-content .rh-board-cal-color.status-completed{background:var(--green)}
+#root .page-content .rh-calendar-state-dot.status-cancelled,
+#root .page-content .rh-board-cal-color.status-cancelled{background:var(--text3)}
+#root .page-content .rh-calendar-event{
+  border-left:3px solid var(--amber)!important;
+  background:var(--amber-bg);color:var(--text);
+}
+#root .page-content .rh-calendar-event.status-confirmed{
+  border-left-color:var(--accent)!important;
+  background:var(--accent-bg);
+}
+#root .page-content .rh-calendar-event.status-rescheduled{
+  border-left-color:var(--purple)!important;background:var(--purple-bg);
+}
+#root .page-content .rh-calendar-event.status-completed{
+  border-left-color:var(--green)!important;background:var(--green-bg);
+}
+#root .page-content .rh-calendar-event.status-cancelled{
+  border-left-color:var(--text3)!important;background:var(--surface2);
+  opacity:.72;
+}
+#root .page-content .rh-calendar-grid-day{
+  grid-template-columns:minmax(0,1fr)!important;
+}
+#root .page-content .rh-calendar-grid-day .rh-calendar-weekday{
+  text-align:left;padding:11px 19px;
+}
+#root .page-content .rh-calendar-grid-day .rh-calendar-cell{
+  min-height:250px;padding:16px 20px;
+  display:flex;align-items:flex-start;justify-content:flex-start;
+  flex-wrap:wrap;gap:10px;
+}
+#root .page-content .rh-calendar-grid-day .rh-calendar-day{
+  margin-right:auto;min-width:53px;min-height:53px;font-size:23px!important;
+}
+#root .page-content .rh-calendar-grid-day .rh-calendar-day-count{
+  position:static;margin:8px;
+}
+#root .page-content .rh-calendar-grid-day .rh-calendar-event{
+  display:block!important;
+  flex:1 1 100%;padding:11px 12px;
+  min-height:44px;font-size:var(--rh-caption-size)!important;
+}
+#root .page-content .rh-calendar-grid-day .rh-calendar-event small{
+  display:block;font-size:14px!important;
+}
+#root .page-content .rh-calendar-grid-week .rh-calendar-cell{
+  min-height:130px;
+}
+#root .page-content .rh-calendar-empty-state{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:165px;text-align:center;gap:12px;
+  background:var(--surface2);border:1px dashed var(--border);
+  border-radius:13px;margin:10px 0;padding:20px;
+}
+#root .page-content .rh-calendar-empty-state p{
+  color:var(--text2);font-size:var(--rh-caption-size)!important;
+  line-height:1.5;
+}
+#root .page-content .rh-calendar-empty-state button{
+  min-height:47px;padding:11px 16px;
+  background:var(--accent);color:white;
+  border:1px solid var(--accent);border-radius:11px;font-weight:800;
+}
+/* Document library: previews and patient metadata */
+#root .page-content .rh-doc-library-header{
+  display:flex;align-items:end;justify-content:space-between;
+  gap:14px 22px;flex-wrap:wrap;padding:7px 0 18px;
+}
+#root .page-content .rh-doc-library-header>div{flex:1 1 260px;min-width:0}
+#root .page-content .rh-doc-library-header h2{
+  font-size:var(--rh-section-title)!important;
+  line-height:1.25;letter-spacing:-.035em;margin:0 0 6px;
+}
+#root .page-content .rh-doc-library-header p{
+  font-size:var(--rh-caption-size)!important;color:var(--text2);
+  line-height:1.55;
+}
+#root .page-content .rh-doc-library-header>label{
+  display:flex;flex-direction:column;gap:8px;min-width:185px;
+  color:var(--text2);font-size:var(--rh-caption-size)!important;
+}
+#root .page-content .rh-doc-library-header select{
+  min-width:185px;min-height:48px;
+}
+#root .page-content .rh-center-records.rh-doc-library-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:17px;align-items:stretch;
+}
+#root .page-content .rh-doc-library-card{
+  display:flex;flex-direction:column;
+  border-radius:17px;overflow:hidden;min-width:0;
+}
+#root .page-content .rh-doc-thumb{
+  display:grid;place-items:center;min-height:136px;height:150px;
+  border-radius:13px;
+  background:linear-gradient(135deg,var(--accent-bg),var(--surface2));
+  border:1px solid var(--border);
+  overflow:hidden;margin-bottom:14px;
+}
+#root .page-content .rh-doc-thumb img{
+  width:100%;height:100%;object-fit:contain;
+}
+#root .page-content .rh-doc-library-card .rh-center-item-actions{
+  margin-top:auto;padding-top:16px;
+}
+#root .sheet .rh-doc-preview{
+  display:flex;flex-direction:column;gap:13px;
+}
+#root .sheet .rh-doc-preview>p{
+  color:var(--text2);font-size:var(--rh-caption-size)!important;
+  line-height:1.5;
+}
+#root .sheet .rh-doc-preview img{
+  width:100%;height:auto;max-height:62vh;object-fit:contain;
+  border:1px solid var(--border);border-radius:12px;
+}
+#root .sheet .rh-doc-preview iframe{
+  width:100%;height:58vh;min-height:350px;
+  border:1px solid var(--border);border-radius:12px;
+}
+/* Patient timeline */
+#root .page-content .rh-history-filters{
+  display:flex;flex-wrap:wrap;gap:8px;
+  margin:0 0 20px;padding:0 0 12px;
+  border-bottom:1px solid var(--border);
+}
+#root .page-content .rh-history-filters button{
+  border:1px solid var(--border);background:var(--surface2);
+  color:var(--text2);border-radius:99px;
+  min-height:45px;padding:10px 15px;font-weight:750;
+}
+#root .page-content .rh-history-filters button.active{
+  background:var(--accent);color:white;border-color:var(--accent);
+}
+#root .page-content .rh-history-total{
+  font-size:var(--rh-caption-size)!important;
+  font-weight:750;color:var(--text2);
+  margin-left:auto;
+}
+#root .page-content .rh-timeline-rail>span{
+  background:var(--accent-bg);border:2px solid var(--accent);
+  border-radius:50%;min-height:13px;min-width:13px;
+}
+#root .page-content .rh-timeline-rail>span.apt{border-color:var(--accent)}
+#root .page-content .rh-timeline-rail>span.dose{border-color:var(--green)}
+#root .page-content .rh-timeline-rail>span.doc,
+#root .page-content .rh-timeline-rail>span.lab{border-color:var(--purple)}
+#root .page-content .rh-timeline-item{
+  border-radius:12px;min-width:0;
+}
+/* Settings: clear groups instead of a long undifferentiated page */
+#root .page-content .rh-settings-jump{
+  display:flex;flex-wrap:wrap;gap:9px;margin:12px 0 22px;
+  padding:12px;background:var(--surface);
+  border:1px solid var(--border);border-radius:15px;
+  box-shadow:var(--rh-v17-soft-shadow);
+}
+#root .page-content .rh-settings-jump button{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:10px 15px;min-height:47px;border-radius:11px;
+  border:1px solid var(--border);background:var(--surface2);
+  color:var(--text);font-weight:800;
+}
+#root .page-content .rh-settings-jump button:hover,
+#root .page-content .rh-settings-jump button:focus-visible{
+  color:var(--accent);border-color:var(--accent);
+  background:var(--accent-bg);
+}
+#root .page-content .rh-settings-family-wrap,
+#root .page-content .rh-settings-extra-wrap{
+  margin:17px 0 24px;scroll-margin-top:110px;
+}
+#root .page-content .rh-settings-grid>.rh-settings-section,
+#root .page-content .rh-settings-privacy-wrap{
+  scroll-margin-top:110px;
+}
+#root .page-content .rh-settings-section-heading{
+  display:flex;align-items:flex-start;gap:12px;
+  margin:0 0 15px;padding:0 2px;
+  color:var(--accent);
+}
+#root .page-content .rh-settings-section-heading>div{
+  flex:1;min-width:0;
+}
+#root .page-content .rh-settings-section-heading h2{
+  color:var(--text);font-size:var(--rh-section-title)!important;
+  line-height:1.3;margin:0 0 3px;
+}
+#root .page-content .rh-settings-section-heading p{
+  color:var(--text2);font-size:var(--rh-caption-size)!important;
+  line-height:1.5;
+}
+#root .page-content .rh-family-offline-notice{
+  display:flex;align-items:flex-start;gap:15px;
+  padding:19px 20px;background:var(--surface);
+  border:1px solid var(--border);border-left:4px solid var(--accent);
+  border-radius:15px;color:var(--text);
+}
+#root .page-content .rh-family-offline-notice>div{flex:1;min-width:0}
+#root .page-content .rh-family-offline-notice strong{
+  display:block;font-size:var(--rh-copy-size)!important;margin:0 0 7px;
+}
+#root .page-content .rh-family-offline-notice p{
+  font-size:var(--rh-caption-size)!important;
+  color:var(--text2);line-height:1.6;
+}
+#root .page-content .rh-settings-privacy-wrap{
+  margin:20px 0 10px;
+}
+#root .page-content .rh-settings-extra-wrap>.rh-local-reminders,
+#root .page-content .rh-settings-extra-wrap>.rh-install-panel,
+#root .page-content .rh-settings-extra-wrap>.rh-backup-panel{
+  margin-top:10px;
+}
+/* Notification hub: visible and concise, with no simulated push */
+#root .rh-alert-trigger{
+  position:relative;display:inline-flex;align-items:center;
+  justify-content:center;width:43px;height:43px;flex:0 0 43px;
+  border:1px solid var(--border);border-radius:12px;
+  color:var(--text);background:var(--surface);
+  cursor:pointer;
+}
+#root .rh-alert-trigger:hover{color:var(--accent);background:var(--accent-bg)}
+#root .rh-alert-count{
+  position:absolute;top:-6px;right:-7px;
+  min-width:21px;height:21px;
+  display:grid;place-items:center;
+  padding:0 5px;border:2px solid var(--surface);
+  background:var(--red);color:white;
+  border-radius:99px;font-size:12px!important;
+  line-height:1;font-weight:800;font-variant-numeric:tabular-nums;
+}
+#root .sheet .rh-notice-center{
+  display:flex;flex-direction:column;gap:10px;
+}
+#root .sheet .rh-notice-intro,
+#root .sheet .rh-notice-footnote{
+  color:var(--text2);font-size:var(--rh-caption-size)!important;
+  line-height:1.55;margin:0 0 9px;
+}
+#root .sheet .rh-notice-footnote{margin:12px 0 0}
+#root .sheet .rh-notice-item{
+  width:100%;min-height:75px;
+  display:flex;align-items:center;gap:12px;
+  text-align:left;padding:14px 12px;
+  border-radius:13px;border:1px solid var(--border);
+  color:var(--text);background:var(--surface);
+}
+#root .sheet .rh-notice-item:hover{
+  background:var(--surface2);border-color:var(--accent2);
+}
+#root .sheet .rh-notice-icon{
+  display:grid;place-items:center;
+  width:43px;height:43px;flex:0 0 43px;
+  background:var(--accent-bg);color:var(--accent);
+  border-radius:12px;
+}
+#root .sheet .rh-notice-item.status-pending .rh-notice-icon{
+  background:var(--amber-bg);color:var(--amber);
+}
+#root .sheet .rh-notice-item.status-error .rh-notice-icon{
+  background:var(--red-bg);color:var(--red);
+}
+#root .sheet .rh-notice-info{
+  flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;
+}
+#root .sheet .rh-notice-info strong{
+  font-size:var(--rh-control-size)!important;
+  line-height:1.35;overflow-wrap:anywhere;
+}
+#root .sheet .rh-notice-info small{
+  color:var(--text2);font-size:var(--rh-caption-size)!important;
+  line-height:1.5;overflow-wrap:anywhere;
+}
+#root .sheet .rh-notice-empty{
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:11px;
+  padding:29px 19px;min-height:180px;
+  background:var(--surface2);border:1px dashed var(--border);
+  border-radius:15px;text-align:center;
+}
+#root .sheet .rh-notice-empty strong{
+  font-size:var(--rh-copy-size)!important;
+}
+#root .sheet .rh-notice-empty p{
+  color:var(--text2);font-size:var(--rh-caption-size)!important;
+}
+/* Consistent empty state, links and focus feedback */
+#root .page-content .rh-center-empty,
+#root .page-content .rh-track-empty,
+#root .page-content .empty,
+#root .page-content .rh-board-empty{
+  border-radius:15px;
+}
+#root .page-content .empty-ico{
+  border-radius:15px;
+}
+#root .page-content button:focus-visible,
+#root .page-content select:focus-visible,
+#root .sheet button:focus-visible,
+#root .sheet select:focus-visible,
+#root .rh-alert-trigger:focus-visible{
+  outline:3px solid var(--accent2)!important;
+  outline-offset:3px;
+}
+@media(max-width:1050px){
+  #root .page-content .rh-center-records.rh-doc-library-grid{
+    grid-template-columns:1fr;
+  }
+}
+@media(max-width:768px){
+  #root .page-content .rh-calendar-mode{width:100%}
+  #root .page-content .rh-calendar-mode button{
+    flex:1 1 0;min-width:0;
+    padding:10px 5px;font-size:var(--rh-caption-size)!important;
+  }
+  #root .page-content .rh-calendar-legend{
+    gap:9px 13px;
+  }
+  #root .page-content .rh-calendar-legend>span{
+    font-size:14px!important;
+  }
+  #root .page-content .rh-calendar-grid-day .rh-calendar-cell{
+    min-height:180px;padding:13px;
+  }
+  #root .page-content .rh-calendar-grid-day .rh-calendar-event{
+    display:block!important;white-space:normal;
+  }
+  #root .page-content .rh-calendar-grid-week .rh-calendar-cell{
+    min-height:85px;
+  }
+  #root .page-content .rh-doc-library-header{
+    align-items:stretch;gap:12px;
+  }
+  #root .page-content .rh-doc-library-header>label{min-width:0}
+  #root .page-content .rh-doc-library-header select{width:100%;min-width:0}
+  #root .page-content .rh-doc-thumb{height:140px}
+  #root .page-content .rh-settings-jump{
+    padding:10px;gap:8px;
+  }
+  #root .page-content .rh-settings-jump button{
+    flex:1 1 auto;min-height:46px;
+    padding:10px;
+  }
+  #root .rh-alert-trigger{
+    border:0;background:transparent;min-width:43px;
+    min-height:43px;
+  }
+}
+@media(max-width:450px){
+  #root .page-content .rh-calendar-mode{gap:2px;padding:3px}
+  #root .page-content .rh-calendar-mode button{
+    font-size:15px!important;
+    min-height:47px;
+  }
+  #root .page-content .rh-settings-jump button{flex:1 1 calc(50% - 8px)}
+  #root .page-content .rh-family-offline-notice{padding:16px}
+  #root .page-content .rh-profile-tabbar{
+    scroll-snap-type:x proximity;
+  }
+  #root .page-content .rh-profile-tabbar button{
+    scroll-snap-align:start;
+  }
+  #root .page-content .rh-history-filters{gap:6px}
+  #root .page-content .rh-history-filters button{
+    padding:9px 11px;min-height:46px;
+    font-size:15px!important;
+  }
+  #root .sheet .rh-notice-item{padding:13px 10px}
+}
+@media(prefers-reduced-motion:reduce){
+  #root .page-content *,
+  #root .sheet *{
+    scroll-behavior:auto!important;
+  }
+}
