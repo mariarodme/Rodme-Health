@@ -1,6 +1,6 @@
 /* Static-only caching. No patient data, files, API responses or localStorage. */
-const VERSION='rh-static-20261014-v16-daily-health';
-const APP=['./','./index.html','./styles.css?v=experience-v16','./app.js?v=experience-v16','./firebase-config.js?v=experience-v16','./cloud.js?v=experience-v16','./manifest.webmanifest','./app-icon.svg'];
+const VERSION='rh-static-20261015-v17-complete-ui';
+const APP=['./','./index.html','./styles.css?v=complete-v17','./app.js?v=complete-v17','./firebase-config.js?v=complete-v17','./cloud.js?v=complete-v17','./manifest.webmanifest','./app-icon.svg'];
 const REACT=['https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js','https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js'];
 self.addEventListener('install',event=>{
   event.waitUntil((async()=>{
