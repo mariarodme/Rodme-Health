@@ -2172,6 +2172,22 @@ function GlobalHealthSearch(p){
   );
 }
 
+function RhNoticeCenter(p){
+  return h(Sheet,{title:'Centro de avisos',sub:'Agenda y revisiones',onClose:p.onClose},
+    h('div',{className:'rh-notice-center'},
+      h('p',{className:'rh-notice-intro'},'Citas próximas, tareas pendientes y reposición de medicamentos en un mismo lugar.'),
+      p.items.length?p.items.map(function(item){
+        return h('button',{type:'button',key:item.id,className:'rh-notice-item status-'+item.kind,onClick:item.action},
+          h('span',{className:'rh-notice-icon'},h(Ic,{n:item.icon,s:19,c:'currentColor'})),
+          h('span',{className:'rh-notice-info'},h('strong',null,item.title),h('small',null,item.detail)),
+          h(Ic,{n:'chevron',s:18,c:'currentColor'}));
+      }):h('div',{className:'rh-notice-empty'},
+        h(Ic,{n:'check',s:29,c:'var(--accent)'}),
+        h('strong',null,'Todo al día'),h('p',null,'No hay avisos que requieran atención ahora.')),
+      h('p',{className:'rh-notice-footnote'},'Son avisos informativos calculados al abrir la aplicación; no son notificaciones automáticas externas.')
+    )
+  );
+}
 function RodmeLocalApp(){
   var th=useState(function(){return localStorage.getItem('rh_theme')||'light';});
   var theme=th[0],setThState=th[1];
@@ -2367,6 +2383,26 @@ function RodmeLocalApp(){
     else{sv(entry.route);}
   }
   var notifs=store.appointments.filter(function(a){var d=du(a.date);return d!==null&&d>=0&&d<=7&&rhAppointmentActive(a);});
+  var noticeItems=[];
+  if(cloudStatus&&cloudStatus.error)noticeItems.push({id:'cloud-error',kind:'error',icon:'alert',title:'Revisar sincronización',detail:'Existe un error del espacio familiar. Revisa Configuración.',action:function(){sv('settings');}});
+  notifs.slice(0,6).forEach(function(ap){
+    var pt=store.patients.find(function(x){return x.id===ap.patientId;});
+    noticeItems.push({id:'apt-'+ap.id,kind:'appointment',icon:'calendar',title:(du(ap.date)===0?'Cita hoy: ':'Próxima cita: ')+(ap.reason||ap.specialty||'Consulta médica'),
+      detail:[fmtD(ap.date),ap.time?fmtT(ap.time):'',pt&&pt.name].filter(Boolean).join(' · '),
+      action:function(){ssa(ap);sm('view-apt');}});
+  });
+  rhPendingList(store,'all').filter(function(x){return x.kind!=='appointment'&&x.date&&x.date<=rhCalDay(new Date());}).slice(0,6).forEach(function(item){
+    noticeItems.push({id:'pending-'+item.id,kind:'pending',icon:'clock',title:item.title,
+      detail:item.detail+' · '+fmtD(item.date),action:function(){openTracking('all','pending');}});
+  });
+  (store.medications||[]).filter(function(m){return m.status!=='completed'&&m.status!=='paused'&&
+    m.stockQty!==''&&m.stockQty!=null&&m.stockThreshold!==''&&m.stockThreshold!=null&&
+    Number.isFinite(Number(m.stockQty))&&Number.isFinite(Number(m.stockThreshold))&&
+    Number(m.stockQty)<=Number(m.stockThreshold);}).slice(0,4).forEach(function(m){
+    noticeItems.push({id:'stock-'+m.id,kind:'medication',icon:'pill',title:'Revisar existencias: '+m.name,
+      detail:'Cantidad anotada: '+m.stockQty+' · Límite: '+m.stockThreshold,
+      action:function(){setMedFocus(m.id);sv('medications');}});
+  });
   useEffect(function(){
     rhReminderScan(user,store);
     var timer=window.setInterval(function(){rhReminderScan(user,store);},5*60*1000);
@@ -2492,6 +2528,8 @@ function RodmeLocalApp(){
           h('button',{className:'rh-board-header-search',onClick:function(){setSearchOpen(true);}},
             h(Ic,{n:'search',s:16,c:'currentColor'}),h('span',null,'Buscar pacientes, citas y medicamentos…')),
           h('button',{className:'rh-nav-theme rh-search-trigger',title:'Buscar registros','aria-label':'Buscar registros',onClick:function(){setSearchOpen(true);}},h(Ic,{n:'search',s:18,c:'currentColor'})),
+          h('button',{className:'rh-alert-trigger',title:'Centro de avisos','aria-label':'Centro de avisos'+(noticeItems.length?' ('+noticeItems.length+')':''),onClick:function(){sm('notices');}},
+            h(Ic,{n:'bell',s:20,c:'currentColor'}),noticeItems.length>0&&h('span',{className:'rh-alert-count'},Math.min(99,noticeItems.length))),
           h('button',{className:'rh-nav-theme',title:'Cambiar tema',onClick:function(){setTheme(theme==='dark'?'light':'dark');}},h(Ic,{n:theme==='dark'?'sun':'moon',s:18,c:'currentColor'})),
           h('button',{className:'rh-nav-cta',onClick:function(){sm('add-apt');}},h(Ic,{n:'plus',s:15,c:'currentColor'}),' Nueva cita'),
           h('button',{className:'rh-nav-avatar',title:'Mi cuenta',onClick:function(){sv('settings');}},ini(displayName||uEmail||'U'))
@@ -2507,6 +2545,8 @@ function RodmeLocalApp(){
         ),
         h('div',{style:{display:'flex',gap:5}},
           h('button',{className:'btn-icon','aria-label':'Buscar registros',onClick:function(){setSearchOpen(true);}},h(Ic,{n:'search',s:18,c:'var(--text2)'})),
+          h('button',{className:'btn-icon rh-alert-trigger','aria-label':'Centro de avisos'+(noticeItems.length?' ('+noticeItems.length+')':''),onClick:function(){sm('notices');}},
+            h(Ic,{n:'bell',s:18,c:'currentColor'}),noticeItems.length>0&&h('span',{className:'rh-alert-count'},Math.min(99,noticeItems.length))),
           h('button',{className:'btn-icon',onClick:function(){setTheme(theme==='dark'?'light':'dark');}},h(Ic,{n:theme==='dark'?'sun':'moon',s:17,c:'var(--text2)'})),
           h('button',{className:'av rh-profile-mobile-btn',type:'button','aria-label':'Abrir configuración',style:{width:32,height:32,fontSize:'.62rem',cursor:'pointer',border:0},onClick:function(){sv('settings');}},ini(displayName||uEmail))
         )
@@ -2622,6 +2662,7 @@ function RodmeLocalApp(){
       h('button',{type:'button',onClick:function(){setToast('');},'aria-label':'Cerrar aviso'},h(Ic,{n:'close',s:16,c:'currentColor'}))
     ),
     searchOpen&&h(GlobalHealthSearch,{store:store,onSelect:selectSearchResult,onClose:function(){setSearchOpen(false);}}),
+    modal==='notices'&&h(RhNoticeCenter,{items:noticeItems,onClose:function(){sm(null);}}),
     // Modals
     modal==='add-patient'&&h(PatientModal,{store:store,user:user,onClose:function(){sm(null);}}),
     modal==='edit-patient'&&h(PatientModal,{store:store,user:user,patient:selP,onDelete:function(){sv('patients');ssp(null);},onClose:function(){sm(null);}}),
