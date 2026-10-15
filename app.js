@@ -1626,19 +1626,37 @@ function SettingsView(p){
         placeholder:placeholder||''})
     );
   }
+  var settingsTabs=[['profile','Mi perfil'],['family','Mi familia'],['appearance','Apariencia'],['privacy','Privacidad'],['backups','Respaldos']];
+  function jumpTo(section){
+    var target=document.getElementById('rh-settings-'+section);
+    if(target&&target.scrollIntoView)target.scrollIntoView({behavior:'smooth',block:'start'});
+  }
   return h('div',{className:'rh-local-settings med1820-settings'},
     h('div',{className:'ph'},h('p',{className:'ph-sub'},'TU ESPACIO'),h('h1',{className:'ph-title'},'Configuración'),
       h('p',{style:{fontSize:'.81rem',color:'var(--text2)',marginTop:9}},'Personaliza tu espacio. Entras directamente, sin cuenta ni contraseña.')),
-    window.RH_ACTIVE_CLOUD&&h(CloudFamilyPanel),
+    h('nav',{className:'rh-settings-jump','aria-label':'Ir a opciones de configuración'},
+      settingsTabs.map(function(tab){return h('button',{type:'button',key:tab[0],onClick:function(){jumpTo(tab[0]);}},tab[1]);})
+    ),
+    h('section',{id:'rh-settings-family',className:'rh-settings-family-wrap'},
+      h('div',{className:'rh-settings-section-heading'},h(Ic,{n:'user',s:21,c:'var(--accent)'}),
+        h('div',null,h('h2',null,'Mi familia'),
+          h('p',null,'Acceso de familiares y permisos de visualización.'))),
+      window.RH_ACTIVE_CLOUD?h(CloudFamilyPanel):
+        h('div',{className:'rh-family-offline-notice'},
+          h(Ic,{n:'shield',s:23,c:'var(--accent)'}),
+          h('div',null,h('strong',null,'Acceso familiar todavía no activado'),
+            h('p',null,'Los registros solo se almacenan en este navegador. Para compartirlos entre dispositivos hay que configurar Firebase, publicar reglas privadas y probar el acceso de cada familiar.'))
+        )
+    ),
     h('div',{className:'rh-settings-grid'},
-      h('section',{className:'card-flat rh-settings-section'},
-        h('h2',null,'Mi información'),
+      h('section',{id:'rh-settings-profile',className:'card-flat rh-settings-section'},
+        h('h2',null,'Mi perfil'),
         settingInput('Nombre','ownerName','text','Cómo quieres aparecer'),
         settingInput('Correo (opcional)','email','email','correo@ejemplo.com'),
         settingInput('Teléfono (opcional)','phone','tel','+506 8888-8888')
       ),
-      h('section',{className:'card-flat rh-settings-section'},
-        h('h2',null,'Preferencias'),
+      h('section',{id:'rh-settings-appearance',className:'card-flat rh-settings-section'},
+        h('h2',null,'Apariencia y preferencias'),
         h('label',{className:'rh-setting-field'},h('span',null,'Zona horaria'),
           h('select',{value:form.timezone||'America/Costa_Rica',onChange:function(e){sf(xt(form,{timezone:e.target.value}));setSavedOk(false);}},
             TZ.map(function(t){return h('option',{key:t.v,value:t.v},t.l);})
@@ -1668,9 +1686,25 @@ function SettingsView(p){
     ),
     h('button',{className:'btn btn-primary btn-full',style:{marginTop:17,marginBottom:15,padding:'13px'},onClick:save},
       h(Ic,{n:savedOk?'check':'settings',s:15,c:'white'}),savedOk?'Preferencias guardadas':'Guardar cambios'),
-    h(LocalRemindersPanel,{user:user}),
-    h(InstallAppPanel),
-    h(BackupPanel,{user:user}),
+    h('section',{className:'rh-settings-extra-wrap',id:'rh-settings-notices'},
+      h('div',{className:'rh-settings-section-heading'},h(Ic,{n:'bell',s:22,c:'var(--accent)'}),
+        h('div',null,h('h2',null,'Recordatorios'),h('p',null,'Avisos que puedes consultar desde la aplicación.'))),
+      h(LocalRemindersPanel,{user:user})
+    ),
+    h('section',{className:'rh-settings-extra-wrap'},
+      h('div',{className:'rh-settings-section-heading'},h(Ic,{n:'home',s:21,c:'var(--accent)'}),
+        h('div',null,h('h2',null,'Instalar aplicación'),h('p',null,'Acceso rápido desde tu dispositivo.'))),
+      h(InstallAppPanel)
+    ),
+    h('section',{className:'rh-settings-extra-wrap',id:'rh-settings-backups'},
+      h('div',{className:'rh-settings-section-heading'},h(Ic,{n:'file',s:21,c:'var(--accent)'}),
+        h('div',null,h('h2',null,'Copias de seguridad'),h('p',null,'Exporta y conserva respaldos personales.'))),
+      h(BackupPanel,{user:user})
+    ),
+    h('div',{id:'rh-settings-privacy',className:'rh-settings-privacy-wrap'},
+      h('div',{className:'rh-settings-section-heading'},h(Ic,{n:'shield',s:22,c:'var(--accent)'}),
+        h('div',null,h('h2',null,'Privacidad'),h('p',null,'Consulta dónde se guardan tus datos.')))
+    ),
     h('div',{className:'rh-local-warning'},
       h(Ic,{n:'shield',s:19,c:'var(--accent)'}),
       h('p',null,window.RH_ACTIVE_CLOUD
