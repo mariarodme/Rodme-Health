@@ -451,6 +451,7 @@ function PatientProfile(p){
   var medical=pt?rhReadRecord(user,pt.id,store.patients):{};
   var countState=useState(15),limit=countState[0],setLimit=countState[1];
   var tabState=useState('summary'),profileTab=tabState[0],setProfileTab=tabState[1];
+  var historyState=useState('all'),historyFilter=historyState[0],setHistoryFilter=historyState[1];
   if(!pt)return h('div',{className:'rh-profile-empty'},'Selecciona un paciente.');
   var apts=store.appointments.filter(function(a){return a.patientId===pt.id;});
   var meds=store.medications.filter(function(m){return m.patientId===pt.id;});
@@ -467,14 +468,21 @@ function PatientProfile(p){
     meta:(a.clinic||'')+(a.time?' · '+fmtT(a.time):''),status:rhAppointmentLabel(a),kind:'apt',apt:a});});
   doses.forEach(function(d){events.push({id:'d'+d.id,at:d.at,title:d.status==='missed'?'Dosis omitida':'Dosis administrada',meta:medName(d.medicationId),kind:'dose'});});
   meds.forEach(function(m){if(m.startDate)events.push({id:'m'+m.id,at:m.startDate+'T08:00',title:'Inicio de tratamiento',meta:m.name,kind:'med'});});
-  labs.forEach(function(x){events.push({id:'l'+x.id,at:x.date+'T12:00',title:'Laboratorio: '+x.title,meta:x.provider||'',kind:'med'});});
-  vaccines.forEach(function(x){events.push({id:'v'+x.id,at:x.date+'T12:00',title:'Vacuna: '+x.title,meta:x.dose||'',kind:'med'});});
-  documents.forEach(function(x){events.push({id:'doc'+x.id,at:x.date+'T12:00',title:'Documento: '+x.title,meta:x.fileName||'',kind:'med'});});
+  labs.forEach(function(x){events.push({id:'l'+x.id,at:x.date+'T12:00',title:'Laboratorio: '+x.title,meta:x.provider||'',kind:'lab'});});
+  vaccines.forEach(function(x){events.push({id:'v'+x.id,at:x.date+'T12:00',title:'Vacuna: '+x.title,meta:x.dose||'',kind:'vaccine'});});
+  documents.forEach(function(x){events.push({id:'doc'+x.id,at:x.date+'T12:00',title:'Documento: '+x.title,meta:x.fileName||'',kind:'doc'});});
   vitals.forEach(function(x){var metric=RH_METRICS.find(function(m){return m.id===x.metric;});
-    events.push({id:'vital'+x.id,at:x.date+'T12:00',title:metric?metric.label:'Medición',meta:x.value+(x.metric==='pressure'?'/'+x.value2:'')+' '+(x.unit||''),kind:'med'});});
-  symptoms.forEach(function(x){events.push({id:'symptom'+x.id,at:x.date+'T12:00',title:'Síntoma: '+x.title,meta:'Intensidad '+x.severity+'/10',kind:'med'});});
-  followups.forEach(function(x){events.push({id:'followup'+x.id,at:x.date+'T12:00',title:'Seguimiento: '+x.title,meta:x.status==='done'?'Completado':'Pendiente',kind:'med'});});
+    events.push({id:'vital'+x.id,at:x.date+'T12:00',title:metric?metric.label:'Medición',meta:x.value+(x.metric==='pressure'?'/'+x.value2:'')+' '+(x.unit||''),kind:'vital'});});
+  symptoms.forEach(function(x){events.push({id:'symptom'+x.id,at:x.date+'T12:00',title:'Síntoma: '+x.title,meta:'Intensidad '+x.severity+'/10',kind:'symptom'});});
+  followups.forEach(function(x){events.push({id:'followup'+x.id,at:x.date+'T12:00',title:'Seguimiento: '+x.title,meta:x.status==='done'?'Completado':'Pendiente',kind:'followup'});});
   events.sort(function(a,b){return b.at.localeCompare(a.at);});
+  var historyGroups=[['all','Todo'],['appointments','Citas'],['treatments','Tratamientos'],['health','Salud y documentos']];
+  var historyFiltered=events.filter(function(ev){
+    return historyFilter==='all'||
+      historyFilter==='appointments'&&ev.kind==='apt'||
+      historyFilter==='treatments'&&['dose','med'].includes(ev.kind)||
+      historyFilter==='health'&&['lab','vaccine','doc','vital','symptom','followup'].includes(ev.kind);
+  });
   var next=apts.filter(function(a){return rhAppointmentActive(a)&&a.date>=rhCalDay(new Date());}).sort(function(a,b){return (a.date+'T'+(a.time||'23:59')).localeCompare(b.date+'T'+(b.time||'23:59'));});
   var activeTreatmentCount=meds.filter(function(x){return x.status!=='completed'&&x.status!=='paused';}).length;
   return h('div',{className:'rh-profile rh-board-profile med1820-section'},
@@ -567,8 +575,14 @@ function PatientProfile(p){
       h('p',null,'Los archivos y resultados están organizados por paciente en Centro de salud.')
     ),
     profileTab==='history'&&h('section',{className:'rh-profile-panel rh-profile-timeline'},
-      h('div',{className:'rh-profile-panel-head'},h('h2',null,'Historial cronológico')),
-      events.length?events.slice(0,limit).map(function(ev){
+      h('div',{className:'rh-profile-panel-head'},h('h2',null,'Historial cronológico'),
+        h('span',{className:'rh-history-total'},historyFiltered.length+' registros')),
+      h('div',{className:'rh-history-filters',role:'group','aria-label':'Filtrar historial del paciente'},
+        historyGroups.map(function(group){return h('button',{key:group[0],type:'button',
+          className:historyFilter===group[0]?'active':'','aria-pressed':historyFilter===group[0],
+          onClick:function(){setHistoryFilter(group[0]);setLimit(15);}},group[1]);})
+      ),
+      historyFiltered.length?historyFiltered.slice(0,limit).map(function(ev){
         return h('div',{className:'rh-timeline-row',key:ev.id},
           h('div',{className:'rh-timeline-rail'},h('span',{className:ev.kind})),
           h('div',{className:'rh-timeline-item'},
@@ -580,7 +594,7 @@ function PatientProfile(p){
           )
         );
       }):h('p',{className:'rh-profile-muted'},'Todavía no hay actividad registrada.'),
-      events.length>limit&&h('button',{className:'rh-mini-btn',onClick:function(){setLimit(limit+20);}},'Mostrar más')
+      historyFiltered.length>limit&&h('button',{className:'rh-mini-btn',onClick:function(){setLimit(limit+20);}},'Mostrar más')
     )
   );
 }
