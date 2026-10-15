@@ -88,3 +88,15 @@ Esta integración NO se ha probado todavía contra un proyecto Firebase real, po
 - **Pantallas pequeñas:** estilos específicos para la agenda, fichas, navegación y confirmaciones. Se mantienen letras grandes y accesos «Volver»/«Volver al inicio».
 
 Estas mejoras de interfaz no activan Firebase ni cambian el modo de almacenamiento. La sincronización entre familiares continúa pendiente de configurar el proyecto y verificar sus reglas y operaciones reales.
+
+
+## Diseño v17 — octubre de 2026
+
+- Calendario con vistas día, semana, mes y lista, más colores de estado de citas.
+- Centro de avisos dentro de la aplicación para citas próximas, seguimientos y existencias anotadas.
+- Biblioteca visual de documentos con filtros, imágenes y vista previa de archivos PDF.
+- Historial del paciente filtrable por citas, tratamientos, salud y documentos.
+- Configuración agrupada por perfil, familia, apariencia, privacidad y respaldos.
+- Mejoras visuales y accesibles para dispositivos móviles.
+
+Los avisos no son notificaciones push. La aplicación no interpreta resultados médicos ni marca dosis como tomadas sin registro. Firebase continúa sin activar y el modo local no sincroniza dispositivos. Los documentos guardados localmente no están cifrados automáticamente.
