@@ -2539,6 +2539,7 @@ function RodmeLocalApp(){
   }
 
   return h(RodmeNavContext.Provider,{value:goHome},
+    h('a',{className:'rh-skip-link',href:'#contenido-principal'},'Saltar al contenido principal'),
     h('div',{className:'app-layout'+(view==='home'?' rh-wix-home-layout':'')},
     h('aside',{className:'sidebar'},h(Sidebar)),
     sideOpen&&h('div',{className:'sidebar-overlay show',onClick:function(){setSideOpen(false);},'aria-hidden':true}),
@@ -2587,7 +2588,7 @@ function RodmeLocalApp(){
       ),
 
       // Page content
-      h('div',{className:'page-content'+(view==='home'?' med1820-landing':' med1820-interior')},
+      h('div',{id:view==='home'?undefined:'contenido-principal',tabIndex:-1,className:'page-content'+(view==='home'?' med1820-landing':' med1820-interior')},
         view!=='home'&&h('nav',{className:'rh-route-bar','aria-label':'Navegación de regreso'},
           h('button',{type:'button',className:'rh-route-back',onClick:goBack,
             'aria-label':'Volver a la pantalla anterior'},
