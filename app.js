@@ -1290,6 +1290,8 @@ function HealthCenterView(p){
   var ts=useState(p.initialTab||'labs'),tab=ts[0],setTab=ts[1];
   var ps=useState(p.initialPatientId||'all'),pid=ps[0],setPid=ps[1];
   var qs=useState(''),query=qs[0],setQuery=qs[1];
+  var docFilterState=useState('all'),docDateFilter=docFilterState[0],setDocDateFilter=docFilterState[1];
+  var previewState=useState(null),previewFile=previewState[0],setPreviewFile=previewState[1];
   var os=useState(false),open=os[0],setOpen=os[1];
   var fs=useState({}),form=fs[0],setForm=fs[1];
   var edit=useState(null),editId=edit[0],setEditId=edit[1];
@@ -1299,6 +1301,10 @@ function HealthCenterView(p){
   var setter=tab==='labs'?store.setLabs:tab==='vaccines'?store.setVaccines:store.setDocuments;
   var matches=dataset.filter(function(e){
     if(pid!=='all'&&e.patientId!==pid)return false;
+    if(tab==='documents'&&docDateFilter!=='all'){
+      var year=String(e.date||'').slice(0,4),currentYear=new Date().getFullYear();
+      if(year!==String(currentYear-(docDateFilter==='previous'?1:0)))return false;
+    }
     var text=[e.title,e.name,e.provider,e.notes,e.date,e.unit,e.value].join(' ').toLowerCase();
     return !query||text.includes(query.trim().toLowerCase());
   }).sort(function(a,b){return String(b.date||'').localeCompare(String(a.date||''));});
@@ -1387,11 +1393,24 @@ function HealthCenterView(p){
       )),
       h('label',null,'Buscar',h('input',{value:query,placeholder:'Buscar '+title.toLowerCase()+'…',onChange:function(e){setQuery(e.target.value);}}))
     ),
-    h('div',{className:'rh-center-records'},
+    tab==='documents'&&h('div',{className:'rh-doc-library-header'},
+      h('div',null,h('h2',null,'Biblioteca de documentos'),
+        h('p',null,'Archivos organizados por paciente y fecha. Los adjuntos se guardan en tu espacio actual.')),
+      h('label',null,'Período',
+        h('select',{value:docDateFilter,onChange:function(e){setDocDateFilter(e.target.value);}},
+          [['all','Todas las fechas'],['current','Este año'],['previous','Año anterior']].map(function(x){return h('option',{value:x[0],key:x[0]},x[1]);})
+        )
+      )
+    ),
+    h('div',{className:'rh-center-records'+(tab==='documents'?' rh-doc-library-grid':'')},
       matches.length?matches.map(function(item){
         var badge=tab==='labs'?(item.status==='reviewed'?'Revisado':item.status==='done'?'Con resultado':'Pendiente'):
           tab==='vaccines'?'Registrada':'Archivo local';
-        return h('article',{className:'rh-center-item',key:item.id},
+        return h('article',{className:'rh-center-item'+(tab==='documents'?' rh-doc-library-card':''),key:item.id},
+          tab==='documents'&&h('div',{className:'rh-doc-thumb'},
+            item.fileData&&/^data:image\/(jpeg|png|webp);base64,/.test(item.fileData)
+              ?h('img',{src:item.fileData,alt:'Vista previa de '+item.title,loading:'lazy'})
+              :h(Ic,{n:'file',s:30,c:'var(--accent)'})),
           h('div',{className:'rh-center-item-head'},h('div',null,
             h('span',{className:'rh-center-patient'},patientName(item.patientId)),
             h('h2',null,item.title)),
@@ -1412,6 +1431,8 @@ function HealthCenterView(p){
           tab==='documents'&&h('p',{className:'rh-center-meta'},item.fileName||'Sin archivo adjunto'),
           item.notes&&h('p',{className:'rh-center-note'},item.notes),
           h('div',{className:'rh-center-item-actions'},
+            tab==='documents'&&item.fileData&&/^data:(image\/(jpeg|png|webp)|application\/pdf);base64,/.test(item.fileData)&&h('button',{
+              onClick:function(){setPreviewFile(item);}},'Vista previa'),
             tab==='documents'&&item.fileData&&h('button',{onClick:function(){downloadEntry(item);}},'Descargar archivo'),
             h('button',{onClick:function(){startEdit(item);}},'Editar'),
             h('button',{onClick:function(){removeEntry(item);},className:'danger'},'Eliminar')
@@ -1466,6 +1487,16 @@ function HealthCenterView(p){
         field('notes','Notas (opcional)','textarea','Solo información que quieras conservar'),
         msg&&h('p',{className:'rh-center-msg',role:'status'},msg),
         h('button',{className:'rh-center-save',onClick:saveEntry},'Guardar registro')
+      )
+    ),
+    previewFile&&h(Sheet,{title:'Vista previa del documento',sub:previewFile.title||'Archivo',onClose:function(){setPreviewFile(null);}},
+      h('div',{className:'rh-doc-preview'},
+        h('p',null,patientName(previewFile.patientId)+' · '+fmtD(previewFile.date)),
+        /^data:image\/(jpeg|png|webp);base64,/.test(previewFile.fileData||'')
+          ?h('img',{src:previewFile.fileData,alt:'Documento: '+previewFile.title})
+          :/^data:application\/pdf;base64,/.test(previewFile.fileData||'')
+            ?h('iframe',{src:previewFile.fileData,title:'Documento PDF: '+previewFile.title,sandbox:'allow-downloads'}):null,
+        h('button',{className:'btn btn-primary btn-full',onClick:function(){downloadEntry(previewFile);}},'Descargar archivo')
       )
     ),
     !open&&msg&&h('p',{className:'rh-center-msg',role:'status'},msg)
